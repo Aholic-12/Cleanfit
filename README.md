@@ -1,220 +1,461 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/header-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="assets/header-light.svg">
-  <img src="assets/header-light.svg" alt="Cleanfit — 深度视觉人体身形测量与版型适配" width="100%">
-</picture>
-
 <div align="center">
 
-<img src="assets/badge-status.svg" alt="In Development" height="28">
-<img src="assets/badge-python.svg" alt="Python 3.8+" height="28">
-<img src="assets/badge-open3d.svg" alt="Open3D 0.17+" height="28">
-<img src="assets/badge-astra.svg" alt="Astra SDK" height="28">
-<img src="assets/badge-camera.svg" alt="深度相机 1.2m" height="28">
-<img src="assets/badge-license.svg" alt="License MIT" height="28">
-<img src="assets/badge-prs.svg" alt="PRs Welcome" height="28">
+# 🧵 Cleanfit
 
-<br/><br/>
-
-<b>用一台消费级深度相机，把「我穿什么版型好看」变成一组可测量的数字。</b>
+### *Deep Vision Body Measurement & Fit Adaptation*
+### *基于深度视觉的人体身形测量与版型适配系统*
 
 <br/>
 
-<sub>身体比例 → 身形分类 → 版型建议，18 个月做到 ≤5% 误差。</sub>
+<p>
+  <img src="https://img.shields.io/badge/Status-In_Development-FFB400?style=flat-square" />
+  <img src="https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-MIT-6C63FF?style=flat-square" />
+  <img src="https://img.shields.io/badge/PRs-Welcome-00C853?style=flat-square" />
+  <img src="https://img.shields.io/github/stars/Aholic-12/Cleanfit?style=social" />
+</p>
 
-<br/><br/>
+<br/>
 
-<a href="#-为什么需要-cleanfit"><kbd>为什么</kbd></a>
-<a href="#-核心功能"><kbd>核心功能</kbd></a>
-<a href="#-系统架构"><kbd>系统架构</kbd></a>
-<a href="#-硬件方案"><kbd>硬件方案</kbd></a>
-<a href="#-精度指标"><kbd>精度指标</kbd></a>
-<a href="#-开发路线图"><kbd>路线图</kbd></a>
-<a href="#-快速开始"><kbd>快速开始</kbd></a>
-<a href="#english-summary"><kbd>English</kbd></a>
-
-</div>
-
-<img src="assets/divider.svg" alt="" width="100%">
-
-## 🎯 为什么需要 Cleanfit
-
-<div align="center">
-
-<table width="100%">
+<table border="0">
  <tr>
-  <td align="center" width="33%" valign="top">
-    <h3>😵‍💫</h3>
-    <b>尺码表靠不住</b><br/>
-    <sub>同一个 M 码，<br/>不同品牌差出两个号。<br/>线上买衣服像抽盲盒。</sub>
+  <td align="center" width="25%">
+    <h3>🎯</h3>
+    <b>≤5% Error</b><br/>
+    <sub>精准测量</sub>
   </td>
-  <td align="center" width="33%" valign="top">
-    <h3>🪞</h3>
-    <b>镜子不会说谎，但也不解释</b><br/>
-    <sub>你知道自己"肩宽"，<br/>但不知道肩宽 / 身高 = 0.26<br/>意味着什么版型。</sub>
+  <td align="center" width="25%">
+    <h3>🧠</h3>
+    <b>AI 3D Vision</b><br/>
+    <sub>点云分析</sub>
   </td>
-  <td align="center" width="33%" valign="top">
-    <h3>📐</h3>
-    <b>量体成本太高</b><br/>
-    <sub>裁缝量体几十项数据、<br/>要预约、要上门。<br/>而穿搭只需要 3 个比例。</sub>
+  <td align="center" width="25%">
+    <h3>👔</h3>
+    <b>Smart Fit</b><br/>
+    <sub>身形分类</sub>
+  </td>
+  <td align="center" width="25%">
+    <h3>📷</h3>
+    <b>Depth Camera</b><br/>
+    <sub>Astra Mini Pro</sub>
   </td>
  </tr>
 </table>
 
+<br/>
+
+<p align="center">
+  <a href="#-english"><img src="https://img.shields.io/badge/-English-6C63FF?style=flat-square" /></a>
+  &nbsp;
+  <a href="#-中文"><img src="https://img.shields.io/badge/-中文-FF6B6B?style=flat-square" /></a>
+</p>
+
 </div>
 
-**Cleanfit 只做一件事**：在受控场景下，把 3 个关键比例测准（≤5% 误差），翻译成一句人话——**"你适合什么版型，避开什么版型"**。
+---
 
-<img src="assets/divider.svg" alt="" width="100%">
+<!-- ====================== TABLE OF CONTENTS ====================== -->
 
-## ✨ 核心功能
+<details open>
+<summary>📑 <b>Table of Contents / 目录</b></summary>
+<br/>
+
+<table>
+ <tr>
+  <td width="50%" valign="top">
+
+**English**
+- [About](#about)
+- [Core Features](#core-features)
+- [System Architecture](#system-architecture)
+- [Hardware](#hardware)
+- [Accuracy Specs](#accuracy-specifications)
+- [Roadmap](#roadmap)
+- [Getting Started](#getting-started)
+- [Design Boundaries](#design-boundaries)
+- [Contributing](#contributing)
+
+  </td>
+  <td width="50%" valign="top">
+
+**中文**
+- [项目简介](#项目简介)
+- [核心功能](#核心功能)
+- [系统架构](#系统架构-1)
+- [硬件方案](#硬件方案)
+- [精度指标](#精度指标)
+- [开发路线图](#开发路线图)
+- [快速开始](#快速开始)
+- [边界说明](#边界说明)
+- [参与贡献](#参与贡献)
+
+  </td>
+ </tr>
+</table>
+
+</details>
+
+<br/>
+
+<!-- ====================== ENGLISH ====================== -->
 
 <div align="center">
 
-<table width="100%">
+<img src="https://img.shields.io/badge/🌟_English-6C63FF?style=for-the-badge" />
+
+</div>
+
+### About
+
+<div align="center">
+<table>
+ <tr>
+  <td>
+
+**Cleanfit** is a desktop-grade body measurement and fit adaptation system powered by a consumer-level depth camera and AI 3D vision algorithms. It precisely extracts body proportions and shape features, outputs standardized body shape classifications and clothing fit recommendations, and includes static virtual try-on for visual verification.
+
+The project follows a **"small but precise"** technical philosophy — deep specialization in targeted scenarios with rigorous accuracy, without over-generalization or feature bloat.
+
+> 🚧 **This project is currently under active development.** Features are being built and updated regularly. Stay tuned!
+
+  </td>
+ </tr>
+</table>
+</div>
+
+### Core Features
+
+<table>
+ <tr>
+  <td align="center" width="50%" valign="top">
+    <br/>
+    <h3>🔬 3D Proportional Measurement</h3>
+    <p>Depth camera captures human point cloud → AI extracts skeletal feature points → auto-corrects perspective & distance distortion → outputs three core proportional measurements.</p>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <br/>
+    <h3>📊 Body Shape Classification</h3>
+    <p>Benchmarks ratio data against industry standards for automatic classification. Outputs fit recommendations (slim / regular / relaxed) per garment with "avoid" warnings.</p>
+  </td>
+ </tr>
+ <tr>
+  <td align="center" width="50%" valign="top">
+    <br/>
+    <h3>👕 Static Virtual Try-On</h3>
+    <p>Upload a flat garment image → system warps and fits it onto your measured body proportions → generates a frontal try-on preview for visual fit verification.</p>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <br/>
+    <h3>📋 Report Export</h3>
+    <p>Outputs proportional data, body shape classification, and fit adaptation recommendations as structured visual reports.</p>
+  </td>
+ </tr>
+</table>
+
+### System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│                         🖥️  APPLICATION LAYER                       │
+│                                                                     │
+│    ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌────────────┐  │
+│    │ Capture │ ──▶ │ Measure │ ──▶ │ Result  │ ──▶ │ Try-On     │  │
+│    └─────────┘     └─────────┘     └─────────┘     └────────────┘  │
+│                                                                     │
+│    • Minimalist desktop UI          • PDF / image report export     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│                      🧠  CORE ALGORITHM LAYER                       │
+│                                                                     │
+│    ① Point Cloud Segmentation & Denoising                           │
+│       Body contour extraction from clothing edges, hair, floor      │
+│                                                                     │
+│    ② Skeletal Feature Point Localization                            │
+│       Auto-locate: head top, acromion, waist, hip peak, feet        │
+│                                                                     │
+│    ③ Perspective & Distance Correction                              │
+│       Camera intrinsics + depth info → ratio distortion fix         │
+│                                                                     │
+│    ④ Body Shape Classification & Fit Engine                         │
+│       Proportion-to-fit mapping with explainable recommendations    │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│                       🔧  FOUNDATION LAYER                          │
+│                                                                     │
+│    • Orbbec Astra SDK (depth + RGB)   • Open3D / PCL               │
+│    • OpenCV (image processing)        • NumPy (computation)         │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Hardware
+
+<table>
+ <tr>
+  <th width="25%" align="center">📷 Camera</th>
+  <th width="25%" align="center">💰 Budget</th>
+  <th width="25%" align="center">🎯 Why This One</th>
+  <th width="25%" align="center">🔗 Integration</th>
+ </tr>
+ <tr>
+  <td align="center">Orbbec Astra Mini Pro<br/><b>Developer Edition</b></td>
+  <td align="center">¥850–950<br/><sub>full dev kit with SDK<br/>& calibration board</sub></td>
+  <td align="center">Depth MSE < 1.5mm at 1m<br/><sub>minimum threshold for<br/>stable ≤5% error</sub></td>
+  <td align="center">USB direct-connect<br/><sub>distortion correction, noise<br/>adaptation & feature<br/>optimization <b>tightly coupled</b></sub></td>
+ </tr>
+</table>
+
+### Accuracy Specifications
+
+> 📏 All specs under controlled conditions: indoor soft lighting, frontal standing, form-fitting base layer, 1.2m ± 0.1m distance.
+
+<table>
+ <tr>
+  <th align="center">Type</th>
+  <th align="center">Metric</th>
+  <th align="center">Error Bound</th>
+ </tr>
+ <tr>
+  <td align="center">✅ <b>Guaranteed</b></td>
+  <td>Head-to-body ratio, Shoulder-width / Height ratio</td>
+  <td align="center">≤ <b>5%</b> relative error</td>
+ </tr>
+ <tr>
+  <td align="center">📌 <b>Reference</b></td>
+  <td>Waist-to-hip ratio</td>
+  <td align="center">≤ <b>7%</b> relative error</td>
+ </tr>
+</table>
+
+**Output**: Body shape classification (Inverted Triangle / H-shape / Pear / Apple) + proportional description + fit adaptation recommendations.
+
+### Roadmap
+
+```mermaid
+gantt
+    title Cleanfit Development Roadmap
+    dateFormat YYYY-MM
+    axisFormat %Y-%m
+
+    section Phase 1
+    Algorithm Validation (SMPL/H3.6M)     :p1, 2026-11, 3M
+    Feature Extraction & Classification    :p1b, 2026-11, 3M
+
+    section Phase 2
+    Hardware Integration & Calibration     :p2, after p1, 4M
+    Real-scene Optimization                :p2b, after p1, 4M
+
+    section Phase 3
+    Feature Refinement & Try-On            :p3, after p2, 5M
+
+    section Phase 4
+    Testing & Performance Optimization     :p4, after p3, 6M
+```
+
+| Phase | Period | Focus |
+|:---:|:---|:---|
+| **1** | Month 1–3 | Algorithm validation on SMPL / Human3.6M datasets; feature extraction, ratio correction, body classification |
+| **2** | Month 4–7 | Hardware integration; camera calibration, real-scene optimization, basic UI flow |
+| **3** | Month 8–12 | Feature refinement; waist-hip ratio tuning, body classification, virtual try-on |
+| **4** | Month 13–18 | Testing expansion, performance optimization, optional side-view & multi-pose |
+
+### Getting Started
+
+```bash
+# Clone the repository
+git clone https://github.com/Aholic-12/Cleanfit.git
+
+# Navigate to the project directory
+cd Cleanfit
+
+# Install dependencies (detailed instructions coming soon)
+pip install -r requirements.txt
+```
+
+<details>
+<summary>📦 <b>Environment Requirements</b></summary>
+<br/>
+
+| Dependency | Version | Purpose |
+|:---|:---|:---|
+| Python | 3.8+ | Runtime |
+| Open3D | 0.17+ | Point cloud processing |
+| Orbbec Astra SDK | Latest | Depth camera interface |
+| NumPy | Latest | Numerical computation |
+| OpenCV | Latest | Image processing & calibration |
+
+</details>
+
+### Design Boundaries
+
+> ⚠️ These are intentional constraints, not limitations.
+
+<table>
+ <tr>
+  <td width="50%" valign="top">
+
+**🚫 No real-time AR try-on**
+Static photo-level only; no cloth simulation or dynamic rendering.
+
+**🎯 Scene-limited accuracy**
+All specs apply under controlled conditions; no over-claiming.
+
+  </td>
+  <td width="50%" valign="top">
+
+**🧠 Focused AI**
+3D feature extraction & correction only; no unnecessary model stacking.
+
+**⚡ Precision first**
+Core measurement stability takes priority over feature expansion.
+
+  </td>
+ </tr>
+</table>
+
+### Contributing
+
+Contributions are welcome! If you have ideas or want to help build Cleanfit together:
+
+```
+Fork → Branch → Commit → Push → PR
+```
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+<br/>
+
+<!-- ====================== 中文 ====================== -->
+
+<div align="center">
+
+<img src="https://img.shields.io/badge/🇨🇳_中文-FF6B6B?style=for-the-badge" />
+
+</div>
+
+### 项目简介
+
+<div align="center">
+<table>
+ <tr>
+  <td>
+
+**Cleanfit** 是一款桌面级精准身形测量工具，以消费级深度相机为硬件载体，通过 AI 三维视觉算法精准提取人体比例与身形特征，输出标准化身形分类和版型适配建议，并附带静态虚拟试穿效果验证。
+
+项目走 **「小而准」** 的技术路线 —— 限定场景深耕精度，不做全场景泛化，不堆砌冗余功能。
+
+> 🚧 **项目正在积极开发中。** 功能正在逐步构建和更新，敬请期待！
+
+  </td>
+ </tr>
+</table>
+</div>
+
+### 核心功能
+
+<table>
  <tr>
   <td align="center" width="50%" valign="top">
     <br/>
     <h3>🔬 三维比例精准测量</h3>
-    <p>深度相机采集人体点云 → AI 提取骨性特征点 → 自动校正透视与距离畸变 → 输出三大核心比例。</p>
-    <sub><code>头身比</code> <code>肩宽/身高</code> <code>腰臀比</code></sub>
-    <br/><br/>
+    <p>深度相机采集人体点云 → AI 提取骨性特征点 → 自动校正透视与距离畸变 → 输出三大核心比例数据。</p>
   </td>
   <td align="center" width="50%" valign="top">
     <br/>
-    <h3>📊 身形分类与版型适配</h3>
-    <p>比例数据对标行业身形标准自动分类，输出上衣 / 下装的版型推荐，并给出「雷区版型」提示。</p>
-    <sub><code>修身</code> <code>合身</code> <code>宽松</code></sub>
-    <br/><br/>
+    <h3>📊 标准身形分类与版型适配</h3>
+    <p>基于比例数据对标行业身形标准，自动分类身形，输出对应上衣/下装的版型推荐（修身 / 合身 / 宽松）和雷区版型提示。</p>
   </td>
  </tr>
  <tr>
   <td align="center" width="50%" valign="top">
     <br/>
     <h3>👕 静态虚拟试穿验证</h3>
-    <p>上传单件衣服平面图 → 基于实测身形比例自动形变贴合 → 生成正面试穿效果图，直观验证版型。</p>
-    <sub>照片级静态效果，非实时 AR</sub>
-    <br/><br/>
+    <p>上传单件衣服平面图 → 基于测量的身形比例自动形变贴合 → 生成正面试穿效果图，直观验证版型适配效果。</p>
   </td>
   <td align="center" width="50%" valign="top">
     <br/>
     <h3>📋 结构化报告导出</h3>
-    <p>比例数据、身形分类、版型建议一次性导出为图文报告，可保存、可分享、可对比。</p>
-    <sub>PDF / 图片</sub>
-    <br/><br/>
+    <p>输出比例数据、身形分类、版型适配建议的图文报告。</p>
   </td>
  </tr>
 </table>
 
-</div>
+### 系统架构
 
-<img src="assets/divider.svg" alt="" width="100%">
-
-## 🧠 系统架构
-
-```mermaid
-flowchart TB
-    subgraph APP["🖥️ 应用层 · Application"]
-        direction LR
-        A1["📷 采集<br/>深度相机取图"] --> A2["📐 测量<br/>比例计算"] --> A3["📊 结果<br/>身形分类"] --> A4["👕 试穿<br/>版型验证"]
-    end
-
-    subgraph CORE["🧠 核心算法层 · Algorithm"]
-        direction LR
-        C1["① 点云分割与去噪"] --> C2["② 骨性特征点定位"] --> C3["③ 透视与距离校正"] --> C4["④ 身形分类与版型匹配"]
-    end
-
-    subgraph BASE["🔧 基础工具层 · Foundation"]
-        direction LR
-        B1["Astra SDK"]
-        B2["Open3D / PCL"]
-        B3["OpenCV"]
-        B4["NumPy"]
-    end
-
-    APP --> CORE --> BASE
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│                           🖥️  应 用 层                              │
+│                                                                     │
+│    ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌────────────┐  │
+│    │  采 集  │ ──▶ │  测 量  │ ──▶ │  结 果  │ ──▶ │  试穿验证  │  │
+│    └─────────┘     └─────────┘     └─────────┘     └────────────┘  │
+│                                                                     │
+│    • 极简桌面端交互界面             • 图文报告导出                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│                         🧠  核心算法层                               │
+│                                                                     │
+│    ① 人体点云精细化分割与去噪                                        │
+│       针对衣物边缘、头发、地面噪声优化，保留精准躯干轮廓               │
+│                                                                     │
+│    ② 骨性特征点智能定位                                              │
+│       自动定位头顶、肩峰、腰最细处、臀峰、脚底等关键点位               │
+│                                                                     │
+│    ③ 透视与距离校正模型                                              │
+│       结合相机内参与深度信息，修正不同距离、微小俯仰的比例畸变         │
+│                                                                     │
+│    ④ 身形分类与版型匹配引擎                                          │
+│       基于标注数据集建立比例→版型映射，输出可解释的适配建议            │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│                         🔧  基础工具层                               │
+│                                                                     │
+│    • 奥比中光 Astra SDK（深度图+彩色图）  • Open3D / PCL             │
+│    • OpenCV（图像处理与标定）             • NumPy（数值计算）          │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-<table width="100%">
+### 硬件方案
+
+<table>
  <tr>
-  <th align="left" width="22%">模块</th>
-  <th align="left">做什么</th>
-  <th align="left" width="34%">关键点</th>
+  <th width="25%" align="center">📷 深度相机</th>
+  <th width="25%" align="center">💰 硬件预算</th>
+  <th width="25%" align="center">🎯 选型理由</th>
+  <th width="25%" align="center">🔗 软硬结合</th>
  </tr>
  <tr>
-  <td><b>① 点云分割与去噪</b></td>
-  <td>从衣物边缘、头发、地面噪声中分离出干净的人体轮廓</td>
-  <td>边缘噪声是最大的误差来源</td>
- </tr>
- <tr>
-  <td><b>② 骨性特征点定位</b></td>
-  <td>自动定位头顶、肩峰、腰最细处、臀峰、脚底</td>
-  <td>只认骨性标志，不认脂肪与衣物</td>
- </tr>
- <tr>
-  <td><b>③ 透视与距离校正</b></td>
-  <td>结合相机内参与深度信息，修正不同距离、微小俯仰造成的比例畸变</td>
-  <td>1.2m 处 ±0.1m 内保持稳定</td>
- </tr>
- <tr>
-  <td><b>④ 分类与版型匹配</b></td>
-  <td>比例 → 身形 → 版型，每一句建议都能追溯到具体数据</td>
-  <td>可解释，不做黑箱推荐</td>
+  <td align="center">奥比中光 Astra Mini Pro<br/><b>开发版</b></td>
+  <td align="center">¥850–950<br/><sub>含官方 SDK 与标定板<br/>的完整开发套件</sub></td>
+  <td align="center">1 米距离深度均方误差<br/>&lt; 1.5mm<br/><sub>稳定实现 ≤5% 误差的<br/>最低硬件门槛</sub></td>
+  <td align="center">USB 直连电脑<br/><sub>专属镜头畸变校正、<br/>深度噪声适配、<br/>特征点优化，<br/>算法与硬件<b>深度绑定</b></sub></td>
  </tr>
 </table>
 
-<img src="assets/divider.svg" alt="" width="100%">
+### 精度指标
 
-## 📷 硬件方案
+> 📏 所有指标均基于限定测试场景：室内均匀柔光、正面自然站立、紧身打底衣物、拍摄距离 1.2m ± 0.1m
 
-<div align="center">
-
-<table width="100%">
+<table>
  <tr>
-  <th width="25%" align="center">深度相机</th>
-  <th width="25%" align="center">硬件预算</th>
-  <th width="25%" align="center">选型理由</th>
-  <th width="25%" align="center">软硬结合</th>
- </tr>
- <tr>
-  <td align="center">
-    <b>奥比中光 Astra Mini Pro</b><br/>
-    <sub>开发版</sub>
-  </td>
-  <td align="center">
-    <b>¥850–950</b><br/>
-    <sub>含官方 SDK 与标定板<br/>的完整开发套件</sub>
-  </td>
-  <td align="center">
-    <b>1m 处深度 MSE &lt; 1.5mm</b><br/>
-    <sub>稳定实现 ≤5% 误差的<br/>最低硬件门槛</sub>
-  </td>
-  <td align="center">
-    <b>USB 直连电脑</b><br/>
-    <sub>镜头畸变校正、深度噪声适配、<br/>特征点优化，<br/>算法与硬件深度绑定</sub>
-  </td>
- </tr>
-</table>
-
-</div>
-
-> 💡 **为什么不用手机摄像头？** 单目 RGB 缺少真实深度，只能靠模型"猜"比例，误差随姿态和光照剧烈波动。深度相机直接给出几何真值，这是 ≤5% 的前提。
-
-<img src="assets/divider.svg" alt="" width="100%">
-
-## 📏 精度指标
-
-<sub>所有指标基于限定测试场景：室内均匀柔光 · 正面自然站立 · 紧身打底衣物 · 拍摄距离 1.2m ± 0.1m</sub>
-
-<table width="100%">
- <tr>
-  <th align="center" width="18%">类型</th>
+  <th align="center">类型</th>
   <th align="center">指标</th>
-  <th align="center" width="26%">误差承诺</th>
+  <th align="center">误差承诺</th>
  </tr>
  <tr>
   <td align="center">✅ <b>保证项</b></td>
-  <td>头身比 · 肩宽 / 身高比</td>
+  <td>头身比、肩宽/身高比</td>
   <td align="center">相对误差 ≤ <b>5%</b></td>
  </tr>
  <tr>
@@ -226,231 +467,115 @@ flowchart TB
 
 **输出形式**：身形分类（倒三角 / H 型 / 梨型 / 苹果型）+ 比例观感描述 + 版型适配建议
 
-<table width="100%">
- <tr>
-  <td align="center" width="25%">🔻<br/><b>倒三角</b><br/><sub>肩宽 &gt; 胯宽</sub></td>
-  <td align="center" width="25%">🔲<br/><b>H 型</b><br/><sub>肩胯接近</sub></td>
-  <td align="center" width="25%">🍐<br/><b>梨型</b><br/><sub>胯宽 &gt; 肩宽</sub></td>
-  <td align="center" width="25%">🍎<br/><b>苹果型</b><br/><sub>腰腹突出</sub></td>
- </tr>
-</table>
+### 开发路线图
 
-<img src="assets/divider.svg" alt="" width="100%">
+| 阶段 | 周期 | 重点 |
+|:---:|:---|:---|
+| **1** | 第 1–3 月 | 基于 SMPL / Human3.6M 数据集跑通算法；特征提取、比例校正、身形分类 |
+| **2** | 第 4–7 月 | 硬件对接；相机标定、畸变校正、真实场景优化、基础界面 |
+| **3** | 第 8–12 月 | 功能完善；腰臀比精度打磨、身形分类、虚拟试穿开发 |
+| **4** | 第 13–18 月 | 测试补全、性能优化、可选拓展（侧面测量 / 多体位验证） |
 
-## 🗺️ 开发路线图
-
-<div align="center">
-
-<sub><code>▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱</code> 阶段 1 · 进行中</sub>
-
-</div>
-
-```mermaid
-gantt
-    title Cleanfit Development Roadmap
-    dateFormat YYYY-MM
-    axisFormat %Y-%m
-
-    section Phase 1 · 算法验证
-    Algorithm Validation (SMPL / H3.6M)   :p1a, 2026-11, 3M
-    Feature Extraction & Classification    :p1b, 2026-11, 3M
-
-    section Phase 2 · 硬件落地
-    Hardware Integration & Calibration     :p2a, after p1a, 4M
-    Real-scene Optimization                :p2b, after p1b, 4M
-
-    section Phase 3 · 精度打磨
-    Waist-Hip Ratio Tuning & Classification:p3a, after p2a, 5M
-    Static Virtual Try-On                  :p3b, after p2b, 5M
-
-    section Phase 4 · 测试与优化
-    Testing & Performance Optimization     :p4, after p3a, 6M
-```
-
-<table width="100%">
- <tr>
-  <th align="center" width="10%">阶段</th>
-  <th align="center" width="18%">周期</th>
-  <th align="left">重点</th>
- </tr>
- <tr>
-  <td align="center"><b>1</b></td>
-  <td align="center">第 1–3 月</td>
-  <td>基于 SMPL / Human3.6M 跑通算法；特征提取、比例校正、身形分类</td>
- </tr>
- <tr>
-  <td align="center"><b>2</b></td>
-  <td align="center">第 4–7 月</td>
-  <td>硬件对接；相机标定、畸变校正、真实场景优化、基础界面</td>
- </tr>
- <tr>
-  <td align="center"><b>3</b></td>
-  <td align="center">第 8–12 月</td>
-  <td>腰臀比精度打磨、身形分类完善、虚拟试穿开发</td>
- </tr>
- <tr>
-  <td align="center"><b>4</b></td>
-  <td align="center">第 13–18 月</td>
-  <td>测试补全、性能优化、可选拓展（侧面测量 / 多体位验证）</td>
- </tr>
-</table>
-
-<img src="assets/divider.svg" alt="" width="100%">
-
-## 🚀 快速开始
+### 快速开始
 
 ```bash
-# 1. 克隆仓库
+# 克隆仓库
 git clone https://github.com/Aholic-12/Cleanfit.git
+
+# 进入项目目录
 cd Cleanfit
 
-# 2. 安装依赖
+# 安装依赖（详细文档随开发进度更新）
 pip install -r requirements.txt
-
-# 3. 运行（详细文档随开发进度更新）
-python main.py
 ```
 
 <details>
 <summary>📦 <b>环境依赖</b></summary>
 <br/>
 
-<table width="100%">
- <tr>
-  <th align="left">依赖</th>
-  <th align="left" width="18%">版本</th>
-  <th align="left">用途</th>
- </tr>
- <tr>
-  <td>Python</td>
-  <td><code>3.8+</code></td>
-  <td>运行时</td>
- </tr>
- <tr>
-  <td>Open3D</td>
-  <td><code>0.17+</code></td>
-  <td>点云处理</td>
- </tr>
- <tr>
-  <td>奥比中光 Astra SDK</td>
-  <td><code>最新版</code></td>
-  <td>深度相机接口</td>
- </tr>
- <tr>
-  <td>NumPy</td>
-  <td><code>最新版</code></td>
-  <td>数值计算</td>
- </tr>
- <tr>
-  <td>OpenCV</td>
-  <td><code>最新版</code></td>
-  <td>图像处理与标定</td>
- </tr>
-</table>
+| 依赖 | 版本 | 用途 |
+|:---|:---|:---|
+| Python | 3.8+ | 运行时 |
+| Open3D | 0.17+ | 点云处理 |
+| 奥比中光 Astra SDK | 最新版 | 深度相机接口 |
+| NumPy | 最新版 | 数值计算 |
+| OpenCV | 最新版 | 图像处理与标定 |
 
 </details>
 
-<details>
-<summary>⚠️ <b>运行前请确认</b></summary>
-<br/>
-
-- 相机已通过 USB 3.0 直连（避免 USB Hub 降压导致掉帧）
-- 环境为室内均匀柔光，避免顶光直射与逆光
-- 穿着紧身打底衣物，赤足站立
-- 拍摄距离保持在 **1.2m ± 0.1m**，镜头与身体正面平行
-
-</details>
-
-<img src="assets/divider.svg" alt="" width="100%">
-
-## 🧭 边界说明
+### 边界说明
 
 > ⚠️ 以下是有意为之的设计约束，不是缺陷。
 
-<table width="100%">
+<table>
  <tr>
   <td width="50%" valign="top">
-    <br/>
-    <b>🚫 不做实时 AR 试穿</b><br/>
-    <sub>仅实现静态照片级试穿，不涉及布料仿真与动态渲染。</sub>
-    <br/><br/>
+
+**🚫 不做实时 AR 试穿**
+仅实现静态照片级试穿效果，不涉及布料仿真与动态渲染。
+
+**🎯 限定场景精度**
+所有指标均基于受控测试环境，不夸大全场景通用效果。
+
   </td>
   <td width="50%" valign="top">
-    <br/>
-    <b>🧠 不堆模型</b><br/>
-    <sub>核心聚焦三维特征提取与校正，不为堆砌 AI 而滥用模型。</sub>
-    <br/><br/>
-  </td>
- </tr>
- <tr>
-  <td width="50%" valign="top">
-    <br/>
-    <b>🎯 限定场景精度</b><br/>
-    <sub>所有指标基于受控环境，不夸大全场景通用效果。</sub>
-    <br/><br/>
-  </td>
-  <td width="50%" valign="top">
-    <br/>
-    <b>⚡ 精度优先于功能</b><br/>
-    <sub>先保证核心测量的稳定性，再谈功能拓展。</sub>
-    <br/><br/>
+
+**🧠 聚焦 AI 能力**
+核心聚焦三维特征提取与校正，不为堆砌 AI 而滥用模型。
+
+**⚡ 精度优先**
+优先保证核心测量的精度与稳定性，再考虑功能拓展。
+
   </td>
  </tr>
 </table>
 
-<img src="assets/divider.svg" alt="" width="100%">
+### 参与贡献
 
-## 🤝 参与贡献
-
-欢迎贡献代码、数据或想法！无论是算法优化、场景测试还是文档改进，都非常需要。
+欢迎贡献代码！如果你有想法或想一起打造 Cleanfit：
 
 ```
 Fork → Branch → Commit → Push → PR
 ```
 
 1. Fork 本仓库
-2. 创建功能分支：`git checkout -b feature/amazing-feature`
-3. 提交修改：`git commit -m 'Add some amazing feature'`
-4. 推送分支：`git push origin feature/amazing-feature`
+2. 创建你的功能分支 (`git checkout -b feature/amazing-feature`)
+3. 提交你的修改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
 5. 发起 Pull Request
 
-<img src="assets/divider.svg" alt="" width="100%">
-
-## English Summary
-
-**Cleanfit** is a desktop-grade body measurement and fit-adaptation system. A consumer depth camera (Orbbec Astra Mini Pro) captures a human point cloud; AI 3D-vision algorithms extract skeletal landmarks, correct perspective and distance distortion, and output three core body ratios — then translate them into a standardized body-shape classification and concrete garment-fit recommendations, with a static virtual try-on for visual verification.
-
-| | |
-|:---|:---|
-| **Guaranteed accuracy** | Head-to-body ratio, shoulder-width / height ratio — ≤ **5%** relative error |
-| **Reference accuracy** | Waist-to-hip ratio — ≤ **7%** relative error |
-| **Output** | Body shape (Inverted Triangle / H / Pear / Apple) + proportion description + fit recommendations |
-| **Stack** | Python 3.8+ · Open3D · OpenCV · NumPy · Orbbec Astra SDK |
-| **Scope** | Controlled indoor scene, frontal standing, form-fitting base layer, 1.2m ± 0.1m |
-Design philosophy: **small but precise** — deep specialization in one scenario with rigorous accuracy, no over-generalization, no feature bloat. No real-time AR try-on, no unnecessary model stacking.
+---
 
 <br/>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/footer-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="assets/footer-light.svg">
-  <img src="assets/footer-light.svg" alt="Cleanfit" width="100%">
-</picture>
+<!-- ====================== FOOTER ====================== -->
 
 <div align="center">
 
-<br/>
+### 📬 Contact / 联系方式
 
 <a href="https://github.com/Aholic-12">
-  <img src="assets/badge-github.svg" alt="GitHub · Aholic-12" height="32">
+  <img src="https://img.shields.io/badge/GitHub-Aholic--12-181717?style=for-the-badge&logo=github&logoColor=white" />
 </a>
 
 <br/><br/>
 
-<i>⭐ 如果这个项目对你有用，给个 Star 支持一下！</i>
+<p>
+  <i>⭐ If you like this project, give it a star!</i>
+  <br/>
+  <i>如果你喜欢这个项目，请给个 Star 支持一下！</i>
+</p>
+
+<p>
+  <sub>Built with precision and purpose. 以精准与专注打造。</sub>
+</p>
 
 <br/>
 
-<sub>本项目 README 的图片均为仓库内本地 SVG，不依赖任何外部图床。</sub>
+---
+
+<p>
+  <sub>Made with ❤️ by <a href="https://github.com/Aholic-12">Aholic-12</a></sub>
+</p>
 
 </div>
