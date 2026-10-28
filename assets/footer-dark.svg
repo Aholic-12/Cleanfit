@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="130" viewBox="0 0 1200 130" role="img" aria-label="Cleanfit footer">
+  <defs>
+    <linearGradient id="facc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6C63FF"/>
+      <stop offset="55%" stop-color="#FFB400"/>
+      <stop offset="100%" stop-color="#FF6B6B"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="130" fill="#0B0B12"/>
+  <rect x="0" y="0" width="1200" height="3" fill="url(#facc)"/>
+  <text x="600.0" y="56" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="15"
+        font-weight="700" letter-spacing="1.5" fill="#FFFFFF">Cleanfit · 精准测量，穿对版型</text>
+  <text x="600.0" y="84" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5"
+        letter-spacing="1" fill="#8E8EAA">Built with precision and purpose · Made with ♥ by Aholic-12</text>
+  <line x1="470" y1="104" x2="730" y2="104" stroke="#6C63FF"
+        stroke-opacity="0.35" stroke-width="1.5" stroke-dasharray="6 7"/>
+</svg>

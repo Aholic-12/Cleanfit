@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cleanfit · README 预览</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0d1117; --fg:#e6edf3; --muted:#9198a1; --border:#30363d; --border-muted:#21262d;
+  --code-bg:rgba(110,118,129,.4); --pre-bg:#161b22; --row-bg:#161b22; --link:#4493f8;
+  --kbd-bg:#161b22; --kbd-shadow:#3d444d;
+}
+[data-theme="light"]{
+  color-scheme:light;
+  --bg:#ffffff; --fg:#1f2328; --muted:#59636e; --border:#d1d9e0; --border-muted:#eff2f5;
+  --code-bg:rgba(175,184,193,.2); --pre-bg:#f6f8fa; --row-bg:#f6f8fa; --link:#0969da;
+  --kbd-bg:#f6f8fa; --kbd-shadow:#d1d9e0;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans",Helvetica,Arial,sans-serif;
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:980px; margin:0 auto; padding:32px 24px 80px}
+.markdown-body > *:first-child{margin-top:0 !important}
+h1,h2,h3,h4{font-weight:600; line-height:1.25; margin:28px 0 16px}
+h1{font-size:2em; border-bottom:1px solid var(--border); padding-bottom:.3em}
+h2{font-size:1.5em; border-bottom:1px solid var(--border); padding-bottom:.3em}
+h3{font-size:1.15em}
+h4{font-size:1em}
+p{margin:0 0 16px}
+a{color:var(--link); text-decoration:none}
+a:hover{text-decoration:underline}
+img{max-width:100%; height:auto; border-style:none}
+hr{height:1px; border:0; background:var(--border); margin:28px 0}
+code{
+  font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:85%; background:var(--code-bg); padding:.2em .4em; border-radius:6px;
+}
+pre{background:var(--pre-bg); padding:16px; border-radius:6px; overflow:auto; margin:0 0 16px; line-height:1.45}
+pre code{background:none; padding:0; font-size:85%; white-space:pre}
+pre.mmd{border:1px dashed var(--border)}
+.mmd-hint{font-size:12px; color:var(--muted); margin-bottom:6px}
+blockquote{
+  margin:0 0 16px; padding:0 1em; color:var(--muted);
+  border-left:.25em solid var(--border);
+}
+blockquote p{margin:0}
+table{border-collapse:collapse; border-spacing:0; margin:0 0 16px; display:block; width:max-content; max-width:100%; overflow:auto}
+table[width="100%"]{display:table; width:100%}
+.pic-only{display:block}
+[data-theme="dark"] .pic-light{display:none}
+[data-theme="light"] .pic-dark{display:none}
+table th,table td{border:1px solid var(--border); padding:6px 13px}
+table th{font-weight:600; background:var(--pre-bg)}
+table tr:nth-child(2n){background:var(--row-bg)}
+ul,ol{margin:0 0 16px; padding-left:2em}
+li+li{margin-top:.25em}
+details{margin:0 0 16px}
+summary{cursor:pointer; font-weight:600}
+details[open] summary{margin-bottom:8px}
+kbd{
+  display:inline-block; padding:3px 6px; font-size:11px; line-height:11px; font-weight:600;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color:var(--fg); background:var(--kbd-bg); border:1px solid var(--border);
+  border-radius:6px; box-shadow:inset 0 -1px 0 var(--kbd-shadow);
+}
+/* 让 align / valign 这类 GitHub 会保留的属性在本地也生效 */
+div[align="center"],p[align="center"],h1[align="center"],h2[align="center"],h3[align="center"]{text-align:center}
+div[align="center"] > table{margin-left:auto; margin-right:auto}
+table[align="center"]{margin-left:auto; margin-right:auto}
+th[align="center"],td[align="center"]{text-align:center}
+th[align="right"],td[align="right"]{text-align:right}
+th[align="left"],td[align="left"]{text-align:left}
+td[valign="top"],th[valign="top"]{vertical-align:top}
+sub{font-size:.75em; color:var(--muted)}
+/* 悬浮主题切换 */
+#toggle{
+  position:fixed; right:22px; bottom:22px; z-index:9; cursor:pointer;
+  padding:9px 15px; border-radius:999px; border:1px solid var(--border);
+  background:var(--pre-bg); color:var(--fg); font-size:13px; font-weight:600;
+  box-shadow:0 4px 16px rgba(0,0,0,.28);
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<article class="markdown-body">
+<span class="pic-only pic-dark"><img src="assets/header-dark.svg" width="100%"></span><span class="pic-only pic-light"><img src="assets/header-light.svg" width="100%"></span>
+<div align="center">
+<img src="assets/badge-status.svg" alt="In Development" height="28">
+<img src="assets/badge-python.svg" alt="Python 3.8+" height="28">
+<img src="assets/badge-open3d.svg" alt="Open3D 0.17+" height="28">
+<img src="assets/badge-astra.svg" alt="Astra SDK" height="28">
+<img src="assets/badge-camera.svg" alt="深度相机 1.2m" height="28">
+<img src="assets/badge-license.svg" alt="License MIT" height="28">
+<img src="assets/badge-prs.svg" alt="PRs Welcome" height="28">
+<br/><br/>
+<b>用一台消费级深度相机，把「我穿什么版型好看」变成一组可测量的数字。</b>
+<br/>
+<sub>身体比例 → 身形分类 → 版型建议，18 个月做到 ≤5% 误差。</sub>
+<br/><br/>
+<a href="#-为什么需要-cleanfit"><kbd>为什么</kbd></a>
+<a href="#-核心功能"><kbd>核心功能</kbd></a>
+<a href="#-系统架构"><kbd>系统架构</kbd></a>
+<a href="#-硬件方案"><kbd>硬件方案</kbd></a>
+<a href="#-精度指标"><kbd>精度指标</kbd></a>
+<a href="#-开发路线图"><kbd>路线图</kbd></a>
+<a href="#-快速开始"><kbd>快速开始</kbd></a>
+<a href="#english-summary"><kbd>English</kbd></a>
+</div>
+<img src="assets/divider.svg" alt="" width="100%">
+<h2>🎯 为什么需要 Cleanfit</h2>
+<div align="center">
+<table width="100%">
+ <tr>
+  <td align="center" width="33%" valign="top">
+    <h3>😵‍💫</h3>
+    <b>尺码表靠不住</b><br/>
+    <sub>同一个 M 码，<br/>不同品牌差出两个号。<br/>线上买衣服像抽盲盒。</sub>
+  </td>
+  <td align="center" width="33%" valign="top">
+    <h3>🪞</h3>
+    <b>镜子不会说谎，但也不解释</b><br/>
+    <sub>你知道自己"肩宽"，<br/>但不知道肩宽 / 身高 = 0.26<br/>意味着什么版型。</sub>
+  </td>
+  <td align="center" width="33%" valign="top">
+    <h3>📐</h3>
+    <b>量体成本太高</b><br/>
+    <sub>裁缝量体几十项数据、<br/>要预约、要上门。<br/>而穿搭只需要 3 个比例。</sub>
+  </td>
+ </tr>
+</table>
+</div>
+<p><strong>Cleanfit 只做一件事</strong>：在受控场景下，把 3 个关键比例测准（≤5% 误差），翻译成一句人话——<strong>"你适合什么版型，避开什么版型"</strong>。</p>
+<img src="assets/divider.svg" alt="" width="100%">
+<h2>✨ 核心功能</h2>
+<div align="center">
+<table width="100%">
+ <tr>
+  <td align="center" width="50%" valign="top">
+    <br/>
+    <h3>🔬 三维比例精准测量</h3>
+    <p>深度相机采集人体点云 → AI 提取骨性特征点 → 自动校正透视与距离畸变 → 输出三大核心比例。</p>
+    <sub><code>头身比</code> <code>肩宽/身高</code> <code>腰臀比</code></sub>
+    <br/><br/>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <br/>
+    <h3>📊 身形分类与版型适配</h3>
+    <p>比例数据对标行业身形标准自动分类，输出上衣 / 下装的版型推荐，并给出「雷区版型」提示。</p>
+    <sub><code>修身</code> <code>合身</code> <code>宽松</code></sub>
+    <br/><br/>
+  </td>
+ </tr>
+ <tr>
+  <td align="center" width="50%" valign="top">
+    <br/>
+    <h3>👕 静态虚拟试穿验证</h3>
+    <p>上传单件衣服平面图 → 基于实测身形比例自动形变贴合 → 生成正面试穿效果图，直观验证版型。</p>
+    <sub>照片级静态效果，非实时 AR</sub>
+    <br/><br/>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <br/>
+    <h3>📋 结构化报告导出</h3>
+    <p>比例数据、身形分类、版型建议一次性导出为图文报告，可保存、可分享、可对比。</p>
+    <sub>PDF / 图片</sub>
+    <br/><br/>
+  </td>
+ </tr>
+</table>
+</div>
+<img src="assets/divider.svg" alt="" width="100%">
+<h2>🧠 系统架构</h2>
+<div class="mmd-hint">▼ GitHub 会把这个代码块渲染成交互式图表（Mermaid），此处预览仅显示源码</div><pre class="mmd"><code>flowchart TB
+    subgraph APP[&quot;🖥️ 应用层 · Application&quot;]
+        direction LR
+        A1[&quot;📷 采集&lt;br/&gt;深度相机取图&quot;] --&gt; A2[&quot;📐 测量&lt;br/&gt;比例计算&quot;] --&gt; A3[&quot;📊 结果&lt;br/&gt;身形分类&quot;] --&gt; A4[&quot;👕 试穿&lt;br/&gt;版型验证&quot;]
+    end
+
+    subgraph CORE[&quot;🧠 核心算法层 · Algorithm&quot;]
+        direction LR
+        C1[&quot;① 点云分割与去噪&quot;] --&gt; C2[&quot;② 骨性特征点定位&quot;] --&gt; C3[&quot;③ 透视与距离校正&quot;] --&gt; C4[&quot;④ 身形分类与版型匹配&quot;]
+    end
+
+    subgraph BASE[&quot;🔧 基础工具层 · Foundation&quot;]
+        direction LR
+        B1[&quot;Astra SDK&quot;]
+        B2[&quot;Open3D / PCL&quot;]
+        B3[&quot;OpenCV&quot;]
+        B4[&quot;NumPy&quot;]
+    end
+
+    APP --&gt; CORE --&gt; BASE</code></pre>
+<table width="100%">
+ <tr>
+  <th align="left" width="22%">模块</th>
+  <th align="left">做什么</th>
+  <th align="left" width="34%">关键点</th>
+ </tr>
+ <tr>
+  <td><b>① 点云分割与去噪</b></td>
+  <td>从衣物边缘、头发、地面噪声中分离出干净的人体轮廓</td>
+  <td>边缘噪声是最大的误差来源</td>
+ </tr>
+ <tr>
+  <td><b>② 骨性特征点定位</b></td>
+  <td>自动定位头顶、肩峰、腰最细处、臀峰、脚底</td>
+  <td>只认骨性标志，不认脂肪与衣物</td>
+ </tr>
+ <tr>
+  <td><b>③ 透视与距离校正</b></td>
+  <td>结合相机内参与深度信息，修正不同距离、微小俯仰造成的比例畸变</td>
+  <td>1.2m 处 ±0.1m 内保持稳定</td>
+ </tr>
+ <tr>
+  <td><b>④ 分类与版型匹配</b></td>
+  <td>比例 → 身形 → 版型，每一句建议都能追溯到具体数据</td>
+  <td>可解释，不做黑箱推荐</td>
+ </tr>
+</table>
+<img src="assets/divider.svg" alt="" width="100%">
+<h2>📷 硬件方案</h2>
+<div align="center">
+<table width="100%">
+ <tr>
+  <th width="25%" align="center">深度相机</th>
+  <th width="25%" align="center">硬件预算</th>
+  <th width="25%" align="center">选型理由</th>
+  <th width="25%" align="center">软硬结合</th>
+ </tr>
+ <tr>
+  <td align="center">
+    <b>奥比中光 Astra Mini Pro</b><br/>
+    <sub>开发版</sub>
+  </td>
+  <td align="center">
+    <b>¥850–950</b><br/>
+    <sub>含官方 SDK 与标定板<br/>的完整开发套件</sub>
+  </td>
+  <td align="center">
+    <b>1m 处深度 MSE &lt; 1.5mm</b><br/>
+    <sub>稳定实现 ≤5% 误差的<br/>最低硬件门槛</sub>
+  </td>
+  <td align="center">
+    <b>USB 直连电脑</b><br/>
+    <sub>镜头畸变校正、深度噪声适配、<br/>特征点优化，<br/>算法与硬件深度绑定</sub>
+  </td>
+ </tr>
+</table>
+</div>
+<blockquote>💡 <strong>为什么不用手机摄像头？</strong> 单目 RGB 缺少真实深度，只能靠模型"猜"比例，误差随姿态和光照剧烈波动。深度相机直接给出几何真值，这是 ≤5% 的前提。</blockquote>
+<img src="assets/divider.svg" alt="" width="100%">
+<h2>📏 精度指标</h2>
+<sub>所有指标基于限定测试场景：室内均匀柔光 · 正面自然站立 · 紧身打底衣物 · 拍摄距离 1.2m ± 0.1m</sub>
+<table width="100%">
+ <tr>
+  <th align="center" width="18%">类型</th>
+  <th align="center">指标</th>
+  <th align="center" width="26%">误差承诺</th>
+ </tr>
+ <tr>
+  <td align="center">✅ <b>保证项</b></td>
+  <td>头身比 · 肩宽 / 身高比</td>
+  <td align="center">相对误差 ≤ <b>5%</b></td>
+ </tr>
+ <tr>
+  <td align="center">📌 <b>参考项</b></td>
+  <td>腰臀比</td>
+  <td align="center">相对误差 ≤ <b>7%</b></td>
+ </tr>
+</table>
+<p><strong>输出形式</strong>：身形分类（倒三角 / H 型 / 梨型 / 苹果型）+ 比例观感描述 + 版型适配建议</p>
+<table width="100%">
+ <tr>
+  <td align="center" width="25%">🔻<br/><b>倒三角</b><br/><sub>肩宽 &gt; 胯宽</sub></td>
+  <td align="center" width="25%">🔲<br/><b>H 型</b><br/><sub>肩胯接近</sub></td>
+  <td align="center" width="25%">🍐<br/><b>梨型</b><br/><sub>胯宽 &gt; 肩宽</sub></td>
+  <td align="center" width="25%">🍎<br/><b>苹果型</b><br/><sub>腰腹突出</sub></td>
+ </tr>
+</table>
+<img src="assets/divider.svg" alt="" width="100%">
+<h2>🗺️ 开发路线图</h2>
+<div align="center">
+<sub><code>▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱</code> 阶段 1 · 进行中</sub>
+</div>
+<div class="mmd-hint">▼ GitHub 会把这个代码块渲染成交互式图表（Mermaid），此处预览仅显示源码</div><pre class="mmd"><code>gantt
+    title Cleanfit Development Roadmap
+    dateFormat YYYY-MM
+    axisFormat %Y-%m
+
+    section Phase 1 · 算法验证
+    Algorithm Validation (SMPL / H3.6M)   :p1a, 2026-11, 3M
+    Feature Extraction &amp; Classification    :p1b, 2026-11, 3M
+
+    section Phase 2 · 硬件落地
+    Hardware Integration &amp; Calibration     :p2a, after p1a, 4M
+    Real-scene Optimization                :p2b, after p1b, 4M
+
+    section Phase 3 · 精度打磨
+    Waist-Hip Ratio Tuning &amp; Classification:p3a, after p2a, 5M
+    Static Virtual Try-On                  :p3b, after p2b, 5M
+
+    section Phase 4 · 测试与优化
+    Testing &amp; Performance Optimization     :p4, after p3a, 6M</code></pre>
+<table width="100%">
+ <tr>
+  <th align="center" width="10%">阶段</th>
+  <th align="center" width="18%">周期</th>
+  <th align="left">重点</th>
+ </tr>
+ <tr>
+  <td align="center"><b>1</b></td>
+  <td align="center">第 1–3 月</td>
+  <td>基于 SMPL / Human3.6M 跑通算法；特征提取、比例校正、身形分类</td>
+ </tr>
+ <tr>
+  <td align="center"><b>2</b></td>
+  <td align="center">第 4–7 月</td>
+  <td>硬件对接；相机标定、畸变校正、真实场景优化、基础界面</td>
+ </tr>
+ <tr>
+  <td align="center"><b>3</b></td>
+  <td align="center">第 8–12 月</td>
+  <td>腰臀比精度打磨、身形分类完善、虚拟试穿开发</td>
+ </tr>
+ <tr>
+  <td align="center"><b>4</b></td>
+  <td align="center">第 13–18 月</td>
+  <td>测试补全、性能优化、可选拓展（侧面测量 / 多体位验证）</td>
+ </tr>
+</table>
+<img src="assets/divider.svg" alt="" width="100%">
+<h2>🚀 快速开始</h2>
+<pre><code class="language-bash"># 1. 克隆仓库
+git clone https://github.com/Aholic-12/Cleanfit.git
+cd Cleanfit
+
+# 2. 安装依赖
+pip install -r requirements.txt
+
+# 3. 运行（详细文档随开发进度更新）
+python main.py</code></pre>
+<details>
+<summary>📦 <b>环境依赖</b></summary>
+<br/>
+<table width="100%">
+ <tr>
+  <th align="left">依赖</th>
+  <th align="left" width="18%">版本</th>
+  <th align="left">用途</th>
+ </tr>
+ <tr>
+  <td>Python</td>
+  <td><code>3.8+</code></td>
+  <td>运行时</td>
+ </tr>
+ <tr>
+  <td>Open3D</td>
+  <td><code>0.17+</code></td>
+  <td>点云处理</td>
+ </tr>
+ <tr>
+  <td>奥比中光 Astra SDK</td>
+  <td><code>最新版</code></td>
+  <td>深度相机接口</td>
+ </tr>
+ <tr>
+  <td>NumPy</td>
+  <td><code>最新版</code></td>
+  <td>数值计算</td>
+ </tr>
+ <tr>
+  <td>OpenCV</td>
+  <td><code>最新版</code></td>
+  <td>图像处理与标定</td>
+ </tr>
+</table>
+</details>
+<details>
+<summary>⚠️ <b>运行前请确认</b></summary>
+<br/>
+<ul><li>相机已通过 USB 3.0 直连（避免 USB Hub 降压导致掉帧）</li><li>环境为室内均匀柔光，避免顶光直射与逆光</li><li>穿着紧身打底衣物，赤足站立</li><li>拍摄距离保持在 <strong>1.2m ± 0.1m</strong>，镜头与身体正面平行</li></ul>
+</details>
+<img src="assets/divider.svg" alt="" width="100%">
+<h2>🧭 边界说明</h2>
+<blockquote>⚠️ 以下是有意为之的设计约束，不是缺陷。</blockquote>
+<table width="100%">
+ <tr>
+  <td width="50%" valign="top">
+    <br/>
+    <b>🚫 不做实时 AR 试穿</b><br/>
+    <sub>仅实现静态照片级试穿，不涉及布料仿真与动态渲染。</sub>
+    <br/><br/>
+  </td>
+  <td width="50%" valign="top">
+    <br/>
+    <b>🧠 不堆模型</b><br/>
+    <sub>核心聚焦三维特征提取与校正，不为堆砌 AI 而滥用模型。</sub>
+    <br/><br/>
+  </td>
+ </tr>
+ <tr>
+  <td width="50%" valign="top">
+    <br/>
+    <b>🎯 限定场景精度</b><br/>
+    <sub>所有指标基于受控环境，不夸大全场景通用效果。</sub>
+    <br/><br/>
+  </td>
+  <td width="50%" valign="top">
+    <br/>
+    <b>⚡ 精度优先于功能</b><br/>
+    <sub>先保证核心测量的稳定性，再谈功能拓展。</sub>
+    <br/><br/>
+  </td>
+ </tr>
+</table>
+<img src="assets/divider.svg" alt="" width="100%">
+<h2>🤝 参与贡献</h2>
+<p>欢迎贡献代码、数据或想法！无论是算法优化、场景测试还是文档改进，都非常需要。</p>
+<pre><code class="language-">Fork → Branch → Commit → Push → PR</code></pre>
+<ol><li>Fork 本仓库</li><li>创建功能分支：<code>git checkout -b feature/amazing-feature</code></li><li>提交修改：<code>git commit -m &#x27;Add some amazing feature&#x27;</code></li><li>推送分支：<code>git push origin feature/amazing-feature</code></li><li>发起 Pull Request</li></ol>
+<img src="assets/divider.svg" alt="" width="100%">
+<h2>English Summary</h2>
+<p><strong>Cleanfit</strong> is a desktop-grade body measurement and fit-adaptation system. A consumer depth camera (Orbbec Astra Mini Pro) captures a human point cloud; AI 3D-vision algorithms extract skeletal landmarks, correct perspective and distance distortion, and output three core body ratios — then translate them into a standardized body-shape classification and concrete garment-fit recommendations, with a static virtual try-on for visual verification.</p>
+<table>
+<tbody>
+<tr>
+<td align="left"><strong>Guaranteed accuracy</strong></td>
+<td align="left">Head-to-body ratio, shoulder-width / height ratio — ≤ <strong>5%</strong> relative error</td>
+</tr>
+<tr>
+<td align="left"><strong>Reference accuracy</strong></td>
+<td align="left">Waist-to-hip ratio — ≤ <strong>7%</strong> relative error</td>
+</tr>
+<tr>
+<td align="left"><strong>Output</strong></td>
+<td align="left">Body shape (Inverted Triangle / H / Pear / Apple) + proportion description + fit recommendations</td>
+</tr>
+<tr>
+<td align="left"><strong>Stack</strong></td>
+<td align="left">Python 3.8+ · Open3D · OpenCV · NumPy · Orbbec Astra SDK</td>
+</tr>
+<tr>
+<td align="left"><strong>Scope</strong></td>
+<td align="left">Controlled indoor scene, frontal standing, form-fitting base layer, 1.2m ± 0.1m</td>
+</tr>
+</tbody></table>
+<p>Design philosophy: <strong>small but precise</strong> — deep specialization in one scenario with rigorous accuracy, no over-generalization, no feature bloat. No real-time AR try-on, no unnecessary model stacking.</p>
+<br/>
+<span class="pic-only pic-dark"><img src="assets/footer-dark.svg" width="100%"></span><span class="pic-only pic-light"><img src="assets/footer-light.svg" width="100%"></span>
+<div align="center">
+<br/>
+<a href="https://github.com/Aholic-12">
+  <img src="assets/badge-github.svg" alt="GitHub · Aholic-12" height="32">
+</a>
+<br/><br/>
+<i>⭐ 如果这个项目对你有用，给个 Star 支持一下！</i>
+<br/>
+<sub>本项目 README 的图片均为仓库内本地 SVG，不依赖任何外部图床。</sub>
+</div>
+</article>
+</div>
+<button id="toggle">☀ 切换浅色</button>
+<script>
+const btn=document.getElementById('toggle');
+btn.addEventListener('click',()=>{
+  const cur=document.documentElement.getAttribute('data-theme');
+  const next=cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  btn.textContent = next==='dark' ? '☀ 切换浅色' : '🌙 切换深色';
+});
+</script>
+</body>
+</html>

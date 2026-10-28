@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="26" viewBox="0 0 1200 26" role="img" aria-label="divider">
+  <line x1="0" y1="13" x2="540" y2="13" stroke="#6C63FF" stroke-opacity="0.30" stroke-width="1.5" stroke-dasharray="7 8"/>
+  <line x1="660" y1="13" x2="1200" y2="13" stroke="#6C63FF" stroke-opacity="0.30" stroke-width="1.5" stroke-dasharray="7 8"/>
+  <circle cx="600" cy="13" r="4" fill="#FFB400"/>
+  <circle cx="576" cy="13" r="2" fill="#6C63FF" fill-opacity="0.6"/>
+  <circle cx="624" cy="13" r="2" fill="#6C63FF" fill-opacity="0.6"/>
+</svg>
