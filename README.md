@@ -1,69 +1,128 @@
-Cleanfit — A desktop-grade body measurement system powered by consumer-level depth camera & AI 3D vision.
-
-Cleanfit — 基于深度视觉的人体身形测量与版型适配系统，让穿搭精准又科学。
-🇺🇸 English ｜ 🇨🇳 中文
-🎯 ≤5%Measurement Error	🧠 AI 3D VisionPoint Cloud Analysis	👔 Smart FitBody Shape Classification	📷 Depth CameraOrbbec Astra Mini Pro
-🌟 English
-About Cleanfit
-Cleanfit is a desktop-grade body measurement and fit adaptation system powered by a consumer-level depth camera and AI 3D vision algorithms. It precisely extracts body proportions and shape features, outputs standardized body shape classifications and clothing fit recommendations, and includes static virtual try-on for visual verification.
-The project follows a "small but precise" technical philosophy — deep specialization in targeted scenarios with rigorous accuracy, without over-generalization or feature bloat.
-🚧 This project is currently under active development. Features are being built and updated regularly. Stay tuned!
-✨ Core Features
-🔬 3D Proportional Measurement — Depth camera captures human point cloud, AI extracts skeletal feature points, auto-corrects perspective & distance distortion, outputs three core proportional measurements
-📊 Body Shape Classification & Fit Matching — Benchmarks ratio data against industry standards for automatic classification; outputs fit recommendations (slim / regular / relaxed) per garment with "avoid" warnings
-👕 Static Virtual Try-On — Upload a flat garment image, system warps and fits it onto your measured body proportions, generates a frontal try-on preview for visual fit verification
-📋 Structured Report Export — Outputs proportional data, body shape classification, and fit adaptation recommendations as visual reports
-🏗️ System Architecture
+markdown
 
 
+<div align="center">
+
+<img src="https://capsule-render.vercel.app/api?type=venom&color=gradient&customColorList=6,11,20&height=200&section=header&text=Cleanfit&fontSize=60&fontColor=fff&animation=fadeIn&fontAlignY=38&desc=Deep+Vision+Body+Measurement+%26+Fit+Adaptation+%E2%80%A2+%E6%B7%B1%E5%BA%A6%E8%A7%86%E8%A7%89%E8%BA%AB%E5%BD%A2%E6%B5%8B%E9%87%8F%E4%B8%8E%E7%89%88%E5%9E%8B%E9%80%82%E9%85%8D&descAlignY=62" width="100%" />
+
+<br/>
+
+![Status](https://img.shields.io/badge/Status-🚧_In_Development-yellow?style=flat-square)
+![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
+![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=flat-square)
+![Stars](https://img.shields.io/github/stars/Aholic-12/Cleanfit?style=social)
+
+<br/>
+
+**Cleanfit** — A desktop-grade body measurement system powered by consumer-level depth camera & AI 3D vision.
+<br/>
+**Cleanfit** — 基于深度视觉的人体身形测量与版型适配系统，让穿搭精准又科学。
+
+<br/>
+
+[🇺🇸 English](#-english) ｜ [🇨🇳 中文](#-中文)
+
+</div>
+
+---
+
+<br/>
+
+<table align="center">
+ <tr>
+  <td align="center" width="25%"><b>🎯 ≤5%</b><br/>Measurement Error</td>
+  <td align="center" width="25%"><b>🧠 AI 3D Vision</b><br/>Point Cloud Analysis</td>
+  <td align="center" width="25%"><b>👔 Smart Fit</b><br/>Body Shape Classification</td>
+  <td align="center" width="25%"><b>📷 Depth Camera</b><br/>Orbbec Astra Mini Pro</td>
+ </tr>
+</table>
+
+<br/>
+
+---
+
+## 🌟 English
+
+### About Cleanfit
+
+**Cleanfit** is a desktop-grade body measurement and fit adaptation system powered by a consumer-level depth camera and AI 3D vision algorithms. It precisely extracts body proportions and shape features, outputs standardized body shape classifications and clothing fit recommendations, and includes static virtual try-on for visual verification.
+
+The project follows a **"small but precise"** technical philosophy — deep specialization in targeted scenarios with rigorous accuracy, without over-generalization or feature bloat.
+
+> 🚧 **This project is currently under active development.** Features are being built and updated regularly. Stay tuned!
+
+### ✨ Core Features
+
+- 🔬 **3D Proportional Measurement** — Depth camera captures human point cloud, AI extracts skeletal feature points, auto-corrects perspective & distance distortion, outputs three core proportional measurements
+- 📊 **Body Shape Classification & Fit Matching** — Benchmarks ratio data against industry standards for automatic classification; outputs fit recommendations (slim / regular / relaxed) per garment with "avoid" warnings
+- 👕 **Static Virtual Try-On** — Upload a flat garment image, system warps and fits it onto your measured body proportions, generates a frontal try-on preview for visual fit verification
+- 📋 **Structured Report Export** — Outputs proportional data, body shape classification, and fit adaptation recommendations as visual reports
+
+### 🏗️ System Architecture
 ┌─────────────────────────────────────────────────────────┐
-│                   APPLICATION LAYER                     │
-│                                                         │
-│   Capture → Measure → Result → Virtual Try-On          │
-│                                                         │
-│   • Minimalist desktop UI   • Report export            │
+│ APPLICATION LAYER │
+│ │
+│ Capture → Measure → Result → Virtual Try-On │
+│ │
+│ • Minimalist desktop UI • Report export │
 ├─────────────────────────────────────────────────────────┤
-│                 CORE ALGORITHM LAYER                    │
-│                                                         │
-│   ① Point Cloud Segmentation & Denoising                │
-│   ② Skeletal Feature Point Localization                │
-│   ③ Perspective & Distance Correction                  │
-│   ④ Body Shape Classification & Fit Engine             │
+│ CORE ALGORITHM LAYER │
+│ │
+│ ① Point Cloud Segmentation & Denoising │
+│ ② Skeletal Feature Point Localization │
+│ ③ Perspective & Distance Correction │
+│ ④ Body Shape Classification & Fit Engine │
 ├─────────────────────────────────────────────────────────┤
-│                   FOUNDATION LAYER                      │
-│                                                         │
-│   • Orbbec Astra SDK    • Open3D / PCL                 │
-│   • OpenCV              • NumPy                        │
+│ FOUNDATION LAYER │
+│ │
+│ • Orbbec Astra SDK • Open3D / PCL │
+│ • OpenCV • NumPy │
 └─────────────────────────────────────────────────────────┘
-🔧 Hardware
-Item	Detail
-Camera	Orbbec Astra Mini Pro (Developer Edition)
-Budget	¥850–950 (full dev kit with SDK & calibration board)
-Why this one	Depth MSE < 1.5mm at 1m — the minimum hardware threshold for stable ≤5% error
-Integration	USB direct-connect; lens distortion correction, depth noise adaptation & feature-point optimization are tightly coupled with this camera
-📐 Accuracy Specifications
-All specs under controlled conditions: indoor soft lighting, frontal standing, form-fitting base layer, 1.2m ± 0.1m distance.
-Type	Metric	Error Bound
-✅ Guaranteed	Head-to-body ratio, Shoulder-width / Height ratio	≤ 5% relative error
-📌 Reference	Waist-to-hip ratio	≤ 7% relative error
-Output: Body shape classification (Inverted Triangle / H-shape / Pear / Apple) + proportional description + fit adaptation recommendations.
-🗺️ Roadmap
-Phase	Period	Focus
-1	Month 1–3	Algorithm validation on SMPL / Human3.6M datasets
-2	Month 4–7	Hardware integration, camera calibration, real-scene optimization
-3	Month 8–12	Feature refinement, virtual try-on development
-4	Month 13–18	Testing expansion, performance optimization, optional multi-pose
-📦 Requirements
-Python 3.8+
-Open3D 0.17+
-Orbbec Astra SDK
-NumPy, OpenCV
-🚀 Getting Started
-bash
 
 
+
+### 🔧 Hardware
+
+| Item | Detail |
+|:---|:---|
+| **Camera** | Orbbec Astra Mini Pro (Developer Edition) |
+| **Budget** | ¥850–950 (full dev kit with SDK & calibration board) |
+| **Why this one** | Depth MSE < 1.5mm at 1m — the minimum hardware threshold for stable ≤5% error |
+| **Integration** | USB direct-connect; lens distortion correction, depth noise adaptation & feature-point optimization are **tightly coupled** with this camera |
+
+### 📐 Accuracy Specifications
+
+> All specs under controlled conditions: indoor soft lighting, frontal standing, form-fitting base layer, 1.2m ± 0.1m distance.
+
+| Type | Metric | Error Bound |
+|:---|:---|:---|
+| ✅ Guaranteed | Head-to-body ratio, Shoulder-width / Height ratio | ≤ **5%** relative error |
+| 📌 Reference | Waist-to-hip ratio | ≤ **7%** relative error |
+
+**Output**: Body shape classification (Inverted Triangle / H-shape / Pear / Apple) + proportional description + fit adaptation recommendations.
+
+### 🗺️ Roadmap
+
+| Phase | Period | Focus |
+|:---:|:---|:---|
+| **1** | Month 1–3 | Algorithm validation on SMPL / Human3.6M datasets |
+| **2** | Month 4–7 | Hardware integration, camera calibration, real-scene optimization |
+| **3** | Month 8–12 | Feature refinement, virtual try-on development |
+| **4** | Month 13–18 | Testing expansion, performance optimization, optional multi-pose |
+
+### 📦 Requirements
+
+- Python 3.8+
+- Open3D 0.17+
+- Orbbec Astra SDK
+- NumPy, OpenCV
+
+### 🚀 Getting Started
+
+```bash
 # Clone the repository
-git clone https://github.com/Aholic-12/Cleanfit.git
+git clone <https://github.com/Aholic-12/Cleanfit.git>
 
 # Navigate to the project directory
 cd Cleanfit
@@ -142,7 +201,7 @@ bash
 
 
 # 克隆仓库
-git clone https://github.com/Aholic-12/Cleanfit.git
+git clone <https://github.com/Aholic-12/Cleanfit.git>
 
 # 进入项目目录
 cd Cleanfit
@@ -162,4 +221,7 @@ Fork 本仓库
 推送到分支 (git push origin feature/amazing-feature)
 发起 Pull Request
 📬 Contact / 联系方式
+
+
+
 ⭐ If you like this project, give it a star! / 如果你喜欢这个项目，请给个 Star 支持一下！
