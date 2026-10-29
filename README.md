@@ -36,9 +36,9 @@
 <summary>📑 <b>Table of Contents / 目录</b></summary>
 <br/>
 
-<table width="100%">
+<table align="center">
  <tr>
-  <td width="50%" valign="top">
+  <td valign="top">
 
 **English**
 - [About](#about)
@@ -52,7 +52,7 @@
 - [Contributing](#contributing)
 
   </td>
-  <td width="50%" valign="top">
+  <td valign="top">
 
 **中文**
 - [项目简介](#项目简介)
@@ -175,9 +175,9 @@ The project follows a **"small but precise"** technical philosophy — deep spec
  </tr>
  <tr>
   <td align="center">Orbbec Astra Mini Pro<br/><b>Developer Edition</b></td>
-  <td align="center">¥850–950<br/><sub>full dev kit with SDK<br/>&amp; calibration board</sub></td>
-  <td align="center">Depth MSE &lt; 1.5mm at 1m<br/><sub>minimum threshold for<br/>stable ≤5% error</sub></td>
-  <td align="center">USB direct-connect<br/><sub>distortion correction, noise<br/>adaptation &amp; feature<br/>optimization <b>tightly coupled</b></sub></td>
+  <td align="center">¥850–950<br/><sub>full dev kit with SDK &amp; calibration board</sub></td>
+  <td align="center">Depth MSE &lt; 1.5mm at 1m<br/><sub>minimum threshold for stable ≤5% error</sub></td>
+  <td align="center">USB direct-connect<br/><sub>distortion correction, noise adaptation &amp; feature optimization <b>tightly coupled</b></sub></td>
  </tr>
 </table>
 
@@ -428,9 +428,9 @@ Fork → Branch → Commit → Push → PR
  </tr>
  <tr>
   <td align="center">奥比中光 Astra Mini Pro<br/><b>开发版</b></td>
-  <td align="center">¥850–950<br/><sub>含官方 SDK 与标定板<br/>的完整开发套件</sub></td>
-  <td align="center">1 米距离深度均方误差<br/>&lt; 1.5mm<br/><sub>稳定实现 ≤5% 误差的<br/>最低硬件门槛</sub></td>
-  <td align="center">USB 直连电脑<br/><sub>专属镜头畸变校正、<br/>深度噪声适配、<br/>特征点优化，<br/>算法与硬件<b>深度绑定</b></sub></td>
+  <td align="center">¥850–950<br/><sub>含官方 SDK 与标定板的完整开发套件</sub></td>
+  <td align="center">1 米距离深度均方误差 &lt; 1.5mm<br/><sub>稳定实现 ≤5% 误差的最低硬件门槛</sub></td>
+  <td align="center">USB 直连电脑<br/><sub>专属镜头畸变校正、深度噪声适配、特征点优化，算法与硬件<b>深度绑定</b></sub></td>
  </tr>
 </table>
 
