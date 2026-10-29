@@ -42,7 +42,7 @@ docs: 补充硬件选型说明
 ## 代码风格
 
 - 行宽 100，`ruff` 统一格式与检查
-- 全部模块加 `from __future__ import annotations`，兼容 Python 3.8
+- 全部模块加 `from __future__ import annotations`，兼容 Python 3.9
 - 类型标注尽量写全，尤其是跨层的数据结构
 - 中文注释，术语保留英文原词
 

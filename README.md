@@ -7,7 +7,7 @@
 <div align="center">
 
 <img src="assets/badge-status.svg" alt="开发中" height="28">
-<img src="assets/badge-python.svg" alt="Python 3.8+" height="28">
+<img src="assets/badge-python.svg" alt="Python 3.9+" height="28">
 <img src="assets/badge-open3d.svg" alt="Open3D 0.17+" height="28">
 <img src="assets/badge-astra.svg" alt="Astra SDK" height="28">
 <img src="assets/badge-camera.svg" alt="深度相机 1.2m" height="28">
@@ -267,7 +267,7 @@ pip install -r requirements.txt
   <th align="left" width="18%">版本</th>
   <th align="left">用途</th>
  </tr>
- <tr><td>Python</td><td><code>3.8+</code></td><td>运行时</td></tr>
+ <tr><td>Python</td><td><code>3.9+</code></td><td>运行时</td></tr>
  <tr><td>Open3D</td><td><code>0.17+</code></td><td>点云处理</td></tr>
  <tr><td>奥比中光 Astra SDK</td><td><code>最新版</code></td><td>深度相机接口</td></tr>
  <tr><td>NumPy</td><td><code>最新版</code></td><td>数值计算</td></tr>

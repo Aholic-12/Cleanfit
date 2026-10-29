@@ -54,7 +54,8 @@ def test_area_is_close_to_expected() -> None:
     mask = foreground_mask(make_frame().depth_mm)
     area = int(mask.sum())
     # 形态学开闭运算会在四角轻微削圆，允许 ±10%
-    assert PERSON_AREA * 0.9 <= area <= PERSON_AREA * 1.1, f"前景面积 {area} 偏离 {PERSON_AREA} 太多"
+    low, high = PERSON_AREA * 0.9, PERSON_AREA * 1.1
+    assert low <= area <= high, f"前景面积 {area} 偏离 {PERSON_AREA} 太多"
 
 
 def test_points_are_back_projected() -> None:
