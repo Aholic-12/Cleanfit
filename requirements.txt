@@ -1,0 +1,12 @@
+# Cleanfit 运行时依赖
+# 安装：pip install -r requirements.txt
+# 也可直接 pip install -e . （依赖定义与 pyproject.toml 一致）
+
+numpy>=1.24
+opencv-python>=4.8
+open3d>=0.17
+
+# 注意：奥比中光 Astra SDK 不在 PyPI 上，
+# 需从官网下载对应系统的安装包后手动安装：
+# https://www.orbbec.com.cn/index/Download/index.html
+# 未安装 SDK 时，capture 层不可用，其余算法层仍可跑离线数据。

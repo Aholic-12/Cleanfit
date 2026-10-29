@@ -1,0 +1,53 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+ENV/
+
+# ---- 测试与工具缓存 ----
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ---- 编辑器 / 系统 ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 环境变量（不要提交密钥） ----
+.env
+.env.*
+
+# ---- 项目数据（体积大，不入库） ----
+# 根目录锚定，避免误伤 src/cleanfit/models/ 这类源码目录
+/data/
+/datasets/
+/models/
+/output/
+/reports/
+*.pth
+*.pt
+*.onnx
+*.ply
+*.pcd
+*.bag
+
+# ---- 日志 ----
+*.log

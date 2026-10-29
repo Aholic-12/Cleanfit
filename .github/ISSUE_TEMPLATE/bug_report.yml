@@ -1,0 +1,57 @@
+name: 🐛 Bug 报告
+description: 报告一个可复现的问题
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！测量类问题最好附上**原始深度图**，否则很难定位。
+        提交前请先搜索一下 [已有 Issue](https://github.com/Aholic-12/Cleanfit/issues)，避免重复。
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题描述
+      description: 发生了什么？和你预期的不一样在哪？
+      placeholder: 例如：1.2m 距离下头身比稳定偏小约 0.3，换成 1.0m 就正常。
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      description: 尽量具体，能一步步照着做出来
+      placeholder: |
+        1. 运行 python -m cleanfit
+        2. 站在 1.2m 处正对相机
+        3. 读取输出比例
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果
+      placeholder: 例如：头身比应在 7.0–7.5 之间。
+    validations:
+      required: false
+
+  - type: input
+    id: env
+    attributes:
+      label: 运行环境
+      description: 操作系统 / Python 版本 / Open3D 版本 / 相机型号
+      placeholder: Windows 11 / Python 3.10 / Open3D 0.18 / Astra Mini Pro
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 报错日志
+      description: 完整的 traceback 或控制台输出
+      render: shell
+    validations:
+      required: false

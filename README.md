@@ -36,6 +36,7 @@
 - [硬件方案](#硬件方案)
 - [精度指标](#精度指标)
 - [开发路线图](#开发路线图)
+- [项目结构](#项目结构)
 - [快速开始](#快速开始)
 - [边界说明](#边界说明)
 - [参与贡献](#参与贡献)
@@ -212,6 +213,32 @@ gantt
 | **3** | 第 8–12 月 | 功能完善；腰臀比精度打磨、身形分类、虚拟试穿开发 |
 | **4** | 第 13–18 月 | 测试补全、性能优化、可选拓展（侧面测量 / 多体位验证） |
 
+## 项目结构
+
+```
+Cleanfit/
+├── src/cleanfit/              核心代码
+│   ├── capture.py             采集层 · 深度帧与彩色帧对齐
+│   ├── segment.py             ① 点云分割与去噪
+│   ├── landmark.py            ② 骨性特征点定位
+│   ├── calibrate.py           ③ 透视与距离校正
+│   ├── classify.py            ④ 身形分类与版型匹配
+│   ├── tryon.py               静态虚拟试穿
+│   ├── report.py              结构化报告导出
+│   ├── pipeline.py            四层串联，一次跑完
+│   └── __main__.py            命令行入口
+├── tests/                     测试
+├── assets/                    README 图形素材（本地 SVG，零外链）
+├── .github/                   Issue / PR 模板
+├── pyproject.toml             打包与工具配置
+├── requirements.txt           运行时依赖
+├── CONTRIBUTING.md            贡献指南
+├── LICENSE                    MIT
+└── README.md
+```
+
+> 🧩 **当前状态**：目录骨架已就位，各算法模块只定义了数据结构与函数签名，实现尚未填充（调用会抛 `NotImplementedError`）。这样做的目的是先把四层之间的数据契约固定下来，再逐层填算法。
+
 ## 快速开始
 
 ```bash
@@ -221,9 +248,14 @@ git clone https://github.com/Aholic-12/Cleanfit.git
 # 进入项目目录
 cd Cleanfit
 
-# 安装依赖（详细文档随开发进度更新）
+# 安装（可编辑模式，同时装好依赖）
+pip install -e .
+
+# 或者只装依赖
 pip install -r requirements.txt
 ```
+
+> 📷 奥比中光 Astra SDK 不在 PyPI 上，需从官网下载安装。**不装 SDK 也能跑算法层**——只要不进 `capture` 模块，其余部分可以用离线数据开发。
 
 <details>
 <summary>📦 <b>环境依赖</b></summary>
@@ -292,7 +324,7 @@ pip install -r requirements.txt
 
 ## 参与贡献
 
-欢迎贡献代码！如果你有想法或想一起打造 Cleanfit：
+欢迎贡献代码！如果你有想法或想一起打造 Cleanfit，完整流程见 **[CONTRIBUTING.md](CONTRIBUTING.md)**。
 
 ```
 Fork → Branch → Commit → Push → PR
@@ -300,9 +332,11 @@ Fork → Branch → Commit → Push → PR
 
 1. Fork 本仓库
 2. 创建你的功能分支 (`git checkout -b feature/amazing-feature`)
-3. 提交你的修改 (`git commit -m 'Add some amazing feature'`)
+3. 提交你的修改 (`git commit -m 'feat(landmark): 用切片宽度曲线定位肩峰'`)
 4. 推送到分支 (`git push origin feature/amazing-feature`)
 5. 发起 Pull Request
+
+> 提 PR 前请先跑 `ruff check .` 和 `pytest`。涉及精度改动的，附上改动前后的误差对比数据。
 
 <img src="assets/divider.svg" alt="" width="100%">
 

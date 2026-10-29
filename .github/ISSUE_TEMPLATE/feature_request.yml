@@ -1,0 +1,46 @@
+name: 💡 功能建议
+description: 提出一个改进想法
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        这个项目刻意保持「小而准」——**限定场景深耕精度，不做全场景泛化**。
+        建议如果会扩大适用范围但不提升精度，可能不会被采纳，先说清楚价值更容易通过。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你想解决什么问题
+      description: 描述场景和痛点，而不是直接给方案
+      placeholder: 例如：侧面站立时腰最细处定位不准，导致腰臀比偏差超过 7%。
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建议的做法
+      placeholder: 例如：增加一个侧视特征点约束，用左右视图交叉验证腰部位置。
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 考虑过的替代方案
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: 影响范围
+      options:
+        - 精度提升（核心指标更准）
+        - 稳定性（同场景重复测量更一致）
+        - 易用性（安装 / 界面 / 文档）
+        - 新能力（新场景 / 新输出）
+    validations:
+      required: true
