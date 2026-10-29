@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="356" viewBox="0 0 1200 356" role="img" aria-label="Cleanfit 身形分类">
+  <title>Cleanfit · Body Shape Classification</title>
+  <defs>
+    <linearGradient id="sbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F6F4FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="356" fill="url(#sbg)"/>
+  <g>
+      <rect x="40" y="16" width="250" height="320" rx="18"
+            fill="#FFFFFF" stroke="#E3E0F4" stroke-width="1.2"/>
+      <rect x="40" y="16" width="250" height="320" rx="18" fill="none"
+            stroke="#4B41D6" stroke-width="1.8" opacity="0">
+        <animate attributeName="opacity" values="0;0.6;0.6;0" dur="8s"
+                 begin="0.0s" repeatCount="indefinite" keyTimes="0;0.12;0.25;0.42"/>
+      </rect>
+      <circle cx="165.0" cy="86" r="10.5" fill="#4B41D6" fill-opacity="0.16"
+              stroke="#4B41D6" stroke-width="2"/>
+      <rect x="160.0" y="96" width="10" height="16" rx="4" fill="#4B41D6" fill-opacity="0.16"
+            stroke="#4B41D6" stroke-width="1.6"/>
+      <path d="M 124.0,112 C 123.0,132 144.0,156 145.0,168 C 145.0,182 141.0,190 139.0,200 L 145.0,252 L 160.0,252 L 160.0,215 L 165.0,209 L 170.0,215 L 170.0,252 L 185.0,252 L 191.0,200 C 189.0,190 185.0,182 185.0,168 C 186.0,156 207.0,132 206.0,112 Z" fill="#4B41D6" fill-opacity="0.14" stroke="#4B41D6"
+            stroke-width="2" stroke-linejoin="round"/>
+      <line x1="124.0" y1="112" x2="206.0" y2="112" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="145.0" y1="168" x2="185.0" y2="168" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="139.0" y1="200" x2="191.0" y2="200" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <circle cx="124.0" cy="112" r="2.6" fill="#FFB400"><animate attributeName="r"
+        values="2.2;3.6;2.2" dur="2.6s" begin="0.0s" repeatCount="indefinite"/></circle>
+      <circle cx="206.0" cy="112" r="2.6" fill="#FFB400"><animate attributeName="r"
+        values="2.2;3.6;2.2" dur="2.6s" begin="0.0s" repeatCount="indefinite"/></circle>
+      <text x="165.0" y="286" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="18.5" font-weight="800" fill="#0E0E17">倒三角</text>
+      <text x="165.0" y="306" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="13" font-weight="500" letter-spacing="0.5" fill="#5A5A72">Inverted Triangle</text>
+    </g><g>
+      <rect x="330" y="16" width="250" height="320" rx="18"
+            fill="#FFFFFF" stroke="#E3E0F4" stroke-width="1.2"/>
+      <rect x="330" y="16" width="250" height="320" rx="18" fill="none"
+            stroke="#A96E00" stroke-width="1.8" opacity="0">
+        <animate attributeName="opacity" values="0;0.6;0.6;0" dur="8s"
+                 begin="0.45s" repeatCount="indefinite" keyTimes="0;0.12;0.25;0.42"/>
+      </rect>
+      <circle cx="455.0" cy="86" r="10.5" fill="#A96E00" fill-opacity="0.16"
+              stroke="#A96E00" stroke-width="2"/>
+      <rect x="450.0" y="96" width="10" height="16" rx="4" fill="#A96E00" fill-opacity="0.16"
+            stroke="#A96E00" stroke-width="1.6"/>
+      <path d="M 425.0,112 C 424.0,132 427.0,156 428.0,168 C 428.0,182 427.0,190 425.0,200 L 431.0,252 L 450.0,252 L 450.0,215 L 455.0,209 L 460.0,215 L 460.0,252 L 479.0,252 L 485.0,200 C 483.0,190 482.0,182 482.0,168 C 483.0,156 486.0,132 485.0,112 Z" fill="#A96E00" fill-opacity="0.14" stroke="#A96E00"
+            stroke-width="2" stroke-linejoin="round"/>
+      <line x1="425.0" y1="112" x2="485.0" y2="112" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="428.0" y1="168" x2="482.0" y2="168" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="425.0" y1="200" x2="485.0" y2="200" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <circle cx="425.0" cy="112" r="2.6" fill="#FFB400"><animate attributeName="r"
+        values="2.2;3.6;2.2" dur="2.6s" begin="0.45s" repeatCount="indefinite"/></circle>
+      <circle cx="485.0" cy="112" r="2.6" fill="#FFB400"><animate attributeName="r"
+        values="2.2;3.6;2.2" dur="2.6s" begin="0.45s" repeatCount="indefinite"/></circle>
+      <text x="455.0" y="286" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="18.5" font-weight="800" fill="#0E0E17">H 型</text>
+      <text x="455.0" y="306" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="13" font-weight="500" letter-spacing="0.5" fill="#5A5A72">H-shape</text>
+    </g><g>
+      <rect x="620" y="16" width="250" height="320" rx="18"
+            fill="#FFFFFF" stroke="#E3E0F4" stroke-width="1.2"/>
+      <rect x="620" y="16" width="250" height="320" rx="18" fill="none"
+            stroke="#D6392F" stroke-width="1.8" opacity="0">
+        <animate attributeName="opacity" values="0;0.6;0.6;0" dur="8s"
+                 begin="0.9s" repeatCount="indefinite" keyTimes="0;0.12;0.25;0.42"/>
+      </rect>
+      <circle cx="745.0" cy="86" r="10.5" fill="#D6392F" fill-opacity="0.16"
+              stroke="#D6392F" stroke-width="2"/>
+      <rect x="740.0" y="96" width="10" height="16" rx="4" fill="#D6392F" fill-opacity="0.16"
+            stroke="#D6392F" stroke-width="1.6"/>
+      <path d="M 722.0,112 C 721.0,132 725.0,156 726.0,168 C 726.0,182 709.0,190 707.0,200 L 713.0,252 L 740.0,252 L 740.0,215 L 745.0,209 L 750.0,215 L 750.0,252 L 777.0,252 L 783.0,200 C 781.0,190 764.0,182 764.0,168 C 765.0,156 769.0,132 768.0,112 Z" fill="#D6392F" fill-opacity="0.14" stroke="#D6392F"
+            stroke-width="2" stroke-linejoin="round"/>
+      <line x1="722.0" y1="112" x2="768.0" y2="112" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="726.0" y1="168" x2="764.0" y2="168" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="707.0" y1="200" x2="783.0" y2="200" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <circle cx="722.0" cy="112" r="2.6" fill="#FFB400"><animate attributeName="r"
+        values="2.2;3.6;2.2" dur="2.6s" begin="0.9s" repeatCount="indefinite"/></circle>
+      <circle cx="768.0" cy="112" r="2.6" fill="#FFB400"><animate attributeName="r"
+        values="2.2;3.6;2.2" dur="2.6s" begin="0.9s" repeatCount="indefinite"/></circle>
+      <text x="745.0" y="286" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="18.5" font-weight="800" fill="#0E0E17">梨型</text>
+      <text x="745.0" y="306" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="13" font-weight="500" letter-spacing="0.5" fill="#5A5A72">Pear</text>
+    </g><g>
+      <rect x="910" y="16" width="250" height="320" rx="18"
+            fill="#FFFFFF" stroke="#E3E0F4" stroke-width="1.2"/>
+      <rect x="910" y="16" width="250" height="320" rx="18" fill="none"
+            stroke="#0B7C87" stroke-width="1.8" opacity="0">
+        <animate attributeName="opacity" values="0;0.6;0.6;0" dur="8s"
+                 begin="1.35s" repeatCount="indefinite" keyTimes="0;0.12;0.25;0.42"/>
+      </rect>
+      <circle cx="1035.0" cy="86" r="10.5" fill="#0B7C87" fill-opacity="0.16"
+              stroke="#0B7C87" stroke-width="2"/>
+      <rect x="1030.0" y="96" width="10" height="16" rx="4" fill="#0B7C87" fill-opacity="0.16"
+            stroke="#0B7C87" stroke-width="1.6"/>
+      <path d="M 1008.0,112 C 1007.0,132 997.0,156 998.0,168 C 998.0,182 1009.0,190 1007.0,200 L 1013.0,252 L 1030.0,252 L 1030.0,215 L 1035.0,209 L 1040.0,215 L 1040.0,252 L 1057.0,252 L 1063.0,200 C 1061.0,190 1072.0,182 1072.0,168 C 1073.0,156 1063.0,132 1062.0,112 Z" fill="#0B7C87" fill-opacity="0.14" stroke="#0B7C87"
+            stroke-width="2" stroke-linejoin="round"/>
+      <line x1="1008.0" y1="112" x2="1062.0" y2="112" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="998.0" y1="168" x2="1072.0" y2="168" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="1007.0" y1="200" x2="1063.0" y2="200" stroke="#FFB400"
+            stroke-opacity="0.75" stroke-width="1.6" stroke-linecap="round"/>
+      <circle cx="1008.0" cy="112" r="2.6" fill="#FFB400"><animate attributeName="r"
+        values="2.2;3.6;2.2" dur="2.6s" begin="1.35s" repeatCount="indefinite"/></circle>
+      <circle cx="1062.0" cy="112" r="2.6" fill="#FFB400"><animate attributeName="r"
+        values="2.2;3.6;2.2" dur="2.6s" begin="1.35s" repeatCount="indefinite"/></circle>
+      <text x="1035.0" y="286" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="18.5" font-weight="800" fill="#0E0E17">苹果型</text>
+      <text x="1035.0" y="306" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="13" font-weight="500" letter-spacing="0.5" fill="#5A5A72">Apple</text>
+    </g>
+</svg>

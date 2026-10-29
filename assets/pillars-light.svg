@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="236" viewBox="0 0 1200 236" role="img" aria-label="Cleanfit 核心亮点">
+  <title>Cleanfit · Highlights</title>
+  <defs>
+    <linearGradient id="pbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F6F4FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="236" fill="url(#pbg)"/>
+  <g>
+      <rect x="40" y="22" width="250" height="192" rx="18"
+            fill="#FFFFFF" stroke="#E3E0F4" stroke-width="1.2"/>
+      <rect x="40" y="22" width="250" height="192" rx="18"
+            fill="none" stroke="#4B41D6" stroke-width="1.8" opacity="0">
+        <animate attributeName="opacity" values="0;0.55;0.55;0" dur="8s"
+                 begin="0.0s" repeatCount="indefinite"
+                 keyTimes="0;0.12;0.25;0.42"/>
+      </rect>
+      <rect x="64" y="44" width="42" height="3" rx="1.5" fill="#4B41D6" opacity="0.85">
+        <animate attributeName="width" from="0" to="42" dur="0.8s"
+                 begin="0.0s" fill="freeze"/>
+      </rect>
+      <g>
+      <circle cx="165.0" cy="88" r="15" fill="none" stroke="#4B41D6" stroke-width="2.4"/>
+      <circle cx="165.0" cy="88" r="15" fill="none" stroke="#4B41D6" stroke-width="2.4">
+        <animate attributeName="r" values="15;25;15" dur="3s" begin="0.3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.55;0;0.55" dur="3s" begin="0.3s" repeatCount="indefinite"/>
+      </circle>
+      <line x1="144.0" y1="88" x2="138.0" y2="88" stroke="#4B41D6" stroke-width="2.4" stroke-linecap="round"/><line x1="186.0" y1="88" x2="192.0" y2="88" stroke="#4B41D6" stroke-width="2.4" stroke-linecap="round"/><line x1="165.0" y1="67" x2="165.0" y2="61" stroke="#4B41D6" stroke-width="2.4" stroke-linecap="round"/><line x1="165.0" y1="109" x2="165.0" y2="115" stroke="#4B41D6" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="165.0" cy="88" r="3.6" fill="#FFB400">
+        <animate attributeName="r" values="3.6;5.2;3.6" dur="2.4s" begin="0.3s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+      <text x="165.0" y="156" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="25" font-weight="800" fill="#0E0E17">≤5% Error</text>
+      <text x="165.0" y="182" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="14.5" font-weight="500" letter-spacing="0.6"
+            fill="#5A5A72">精准测量 · 受控场景</text>
+    </g><g>
+      <rect x="330" y="22" width="250" height="192" rx="18"
+            fill="#FFFFFF" stroke="#E3E0F4" stroke-width="1.2"/>
+      <rect x="330" y="22" width="250" height="192" rx="18"
+            fill="none" stroke="#A96E00" stroke-width="1.8" opacity="0">
+        <animate attributeName="opacity" values="0;0.55;0.55;0" dur="8s"
+                 begin="0.35s" repeatCount="indefinite"
+                 keyTimes="0;0.12;0.25;0.42"/>
+      </rect>
+      <rect x="354" y="44" width="42" height="3" rx="1.5" fill="#A96E00" opacity="0.85">
+        <animate attributeName="width" from="0" to="42" dur="0.8s"
+                 begin="0.35s" fill="freeze"/>
+      </rect>
+      <g><circle cx="435.0" cy="78" r="2.8" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="0.65s" repeatCount="indefinite"/></circle><circle cx="442.0" cy="72" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="0.78s" repeatCount="indefinite"/></circle><circle cx="451.0" cy="69" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="0.91s" repeatCount="indefinite"/></circle><circle cx="461.0" cy="71" r="2.8" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="1.04s" repeatCount="indefinite"/></circle><circle cx="471.0" cy="76" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="1.17s" repeatCount="indefinite"/></circle><circle cx="475.0" cy="85" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="1.3s" repeatCount="indefinite"/></circle><circle cx="433.0" cy="89" r="2.8" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="1.43s" repeatCount="indefinite"/></circle><circle cx="439.0" cy="95" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="1.56s" repeatCount="indefinite"/></circle><circle cx="448.0" cy="92" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="1.69s" repeatCount="indefinite"/></circle><circle cx="457.0" cy="97" r="2.8" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="1.82s" repeatCount="indefinite"/></circle><circle cx="466.0" cy="94" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="1.95s" repeatCount="indefinite"/></circle><circle cx="474.0" cy="96" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="2.08s" repeatCount="indefinite"/></circle><circle cx="443.0" cy="105" r="2.8" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="2.21s" repeatCount="indefinite"/></circle><circle cx="452.0" cy="108" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="2.34s" repeatCount="indefinite"/></circle><circle cx="462.0" cy="106" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="2.47s" repeatCount="indefinite"/></circle><circle cx="470.0" cy="103" r="2.8" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="2.6s" repeatCount="indefinite"/></circle><circle cx="455.0" cy="82" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="2.73s" repeatCount="indefinite"/></circle><circle cx="464.0" cy="86" r="2.0" fill="#A96E00" opacity="0.85"><animate attributeName="opacity" values="0.85;0.18;0.85" dur="2.8s" begin="2.86s" repeatCount="indefinite"/></circle></g>
+      <text x="455.0" y="156" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="25" font-weight="800" fill="#0E0E17">AI 3D Vision</text>
+      <text x="455.0" y="182" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="14.5" font-weight="500" letter-spacing="0.6"
+            fill="#5A5A72">点云分析 · 特征提取</text>
+    </g><g>
+      <rect x="620" y="22" width="250" height="192" rx="18"
+            fill="#FFFFFF" stroke="#E3E0F4" stroke-width="1.2"/>
+      <rect x="620" y="22" width="250" height="192" rx="18"
+            fill="none" stroke="#D6392F" stroke-width="1.8" opacity="0">
+        <animate attributeName="opacity" values="0;0.55;0.55;0" dur="8s"
+                 begin="0.7s" repeatCount="indefinite"
+                 keyTimes="0;0.12;0.25;0.42"/>
+      </rect>
+      <rect x="644" y="44" width="42" height="3" rx="1.5" fill="#D6392F" opacity="0.85">
+        <animate attributeName="width" from="0" to="42" dur="0.8s"
+                 begin="0.7s" fill="freeze"/>
+      </rect>
+      <g>
+      <path d="M 726.0,75 L 737.0,69 L 741.0,74 Q 745.0,78 749.0,74 L 753.0,69 L 764.0,75 L 767.0,85 L 760.0,89 L 760.0,108 L 730.0,108 L 730.0,89 L 723.0,85 Z" fill="#D6392F" fill-opacity="0.14" stroke="#D6392F"
+            stroke-width="2.2" stroke-linejoin="round"
+            stroke-dasharray="200" stroke-dashoffset="0">
+        <animate attributeName="stroke-dashoffset" from="200" to="0"
+                 dur="1.6s" begin="1.0s" fill="freeze"/>
+      </path>
+      <line x1="736.0" y1="89" x2="754.0" y2="89" stroke="#FFB400"
+            stroke-width="2" stroke-linecap="round" opacity="0.9">
+        <animate attributeName="opacity" values="0.9;0.25;0.9" dur="2.6s"
+                 begin="1.6s" repeatCount="indefinite"/>
+      </line>
+    </g>
+      <text x="745.0" y="156" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="25" font-weight="800" fill="#0E0E17">Smart Fit</text>
+      <text x="745.0" y="182" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="14.5" font-weight="500" letter-spacing="0.6"
+            fill="#5A5A72">身形分类 · 版型建议</text>
+    </g><g>
+      <rect x="910" y="22" width="250" height="192" rx="18"
+            fill="#FFFFFF" stroke="#E3E0F4" stroke-width="1.2"/>
+      <rect x="910" y="22" width="250" height="192" rx="18"
+            fill="none" stroke="#0B7C87" stroke-width="1.8" opacity="0">
+        <animate attributeName="opacity" values="0;0.55;0.55;0" dur="8s"
+                 begin="1.05s" repeatCount="indefinite"
+                 keyTimes="0;0.12;0.25;0.42"/>
+      </rect>
+      <rect x="934" y="44" width="42" height="3" rx="1.5" fill="#0B7C87" opacity="0.85">
+        <animate attributeName="width" from="0" to="42" dur="0.8s"
+                 begin="1.05s" fill="freeze"/>
+      </rect>
+      <g>
+      <rect x="1013.0" y="77" width="44" height="26" rx="7"
+            fill="none" stroke="#0B7C87" stroke-width="2.3"/>
+      <rect x="1028.0" y="71" width="14" height="6" rx="2"
+            fill="none" stroke="#0B7C87" stroke-width="2.3"/>
+      <circle cx="1035.0" cy="90" r="7.5" fill="none" stroke="#0B7C87" stroke-width="2.3"/>
+      <circle cx="1035.0" cy="90" r="7.5" fill="none" stroke="#FFB400" stroke-width="2">
+        <animate attributeName="r" values="7.5;13;7.5" dur="3.2s" begin="1.35s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8;0;0.8" dur="3.2s" begin="1.35s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="1035.0" cy="90" r="2.8" fill="#FFB400"/>
+    </g>
+      <text x="1035.0" y="156" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="25" font-weight="800" fill="#0E0E17">Depth Camera</text>
+      <text x="1035.0" y="182" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+            font-size="14.5" font-weight="500" letter-spacing="0.6"
+            fill="#5A5A72">Astra Mini Pro · 1.2m</text>
+    </g>
+</svg>

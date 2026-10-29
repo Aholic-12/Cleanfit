@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="28" viewBox="0 0 140 28" role="img" aria-label="In Development">
+  <title>In Development</title>
+  <rect width="140" height="28" rx="14.0" fill="#FFB400"/>
+  <circle cx="13" cy="14.0" r="3.4" fill="#1A1A2E">
+    <animate attributeName="opacity" values="1;0.15;1" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+<text x="76.5" y="14.0" dy="4.2" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+        font-size="12.5" font-weight="600" fill="#1A1A2E">In Development</text>
+</svg>

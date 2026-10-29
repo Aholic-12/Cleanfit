@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="130" viewBox="0 0 1200 130" role="img" aria-label="Cleanfit footer">
+  <defs>
+    <linearGradient id="facc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6C63FF"/>
+      <stop offset="30%" stop-color="#FFB400"/>
+      <stop offset="55%" stop-color="#FF6B6B"/>
+      <stop offset="80%" stop-color="#6C63FF"/>
+      <stop offset="100%" stop-color="#FFB400"/>
+      <animateTransform attributeName="gradientTransform" type="translate"
+                        values="-1 0; 0 0; -1 0" dur="9s" repeatCount="indefinite"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="130" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="1200" height="3" fill="url(#facc)"/>
+  <text x="600.0" y="56" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="15"
+        font-weight="700" letter-spacing="1.5" fill="#0E0E17">Cleanfit · 精准测量，穿对版型</text>
+  <text x="600.0" y="84" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.5"
+        letter-spacing="1" fill="#6B6B84">Built with precision and purpose · Made with ♥ by Aholic-12</text>
+
+  <!-- 走动的虚线（marching ants） -->
+  <line x1="470" y1="104" x2="730" y2="104" stroke="#6C63FF" stroke-opacity="0.45"
+        stroke-width="1.6" stroke-dasharray="7 7">
+    <animate attributeName="stroke-dashoffset" from="0" to="-28"
+             dur="1.6s" repeatCount="indefinite"/>
+  </line>
+</svg>

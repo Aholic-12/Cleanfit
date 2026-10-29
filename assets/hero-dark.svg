@@ -1,0 +1,222 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-label="Cleanfit — 深度视觉人体身形测量与版型适配">
+  <title>Cleanfit · Deep Vision Body Measurement &amp; Fit Adaptation</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B0B12"/>
+      <stop offset="100%" stop-color="#191926"/>
+    </linearGradient>
+
+    <!-- 顶部流光：靠 gradientTransform 平移制造流动感 -->
+    <linearGradient id="flow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6C63FF"/>
+      <stop offset="30%" stop-color="#FFB400"/>
+      <stop offset="55%" stop-color="#FF6B6B"/>
+      <stop offset="80%" stop-color="#6C63FF"/>
+      <stop offset="100%" stop-color="#FFB400"/>
+      <animateTransform attributeName="gradientTransform" type="translate"
+                        values="-1 0; 0 0; -1 0" dur="9s" repeatCount="indefinite"/>
+    </linearGradient>
+
+    <!-- 扫描光带 -->
+    <linearGradient id="scanGlow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6C63FF" stop-opacity="0"/>
+      <stop offset="70%" stop-color="#6C63FF" stop-opacity="0.17"/>
+      <stop offset="100%" stop-color="#6C63FF" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- 扫描线本体：两端淡出，避免像一块硬边矩形 -->
+    <linearGradient id="scanEdge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6C63FF" stop-opacity="0"/>
+      <stop offset="25%" stop-color="#6C63FF" stop-opacity="0.9"/>
+      <stop offset="75%" stop-color="#6C63FF" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#6C63FF" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- 横向淡出遮罩，让光带左右边缘不硬 -->
+    <linearGradient id="fadeX" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#000"/>
+      <stop offset="22%" stop-color="#fff"/>
+      <stop offset="78%" stop-color="#fff"/>
+      <stop offset="100%" stop-color="#000"/>
+    </linearGradient>
+    <mask id="scanMask">
+      <rect x="770" y="0" width="380" height="46" fill="url(#fadeX)"/>
+    </mask>
+  </defs>
+
+  <rect width="1200" height="340" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="4" fill="url(#flow)"/>
+
+  <!-- 顶部小标签 -->
+  <text x="72" y="88" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="13" font-weight="700"
+        letter-spacing="5" fill="#FFB400">DEEP VISION FITTING SYSTEM</text>
+
+  <!-- 主标题 -->
+  <text x="70" y="180" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="92" font-weight="800"
+        letter-spacing="-1" fill="#FFFFFF">Cleanfit<tspan fill="#6C63FF" fill-opacity="1">.
+        <animate attributeName="fill-opacity" values="1;0.1;1" dur="2.4s"
+                 repeatCount="indefinite"/></tspan></text>
+
+  <!-- 中文副标题 -->
+  <text x="74" y="228" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="25" font-weight="600"
+        fill="#FFFFFF" fill-opacity="0.88">深度视觉 · 人体身形测量与版型适配</text>
+
+  <!-- 英文说明 -->
+  <text x="74" y="264" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="14" font-weight="500"
+        letter-spacing="2.6" fill="#A9A9C4">MEASURE PRECISELY — DRESS WITH CONFIDENCE</text>
+
+  <!-- 右侧：人体比例测量示意（带扫描动效） -->
+  <g>
+    <line x1="930" y1="74" x2="930" y2="296" stroke="#6C63FF" stroke-opacity="0.28"
+          stroke-width="1.5" stroke-dasharray="5 6"/>
+    <line x1="915.0" y1="96" x2="945.0" y2="96"
+      stroke="#6C63FF" stroke-opacity="0.75" stroke-width="2.4" stroke-linecap="round"
+      stroke-dasharray="30" stroke-dashoffset="0">
+      <animate attributeName="stroke-dashoffset" from="30" to="0"
+               dur="0.9s" begin="0.0s" fill="freeze"/>
+    </line>
+    <circle cx="915.0" cy="96" r="3.2" fill="#FFB400">
+      <animate attributeName="r" values="2.6;4.6;2.6" dur="2.6s"
+               begin="0.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="945.0" cy="96" r="3.2" fill="#FFB400">
+      <animate attributeName="r" values="2.6;4.6;2.6" dur="2.6s"
+               begin="0.6s" repeatCount="indefinite"/>
+    </circle>
+    <text x="957.0" y="96" dy="3.4" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+      font-size="9" font-weight="700" letter-spacing="1.6"
+      fill="#6C63FF" fill-opacity="0.8">HEAD<animate attributeName="fill-opacity"
+      from="0" to="0.8" dur="0.6s" begin="0.7s" fill="freeze"/></text>
+    <line x1="860.0" y1="150" x2="1000.0" y2="150"
+      stroke="#6C63FF" stroke-opacity="0.75" stroke-width="2.4" stroke-linecap="round"
+      stroke-dasharray="140" stroke-dashoffset="0">
+      <animate attributeName="stroke-dashoffset" from="140" to="0"
+               dur="0.9s" begin="0.5s" fill="freeze"/>
+    </line>
+    <circle cx="860.0" cy="150" r="3.2" fill="#FFB400">
+      <animate attributeName="r" values="2.6;4.6;2.6" dur="2.6s"
+               begin="1.1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="1000.0" cy="150" r="3.2" fill="#FFB400">
+      <animate attributeName="r" values="2.6;4.6;2.6" dur="2.6s"
+               begin="1.1s" repeatCount="indefinite"/>
+    </circle>
+    <text x="1012.0" y="150" dy="3.4" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+      font-size="9" font-weight="700" letter-spacing="1.6"
+      fill="#6C63FF" fill-opacity="0.8">SHOULDER<animate attributeName="fill-opacity"
+      from="0" to="0.8" dur="0.6s" begin="1.2s" fill="freeze"/></text>
+    <line x1="891.0" y1="222" x2="969.0" y2="222"
+      stroke="#6C63FF" stroke-opacity="0.75" stroke-width="2.4" stroke-linecap="round"
+      stroke-dasharray="78" stroke-dashoffset="0">
+      <animate attributeName="stroke-dashoffset" from="78" to="0"
+               dur="0.9s" begin="1.0s" fill="freeze"/>
+    </line>
+    <circle cx="891.0" cy="222" r="3.2" fill="#FFB400">
+      <animate attributeName="r" values="2.6;4.6;2.6" dur="2.6s"
+               begin="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="969.0" cy="222" r="3.2" fill="#FFB400">
+      <animate attributeName="r" values="2.6;4.6;2.6" dur="2.6s"
+               begin="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <text x="981.0" y="222" dy="3.4" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+      font-size="9" font-weight="700" letter-spacing="1.6"
+      fill="#6C63FF" fill-opacity="0.8">WAIST<animate attributeName="fill-opacity"
+      from="0" to="0.8" dur="0.6s" begin="1.7s" fill="freeze"/></text>
+    <line x1="872.0" y1="272" x2="988.0" y2="272"
+      stroke="#6C63FF" stroke-opacity="0.75" stroke-width="2.4" stroke-linecap="round"
+      stroke-dasharray="116" stroke-dashoffset="0">
+      <animate attributeName="stroke-dashoffset" from="116" to="0"
+               dur="0.9s" begin="1.5s" fill="freeze"/>
+    </line>
+    <circle cx="872.0" cy="272" r="3.2" fill="#FFB400">
+      <animate attributeName="r" values="2.6;4.6;2.6" dur="2.6s"
+               begin="2.1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="988.0" cy="272" r="3.2" fill="#FFB400">
+      <animate attributeName="r" values="2.6;4.6;2.6" dur="2.6s"
+               begin="2.1s" repeatCount="indefinite"/>
+    </circle>
+    <text x="1000.0" y="272" dy="3.4" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
+      font-size="9" font-weight="700" letter-spacing="1.6"
+      fill="#6C63FF" fill-opacity="0.8">HIP<animate attributeName="fill-opacity"
+      from="0" to="0.8" dur="0.6s" begin="2.2s" fill="freeze"/></text>
+  </g>
+
+  <!-- 扫描线：上下往复 -->
+  <g opacity="0.9">
+    <animateTransform attributeName="transform" type="translate"
+                      values="0 40; 0 210; 0 40" dur="7s" repeatCount="indefinite"
+                      calcMode="spline" keyTimes="0;0.5;1"
+                      keySplines="0.42 0 0.58 1;0.42 0 0.58 1"/>
+    <rect x="770" y="0" width="380" height="46" fill="url(#scanGlow)" mask="url(#scanMask)"/>
+    <rect x="770" y="44" width="380" height="1.6" fill="url(#scanEdge)">
+      <animate attributeName="opacity" values="0.95;0.35;0.95" dur="7s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <!-- 底部量尺 -->
+  <g>
+    <line x1="0" y1="322" x2="0" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="20" y1="331" x2="20" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="40" y1="331" x2="40" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="60" y1="331" x2="60" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="80" y1="331" x2="80" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="100" y1="322" x2="100" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="120" y1="331" x2="120" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="140" y1="331" x2="140" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="160" y1="331" x2="160" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="180" y1="331" x2="180" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="200" y1="322" x2="200" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="220" y1="331" x2="220" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="240" y1="331" x2="240" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="260" y1="331" x2="260" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="280" y1="331" x2="280" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="300" y1="322" x2="300" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="320" y1="331" x2="320" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="340" y1="331" x2="340" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="360" y1="331" x2="360" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="380" y1="331" x2="380" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="400" y1="322" x2="400" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="420" y1="331" x2="420" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="440" y1="331" x2="440" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="460" y1="331" x2="460" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="480" y1="331" x2="480" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="500" y1="322" x2="500" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="520" y1="331" x2="520" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="540" y1="331" x2="540" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="560" y1="331" x2="560" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="580" y1="331" x2="580" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="600" y1="322" x2="600" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="620" y1="331" x2="620" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="640" y1="331" x2="640" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="660" y1="331" x2="660" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="680" y1="331" x2="680" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="700" y1="322" x2="700" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="720" y1="331" x2="720" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="740" y1="331" x2="740" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="760" y1="331" x2="760" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="780" y1="331" x2="780" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="800" y1="322" x2="800" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="820" y1="331" x2="820" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="840" y1="331" x2="840" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="860" y1="331" x2="860" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="880" y1="331" x2="880" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="900" y1="322" x2="900" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="920" y1="331" x2="920" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="940" y1="331" x2="940" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="960" y1="331" x2="960" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="980" y1="331" x2="980" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="1000" y1="322" x2="1000" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="1020" y1="331" x2="1020" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="1040" y1="331" x2="1040" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="1060" y1="331" x2="1060" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="1080" y1="331" x2="1080" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="1100" y1="322" x2="1100" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+    <line x1="1120" y1="331" x2="1120" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="1140" y1="331" x2="1140" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="1160" y1="331" x2="1160" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="1180" y1="331" x2="1180" y2="340" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="1"/>
+    <line x1="1200" y1="322" x2="1200" y2="340" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="1"/>
+  </g>
+</svg>
