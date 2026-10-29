@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 同一分支连续推送时，取消上一次还在跑的构建，省额度
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装 ruff
+        run: pip install ruff
+
+      - name: 代码风格与静态检查
+        run: ruff check .
+
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      # 算法层目前只依赖 numpy；open3d / opencv 体积大且尚未被 import，
+      # 等阶段 2 接硬件时再去掉 --no-deps 换成完整安装。
+      - name: 安装项目与测试依赖
+        run: |
+          pip install -e . --no-deps
+          pip install numpy pytest
+
+      - name: 运行测试
+        run: pytest -q

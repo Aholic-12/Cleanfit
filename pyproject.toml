@@ -44,4 +44,6 @@ line-length = 100
 target-version = "py38"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B"]
+select = ["E", "F", "I", "B"]
+# E203 与 black 风格冲突（切片里允许 x[a + b : c] 的写法），业界惯例是关掉
+ignore = ["E203"]
