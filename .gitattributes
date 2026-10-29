@@ -13,3 +13,6 @@
 *.onnx  binary
 *.ply   binary
 *.pcd   binary
+
+# demo 的前端依赖（wasm / tflite / 运行时资源）一律原样存放，不做换行转换
+demo/vendor/** binary

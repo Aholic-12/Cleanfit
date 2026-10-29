@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cleanfit · Pose Mirror</title>
+<link rel="stylesheet" href="css/hud.css" />
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo"><i></i><i></i><i></i></span>
+      <b>CLEANFIT</b>
+      <span class="sub">POSE&nbsp;MIRROR</span>
+    </div>
+    <div class="status"><i id="dot"></i><span id="statusText">初始化推理引擎…</span></div>
+  </header>
+
+  <main class="stage">
+
+    <!-- 左：取景窗口 -->
+    <section class="panel">
+      <div class="panel-head">
+        <span>CAMERA · LIVE</span>
+        <span class="head-r" id="camInfo">--</span>
+      </div>
+      <div class="cam-wrap" id="camWrap">
+        <video id="video" playsinline muted autoplay></video>
+        <canvas id="overlay"></canvas>
+        <div class="frame">
+          <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+          <div class="sweep"></div>
+        </div>
+        <div class="cam-idle" id="camIdle">
+          <div class="idle-ring"></div>
+          <div class="idle-title">摄像头未启动</div>
+          <div class="idle-sub">点击下方「启动摄像头」并允许访问</div>
+        </div>
+      </div>
+      <div class="panel-foot">
+        <select id="camSelect" class="sel" title="选择摄像头">
+          <option>检测设备…</option>
+        </select>
+        <button id="btnCam" class="btn primary">启动摄像头</button>
+        <button id="btnMirror" class="btn on">镜像 开</button>
+        <button id="btnMask" class="btn">掩码 关</button>
+        <button id="btnBones" class="btn on">骨骼 开</button>
+      </div>
+    </section>
+
+    <!-- 右：3D 重建 -->
+    <section class="panel">
+      <div class="panel-head">
+        <span>RECONSTRUCTION · 3D</span>
+        <span class="head-r" id="fpsInfo">-- FPS</span>
+      </div>
+      <div class="viewport" id="viewport">
+        <div class="hint" id="hint">等待人体进入画面</div>
+      </div>
+      <div class="metrics" id="metrics"></div>
+    </section>
+
+  </main>
+
+  <footer class="footbar">
+    <span>BlazePose · 33 关键点 · 世界坐标（米）</span>
+    <span id="loadInfo">模型加载中</span>
+  </footer>
+</div>
+
+<script>
+// 任何未捕获异常都直接显示在状态栏，避免出现「页面一片空白但不知道原因」
+(function () {
+  var show = function (msg) {
+    var el = document.getElementById('statusText');
+    var dot = document.getElementById('dot');
+    if (el) el.textContent = '错误：' + msg;
+    if (dot) dot.className = 'err';
+    document.title = 'ERR · ' + msg;
+  };
+  window.addEventListener('error', function (e) {
+    show(e.message || (e.target && e.target.src) || 'unknown');
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    show((e.reason && e.reason.message) || String(e.reason));
+  });
+})();
+</script>
+<script src="vendor/mediapipe/pose.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
