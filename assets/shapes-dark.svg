@@ -34,7 +34,7 @@
       <text x="165.0" y="286" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
             font-size="18.5" font-weight="800" fill="#FFFFFF">倒三角</text>
       <text x="165.0" y="306" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
-            font-size="13" font-weight="500" letter-spacing="0.5" fill="#A9A9C4">Inverted Triangle</text>
+            font-size="13" font-weight="500" letter-spacing="0.5" fill="#A9A9C4">肩宽 &gt; 胯宽</text>
     </g><g>
       <rect x="330" y="16" width="250" height="320" rx="18"
             fill="#15151F" stroke="#2E2E42" stroke-width="1.2"/>
@@ -62,7 +62,7 @@
       <text x="455.0" y="286" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
             font-size="18.5" font-weight="800" fill="#FFFFFF">H 型</text>
       <text x="455.0" y="306" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
-            font-size="13" font-weight="500" letter-spacing="0.5" fill="#A9A9C4">H-shape</text>
+            font-size="13" font-weight="500" letter-spacing="0.5" fill="#A9A9C4">肩胯接近</text>
     </g><g>
       <rect x="620" y="16" width="250" height="320" rx="18"
             fill="#15151F" stroke="#2E2E42" stroke-width="1.2"/>
@@ -90,7 +90,7 @@
       <text x="745.0" y="286" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
             font-size="18.5" font-weight="800" fill="#FFFFFF">梨型</text>
       <text x="745.0" y="306" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
-            font-size="13" font-weight="500" letter-spacing="0.5" fill="#A9A9C4">Pear</text>
+            font-size="13" font-weight="500" letter-spacing="0.5" fill="#A9A9C4">胯宽 &gt; 肩宽</text>
     </g><g>
       <rect x="910" y="16" width="250" height="320" rx="18"
             fill="#15151F" stroke="#2E2E42" stroke-width="1.2"/>
@@ -118,6 +118,6 @@
       <text x="1035.0" y="286" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
             font-size="18.5" font-weight="800" fill="#FFFFFF">苹果型</text>
       <text x="1035.0" y="306" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
-            font-size="13" font-weight="500" letter-spacing="0.5" fill="#A9A9C4">Apple</text>
+            font-size="13" font-weight="500" letter-spacing="0.5" fill="#A9A9C4">腰腹突出</text>
     </g>
 </svg>

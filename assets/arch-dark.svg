@@ -26,12 +26,12 @@
     <text x="115" y="76.0" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
           font-size="16.5" font-weight="800" fill="#6C63FF">应用层</text>
     <text x="115" y="93.0" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
-          font-size="10.5" font-weight="700" letter-spacing="2" fill="#6E6E8C">APP</text><rect x="214" y="40" width="216" height="76" rx="12"
+          font-size="10.5" font-weight="700" letter-spacing="2" fill="#6E6E8C">应用</text><rect x="214" y="40" width="216" height="76" rx="12"
           fill="#1B1B28" stroke="#2E2E42" stroke-width="1"/>
     <rect x="214" y="53" width="3.2" height="50" rx="1.6" fill="#6C63FF" opacity="0.85"/><text x="232" y="73.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="16.5"
-          font-weight="700" fill="#FFFFFF">Capture</text>
+          font-weight="700" fill="#FFFFFF">采集</text>
     <text x="232" y="96.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.8"
-          font-weight="500" fill="#A9A9C4">采集 · 深度帧</text><line x1="435" y1="78.0" x2="452" y2="78.0"
+          font-weight="500" fill="#A9A9C4">深度帧 + 彩色图</text><line x1="435" y1="78.0" x2="452" y2="78.0"
           stroke="#6C63FF" stroke-opacity="0.65" stroke-width="1.6"
           stroke-dasharray="5 4">
         <animate attributeName="stroke-dashoffset" from="0" to="-9"
@@ -47,9 +47,9 @@
       </circle><rect x="457" y="40" width="216" height="76" rx="12"
           fill="#1B1B28" stroke="#2E2E42" stroke-width="1"/>
     <rect x="457" y="53" width="3.2" height="50" rx="1.6" fill="#6C63FF" opacity="0.85"/><text x="475" y="73.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="16.5"
-          font-weight="700" fill="#FFFFFF">Measure</text>
+          font-weight="700" fill="#FFFFFF">测量</text>
     <text x="475" y="96.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.8"
-          font-weight="500" fill="#A9A9C4">测量 · 比例计算</text><line x1="678" y1="78.0" x2="695" y2="78.0"
+          font-weight="500" fill="#A9A9C4">比例与特征点</text><line x1="678" y1="78.0" x2="695" y2="78.0"
           stroke="#6C63FF" stroke-opacity="0.65" stroke-width="1.6"
           stroke-dasharray="5 4">
         <animate attributeName="stroke-dashoffset" from="0" to="-9"
@@ -65,9 +65,9 @@
       </circle><rect x="700" y="40" width="216" height="76" rx="12"
           fill="#1B1B28" stroke="#2E2E42" stroke-width="1"/>
     <rect x="700" y="53" width="3.2" height="50" rx="1.6" fill="#6C63FF" opacity="0.85"/><text x="718" y="73.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="16.5"
-          font-weight="700" fill="#FFFFFF">Result</text>
+          font-weight="700" fill="#FFFFFF">结果</text>
     <text x="718" y="96.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.8"
-          font-weight="500" fill="#A9A9C4">结果 · 身形分类</text><line x1="921" y1="78.0" x2="938" y2="78.0"
+          font-weight="500" fill="#A9A9C4">身形分类</text><line x1="921" y1="78.0" x2="938" y2="78.0"
           stroke="#6C63FF" stroke-opacity="0.65" stroke-width="1.6"
           stroke-dasharray="5 4">
         <animate attributeName="stroke-dashoffset" from="0" to="-9"
@@ -83,9 +83,9 @@
       </circle><rect x="943" y="40" width="216" height="76" rx="12"
           fill="#1B1B28" stroke="#2E2E42" stroke-width="1"/>
     <rect x="943" y="53" width="3.2" height="50" rx="1.6" fill="#6C63FF" opacity="0.85"/><text x="961" y="73.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="16.5"
-          font-weight="700" fill="#FFFFFF">Try-On</text>
+          font-weight="700" fill="#FFFFFF">试穿</text>
     <text x="961" y="96.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.8"
-          font-weight="500" fill="#A9A9C4">试穿 · 版型验证</text><rect x="24" y="158" width="1152" height="124" rx="16"
+          font-weight="500" fill="#A9A9C4">版型验证</text><rect x="24" y="158" width="1152" height="124" rx="16"
           fill="#15151F" stroke="#2E2E42" stroke-width="1.1"/>
     <rect x="24" y="158" width="1152" height="124" rx="16" fill="#FFB400" opacity="0">
       <animate attributeName="opacity" values="0;0.07;0.07;0" dur="9s"
@@ -95,12 +95,12 @@
     <text x="115" y="218.0" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
           font-size="16.5" font-weight="800" fill="#FFB400">核心算法层</text>
     <text x="115" y="235.0" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
-          font-size="10.5" font-weight="700" letter-spacing="2" fill="#6E6E8C">CORE</text><rect x="214" y="172" width="216" height="96" rx="12"
+          font-size="10.5" font-weight="700" letter-spacing="2" fill="#6E6E8C">算法</text><rect x="214" y="172" width="216" height="96" rx="12"
           fill="#1B1B28" stroke="#2E2E42" stroke-width="1"/>
     <rect x="214" y="185" width="3.2" height="70" rx="1.6" fill="#FFB400" opacity="0.85"/><text x="232" y="215.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="16.5"
-          font-weight="700" fill="#FFFFFF">① Point Cloud</text>
+          font-weight="700" fill="#FFFFFF">① 点云分割</text>
     <text x="232" y="238.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.8"
-          font-weight="500" fill="#A9A9C4">分割与去噪</text><line x1="435" y1="220.0" x2="452" y2="220.0"
+          font-weight="500" fill="#A9A9C4">去噪与轮廓提取</text><line x1="435" y1="220.0" x2="452" y2="220.0"
           stroke="#FFB400" stroke-opacity="0.65" stroke-width="1.6"
           stroke-dasharray="5 4">
         <animate attributeName="stroke-dashoffset" from="0" to="-9"
@@ -116,9 +116,9 @@
       </circle><rect x="457" y="172" width="216" height="96" rx="12"
           fill="#1B1B28" stroke="#2E2E42" stroke-width="1"/>
     <rect x="457" y="185" width="3.2" height="70" rx="1.6" fill="#FFB400" opacity="0.85"/><text x="475" y="215.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="16.5"
-          font-weight="700" fill="#FFFFFF">② Feature Points</text>
+          font-weight="700" fill="#FFFFFF">② 特征点定位</text>
     <text x="475" y="238.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.8"
-          font-weight="500" fill="#A9A9C4">骨性点定位</text><line x1="678" y1="220.0" x2="695" y2="220.0"
+          font-weight="500" fill="#A9A9C4">头顶 · 肩峰 · 腰 · 臀</text><line x1="678" y1="220.0" x2="695" y2="220.0"
           stroke="#FFB400" stroke-opacity="0.65" stroke-width="1.6"
           stroke-dasharray="5 4">
         <animate attributeName="stroke-dashoffset" from="0" to="-9"
@@ -134,9 +134,9 @@
       </circle><rect x="700" y="172" width="216" height="96" rx="12"
           fill="#1B1B28" stroke="#2E2E42" stroke-width="1"/>
     <rect x="700" y="185" width="3.2" height="70" rx="1.6" fill="#FFB400" opacity="0.85"/><text x="718" y="215.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="16.5"
-          font-weight="700" fill="#FFFFFF">③ Perspective Fix</text>
+          font-weight="700" fill="#FFFFFF">③ 透视校正</text>
     <text x="718" y="238.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.8"
-          font-weight="500" fill="#A9A9C4">透视与距离校正</text><line x1="921" y1="220.0" x2="938" y2="220.0"
+          font-weight="500" fill="#A9A9C4">内参 + 深度信息</text><line x1="921" y1="220.0" x2="938" y2="220.0"
           stroke="#FFB400" stroke-opacity="0.65" stroke-width="1.6"
           stroke-dasharray="5 4">
         <animate attributeName="stroke-dashoffset" from="0" to="-9"
@@ -152,9 +152,9 @@
       </circle><rect x="943" y="172" width="216" height="96" rx="12"
           fill="#1B1B28" stroke="#2E2E42" stroke-width="1"/>
     <rect x="943" y="185" width="3.2" height="70" rx="1.6" fill="#FFB400" opacity="0.85"/><text x="961" y="215.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="16.5"
-          font-weight="700" fill="#FFFFFF">④ Fit Engine</text>
+          font-weight="700" fill="#FFFFFF">④ 分类与匹配</text>
     <text x="961" y="238.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="12.8"
-          font-weight="500" fill="#A9A9C4">分类与版型匹配</text><rect x="24" y="310" width="1152" height="84" rx="16"
+          font-weight="500" fill="#A9A9C4">比例 → 版型</text><rect x="24" y="310" width="1152" height="84" rx="16"
           fill="#15151F" stroke="#2E2E42" stroke-width="1.1"/>
     <rect x="24" y="310" width="1152" height="84" rx="16" fill="#0FA3B1" opacity="0">
       <animate attributeName="opacity" values="0;0.07;0.07;0" dur="9s"
@@ -164,7 +164,7 @@
     <text x="115" y="350.0" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
           font-size="16.5" font-weight="800" fill="#0FA3B1">基础工具层</text>
     <text x="115" y="367.0" text-anchor="middle" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif"
-          font-size="10.5" font-weight="700" letter-spacing="2" fill="#6E6E8C">BASE</text><rect x="214" y="324" width="216" height="56" rx="12"
+          font-size="10.5" font-weight="700" letter-spacing="2" fill="#6E6E8C">工具</text><rect x="214" y="324" width="216" height="56" rx="12"
           fill="#1B1B28" stroke="#2E2E42" stroke-width="1"/>
     <rect x="214" y="337" width="3.2" height="30" rx="1.6" fill="#0FA3B1" opacity="0.85"/><text x="232" y="347.0" font-family="'Segoe UI','PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif" font-size="16.5"
           font-weight="700" fill="#FFFFFF">Astra SDK</text>
