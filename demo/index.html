@@ -37,6 +37,17 @@
           <div class="idle-ring"></div>
           <div class="idle-title">摄像头未启动</div>
           <div class="idle-sub">点击下方「启动摄像头」并允许访问</div>
+          <div class="idle-tip" id="idleTip"></div>
+        </div>
+        <div class="diag" id="diag" hidden>
+          <div class="diag-head">
+            <span>DEVICE DIAGNOSTIC</span>
+            <span class="diag-actions">
+              <button id="btnDiagCopy" class="btn">复制</button>
+              <button id="btnDiagClose" class="btn">关闭</button>
+            </span>
+          </div>
+          <pre id="diagBody">检测中…</pre>
         </div>
       </div>
       <div class="panel-foot">
@@ -47,6 +58,7 @@
         <button id="btnMirror" class="btn on">镜像 开</button>
         <button id="btnMask" class="btn">掩码 关</button>
         <button id="btnBones" class="btn on">骨骼 开</button>
+        <button id="btnDiag" class="btn">诊断</button>
       </div>
     </section>
 

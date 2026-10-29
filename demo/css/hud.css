@@ -241,6 +241,58 @@ body::before {
 @keyframes spin { to { transform: rotate(360deg); } }
 .idle-title { font-size: 13px; letter-spacing: 2px; color: #a8d8e6; }
 .idle-sub { font-size: 11px; color: var(--muted); letter-spacing: .6px; }
+.idle-tip {
+  margin-top: 10px;
+  max-width: 78%;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--amber);
+  text-align: center;
+  letter-spacing: .4px;
+}
+.idle-tip:empty { display: none; }
+
+/* 设备诊断覆盖层 */
+.diag {
+  position: absolute;
+  inset: 8px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: rgba(2, 8, 14, .97);
+  box-shadow: 0 0 40px -8px rgba(34, 211, 238, .35);
+}
+.diag[hidden] { display: none; }
+.diag-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+.diag-actions { display: flex; gap: 6px; }
+.diag-actions .btn { padding: 4px 10px; font-size: 10.5px; }
+.diag pre {
+  flex: 1;
+  margin: 0;
+  overflow: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.75;
+  color: #9fd6e4;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.diag .ok { color: #4ade80; }
+.diag .bad { color: #fb7185; }
+.diag .warn { color: var(--amber); }
 
 /* ---------- 3D 视口 ---------- */
 

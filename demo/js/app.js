@@ -28,6 +28,12 @@ const els = {
   btnMask: $('btnMask'),
   btnBones: $('btnBones'),
   camSelect: $('camSelect'),
+  btnDiag: $('btnDiag'),
+  btnDiagClose: $('btnDiagClose'),
+  btnDiagCopy: $('btnDiagCopy'),
+  diag: $('diag'),
+  diagBody: $('diagBody'),
+  idleTip: $('idleTip'),
 };
 
 const state = {
@@ -473,6 +479,122 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 
+// ---------------------------------------------------------------- 设备诊断
+
+const ERR_HINT = {
+  NotAllowedError: '权限被拒绝。点地址栏左侧的锁/摄像头图标，把「摄像头」改成「允许」，然后刷新页面。',
+  NotFoundError: '系统里找不到这个设备。检查 USB 是否插稳、设备管理器里有没有黄色感叹号。',
+  NotReadableError: '设备被别的程序占用了。关掉 Windows「设置 → 摄像头」的预览、相机 App、以及任何开会软件后重试。',
+  OverconstrainedError: '设备不支持请求的分辨率/参数。换一个摄像头试试。',
+  AbortError: '系统层面的中断，通常是驱动问题。拔插一次 USB 再试。',
+  SecurityError: '安全策略阻止。必须用 https 或 http://localhost 打开。',
+};
+
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+async function diagnose() {
+  const L = [];
+  const add = (text, cls) => L.push(cls ? `<span class="${cls}">${esc(text)}</span>` : esc(text));
+
+  add(`协议        ${location.protocol}//${location.host}`);
+  add(`安全上下文  ${window.isSecureContext ? '是' : '否'}`,
+    window.isSecureContext ? 'ok' : 'bad');
+  if (!window.isSecureContext) {
+    add('  → 摄像头 API 只在 https 或 http://localhost 下可用', 'warn');
+  }
+  add(`浏览器      ${navigator.userAgent.slice(0, 96)}`);
+  add('');
+
+  if (!navigator.mediaDevices) {
+    add('navigator.mediaDevices 不存在 → 非安全上下文或浏览器过旧', 'bad');
+    els.diagBody.innerHTML = L.join('\n');
+    return;
+  }
+
+  // 权限
+  let perm = '未知';
+  if (navigator.permissions && navigator.permissions.query) {
+    try {
+      const p = await navigator.permissions.query({ name: 'camera' });
+      perm = p.state;
+    } catch (e) {
+      perm = `查询失败(${e.name})`;
+    }
+  }
+  add(`摄像头权限  ${perm}`, perm === 'granted' ? 'ok' : perm === 'denied' ? 'bad' : 'warn');
+
+  // 设备列表
+  let devs = [];
+  try {
+    devs = await navigator.mediaDevices.enumerateDevices();
+  } catch (e) {
+    add(`enumerateDevices 失败: ${e.name} ${e.message}`, 'bad');
+  }
+  const cams = devs.filter((d) => d.kind === 'videoinput');
+  add(`视频输入    ${cams.length} 个`, cams.length ? 'ok' : 'bad');
+  cams.forEach((c, i) => {
+    add(`  [${i}] ${c.label || '(无名称 · 未授权时属正常)'}  id=${(c.deviceId || '').slice(0, 10)}…`);
+  });
+
+  if (!cams.length) {
+    add('');
+    add('结论：浏览器完全看不到摄像头。', 'bad');
+    add('排查顺序：', 'warn');
+    add('  1. Windows 设置 → 隐私和安全性 → 摄像头 → 打开「允许桌面应用访问摄像头」');
+    add('  2. 设备管理器里「图像设备」下能否看到 USB Camera');
+    add('  3. 关掉 Windows 设置里的摄像头预览（它会独占设备），再刷新页面');
+    add('  4. 换一个 USB 口，尽量直插主板而不是经 HUB');
+    els.diagBody.innerHTML = L.join('\n');
+    return;
+  }
+
+  // 逐个试开。先停掉当前流，否则会自己和自己抢设备
+  if (stream) {
+    stream.getTracks().forEach((t) => t.stop());
+    stream = null;
+    state.running = false;
+    els.video.srcObject = null;
+  }
+
+  add('');
+  add('逐个试开：');
+  const hints = new Set();
+  for (const c of cams) {
+    const name = c.label || `设备[${cams.indexOf(c)}]`;
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: { exact: c.deviceId } },
+      });
+      const t = s.getVideoTracks()[0];
+      const st = t.getSettings();
+      add(`  ✓ ${name}  ${st.width}×${st.height}${st.frameRate ? ' ' + Math.round(st.frameRate) + 'fps' : ''}`, 'ok');
+      s.getTracks().forEach((x) => x.stop());
+    } catch (e) {
+      add(`  ✗ ${name}  ${e.name}`, 'bad');
+      add(`     ${e.message}`, 'bad');
+      if (ERR_HINT[e.name]) hints.add(ERR_HINT[e.name]);
+    }
+  }
+
+  if (hints.size) {
+    add('');
+    add('怎么处理：', 'warn');
+    for (const h of hints) add(`  · ${h}`);
+  }
+
+  add('');
+  add('关闭诊断后点「启动摄像头」重试。');
+  els.diagBody.innerHTML = L.join('\n');
+}
+
+function openDiag() {
+  els.diag.hidden = false;
+  els.diagBody.textContent = '检测中…';
+  diagnose().catch((e) => {
+    els.diagBody.textContent = '诊断本身出错：' + (e && e.message ? e.message : e);
+  });
+}
+
 // ---------------------------------------------------------------- 摄像头
 
 let stream = null;
@@ -538,8 +660,10 @@ async function startCamera(deviceId) {
     const msg =
       e && e.name === 'NotAllowedError' ? '权限被拒绝，请允许摄像头访问'
         : e && e.name === 'NotFoundError' ? '未找到摄像头设备'
-          : '摄像头不可用：' + (e && e.message ? e.message : e);
+          : e && e.name === 'NotReadableError' ? '摄像头被其他程序占用'
+            : '摄像头不可用：' + (e && e.message ? e.message : e);
     setStatus(msg, 'err');
+    els.idleTip.textContent = '点右下角「诊断」查看详细原因';
   }
 }
 
@@ -567,6 +691,26 @@ els.btnBones.addEventListener('click', () => {
 });
 
 els.video.addEventListener('loadedmetadata', fitOverlay);
+
+els.btnDiag.addEventListener('click', openDiag);
+els.btnDiagClose.addEventListener('click', () => { els.diag.hidden = true; });
+els.btnDiagCopy.addEventListener('click', async () => {
+  const text = els.diagBody.innerText;
+  try {
+    await navigator.clipboard.writeText(text);
+    els.btnDiagCopy.textContent = '已复制';
+    setTimeout(() => { els.btnDiagCopy.textContent = '复制'; }, 1500);
+  } catch {
+    // 剪贴板不可用时退化成选中文本，让用户自己 Ctrl+C
+    const r = document.createRange();
+    r.selectNodeContents(els.diagBody);
+    const sel = getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+    els.btnDiagCopy.textContent = '已选中';
+    setTimeout(() => { els.btnDiagCopy.textContent = '复制'; }, 1500);
+  }
+});
 
 // 切换摄像头：停掉旧流，用新 deviceId 重新取流
 els.camSelect.addEventListener('change', () => {
