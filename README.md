@@ -77,7 +77,7 @@
 
 ### About
 
-<table width="100%">
+<table>
  <tr>
   <td align="left">
 
@@ -93,7 +93,7 @@ The project follows a **"small but precise"** technical philosophy — deep spec
 
 ### Core Features
 
-<table width="100%">
+<table>
  <tr>
   <td align="center" width="50%" valign="top">
     <br/>
@@ -136,7 +136,7 @@ The project follows a **"small but precise"** technical philosophy — deep spec
   <img src="assets/arch-light.svg" alt="Cleanfit 系统架构：应用层 / 核心算法层 / 基础工具层" width="100%">
 </picture>
 
-<table width="100%">
+<table>
  <tr>
   <th align="left" width="24%">Module</th>
   <th align="left">What it does</th>
@@ -166,7 +166,7 @@ The project follows a **"small but precise"** technical philosophy — deep spec
 
 ### Hardware
 
-<table width="100%">
+<table>
  <tr>
   <th width="25%" align="center">📷 Camera</th>
   <th width="25%" align="center">💰 Budget</th>
@@ -187,7 +187,7 @@ The project follows a **"small but precise"** technical philosophy — deep spec
 
 > 📏 All specs under controlled conditions: indoor soft lighting, frontal standing, form-fitting base layer, 1.2m ± 0.1m distance.
 
-<table width="100%">
+<table>
  <tr>
   <th align="center" width="18%">Type</th>
   <th align="center">Metric</th>
@@ -260,7 +260,7 @@ pip install -r requirements.txt
 <summary>📦 <b>Environment Requirements</b></summary>
 <br/>
 
-<table width="100%">
+<table>
  <tr>
   <th align="left">Dependency</th>
   <th align="left" width="18%">Version</th>
@@ -279,7 +279,7 @@ pip install -r requirements.txt
 
 > ⚠️ These are intentional constraints, not limitations.
 
-<table width="100%">
+<table>
  <tr>
   <td width="50%" valign="top">
     <br/>
@@ -330,7 +330,7 @@ Fork → Branch → Commit → Push → PR
 
 ### 项目简介
 
-<table width="100%">
+<table>
  <tr>
   <td align="left">
 
@@ -346,7 +346,7 @@ Fork → Branch → Commit → Push → PR
 
 ### 核心功能
 
-<table width="100%">
+<table>
  <tr>
   <td align="center" width="50%" valign="top">
     <br/>
@@ -389,7 +389,7 @@ Fork → Branch → Commit → Push → PR
   <img src="assets/arch-light.svg" alt="Cleanfit 系统架构：应用层 / 核心算法层 / 基础工具层" width="100%">
 </picture>
 
-<table width="100%">
+<table>
  <tr>
   <th align="left" width="24%">模块</th>
   <th align="left">做什么</th>
@@ -419,7 +419,7 @@ Fork → Branch → Commit → Push → PR
 
 ### 硬件方案
 
-<table width="100%">
+<table>
  <tr>
   <th width="25%" align="center">📷 深度相机</th>
   <th width="25%" align="center">💰 硬件预算</th>
@@ -440,7 +440,7 @@ Fork → Branch → Commit → Push → PR
 
 > 📏 所有指标均基于限定测试场景：室内均匀柔光、正面自然站立、紧身打底衣物、拍摄距离 1.2m ± 0.1m
 
-<table width="100%">
+<table>
  <tr>
   <th align="center" width="18%">类型</th>
   <th align="center">指标</th>
@@ -513,7 +513,7 @@ pip install -r requirements.txt
 <summary>📦 <b>环境依赖</b></summary>
 <br/>
 
-<table width="100%">
+<table>
  <tr>
   <th align="left">依赖</th>
   <th align="left" width="18%">版本</th>
@@ -543,7 +543,7 @@ pip install -r requirements.txt
 
 > ⚠️ 以下是有意为之的设计约束，不是缺陷。
 
-<table width="100%">
+<table>
  <tr>
   <td width="50%" valign="top">
     <br/>
