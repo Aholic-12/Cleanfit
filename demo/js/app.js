@@ -42,6 +42,15 @@ const els = {
   sensorSpec: $('sensorSpec'),
   sensorDepth: $('sensorDepth'),
   sensorGain: $('sensorGain'),
+  btnTryon: $('btnTryon'),
+  btnTryonClose: $('btnTryonClose'),
+  tryon: $('tryon'),
+  garmentDrop: $('garmentDrop'),
+  garmentFile: $('garmentFile'),
+  garmentTip: $('garmentTip'),
+  garmentKey: $('garmentKey'),
+  garmentScale: $('garmentScale'),
+  btnGarmentClear: $('btnGarmentClear'),
 };
 
 const state = {
@@ -65,6 +74,7 @@ const state = {
   gainNow: 1,
   gainTick: 0,
   luma: 1,
+  garmentImg: null,  // 最近一次载入的衣服图片，改「抠白底」时要重处理
 };
 
 function setStatus(text, kind) {
@@ -91,6 +101,7 @@ function syncCamButton() {
 // ---------------------------------------------------------------- 3D 场景
 
 const holo = new HoloScene(els.viewport);
+holo.setMirror(state.mirror);      // 摄像头默认是镜像的，3D 必须一起镜像，否则左右反掉
 new ResizeObserver(() => holo.resize()).observe(els.viewport);
 
 // ---------------------------------------------------------------- 指标面板
@@ -558,7 +569,7 @@ function loop(now) {
     els.hint.classList.add('hide');
   }
 
-  holo.update(state.world, dt);
+  holo.update(state.world, dt, state.m);
   holo.render();
   drawOverlay();
 
@@ -1018,6 +1029,8 @@ els.btnMirror.addEventListener('click', () => {
   els.video.classList.toggle('no-mirror', !state.mirror);
   els.btnMirror.classList.toggle('on', state.mirror);
   els.btnMirror.textContent = state.mirror ? '镜像 开' : '镜像 关';
+  // 3D 人像跟着一起翻，才能和画面里的动作方向对上
+  holo.setMirror(state.mirror);
 });
 
 els.btnMask.addEventListener('click', () => {
@@ -1030,6 +1043,8 @@ els.btnBones.addEventListener('click', () => {
   state.showBones = !state.showBones;
   els.btnBones.classList.toggle('on', state.showBones);
   els.btnBones.textContent = state.showBones ? '骨骼 开' : '骨骼 关';
+  // 同时控制 2D 叠加层和 3D 里的骨架扫描层
+  holo.setSkeletonVisible(state.showBones);
 });
 
 els.video.addEventListener('loadedmetadata', fitOverlay);
@@ -1065,6 +1080,80 @@ els.camSelect.addEventListener('change', async () => {
   if (!state.running) return;
   await startCamera(isDepth ? undefined : id);
   if (isDepth) els.loadInfo.textContent = '深度流浏览器不支持 · 已切到彩色流';
+});
+
+// ---------------------------------------------------------------- 试衣
+
+function loadGarmentFile(file) {
+  if (!file || !/^image\//.test(file.type)) {
+    els.garmentTip.textContent = '这不是图片文件';
+    return;
+  }
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const size = holo.setGarmentImage(img, { removeWhite: els.garmentKey.checked });
+      state.garmentImg = img;
+      els.garmentTip.textContent =
+        `已载入 ${size.width}×${size.height}${els.garmentKey.checked ? ' · 已抠白底' : ''}`;
+    } catch (e) {
+      els.garmentTip.textContent = '处理失败：' + (e && e.message ? e.message : e);
+    }
+    URL.revokeObjectURL(url);
+  };
+  img.onerror = () => {
+    els.garmentTip.textContent = '图片读取失败';
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+els.btnTryon.addEventListener('click', () => {
+  els.tryon.hidden = !els.tryon.hidden;
+});
+els.btnTryonClose.addEventListener('click', () => { els.tryon.hidden = true; });
+
+els.garmentFile.addEventListener('change', () => {
+  loadGarmentFile(els.garmentFile.files && els.garmentFile.files[0]);
+});
+
+// 拖拽上传
+els.garmentDrop.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  els.garmentDrop.classList.add('over');
+});
+els.garmentDrop.addEventListener('dragleave', () => {
+  els.garmentDrop.classList.remove('over');
+});
+els.garmentDrop.addEventListener('drop', (e) => {
+  e.preventDefault();
+  els.garmentDrop.classList.remove('over');
+  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) loadGarmentFile(f);
+});
+
+// 切换抠白底：用缓存的原图重新处理，不用再选一次文件
+els.garmentKey.addEventListener('change', () => {
+  if (!state.garmentImg) return;
+  try {
+    const size = holo.setGarmentImage(state.garmentImg, { removeWhite: els.garmentKey.checked });
+    els.garmentTip.textContent =
+      `已载入 ${size.width}×${size.height}${els.garmentKey.checked ? ' · 已抠白底' : ''}`;
+  } catch (e) {
+    els.garmentTip.textContent = '处理失败：' + (e && e.message ? e.message : e);
+  }
+});
+
+els.garmentScale.addEventListener('input', () => {
+  holo.setGarmentScale(Number(els.garmentScale.value) / 100);
+});
+
+els.btnGarmentClear.addEventListener('click', () => {
+  holo.clearGarment();
+  state.garmentImg = null;
+  els.garmentFile.value = '';
+  els.garmentTip.textContent = '或拖拽图片 · PNG / JPG';
 });
 
 // ---------------------------------------------------------------- 启动
