@@ -50,6 +50,7 @@ const state = {
   busy: false,
   starting: false,
   ready: false,
+  engineErr: false,
   world: null,
   norm: null,
   mask: null,
@@ -67,6 +68,13 @@ const state = {
 function setStatus(text, kind) {
   els.statusText.textContent = text;
   els.dot.className = kind || '';
+}
+
+// 底栏的引擎状态只由 state.ready / engineErr 决定，避免「摄像头开好了就谎报引擎就绪」
+function syncLoadInfo() {
+  els.loadInfo.textContent = state.ready
+    ? '引擎就绪 · BlazePose Lite'
+    : state.engineErr ? '引擎初始化失败' : '推理引擎加载中…';
 }
 
 // ---------------------------------------------------------------- 3D 场景
@@ -426,11 +434,14 @@ async function initPose() {
   try {
     await pose.initialize();
     state.ready = true;
-    els.loadInfo.textContent = '引擎就绪 · BlazePose Lite';
-    setStatus('引擎就绪，等待摄像头', '');
+    syncLoadInfo();
+    // 引擎就绪时摄像头可能早就开好了，别把「实时追踪中」覆盖掉
+    if (state.running) setStatus('实时追踪中', 'live');
+    else setStatus('引擎就绪，等待摄像头', '');
   } catch (e) {
     console.error(e);
-    els.loadInfo.textContent = '引擎初始化失败';
+    state.engineErr = true;
+    syncLoadInfo();
     setStatus('引擎初始化失败：' + (e && e.message ? e.message : e), 'err');
   }
 }
@@ -839,8 +850,8 @@ async function attach(s, dev, fp, spec) {
   els.btnCam.textContent = '重新连接';
   els.btnCam.classList.remove('primary');
   fitOverlay();
-  setStatus('实时追踪中', 'live');
-  els.loadInfo.textContent = '引擎就绪 · BlazePose Lite';
+  syncLoadInfo();
+  setStatus(state.ready ? '实时追踪中' : '摄像头就绪 · 引擎加载中', state.ready ? 'live' : 'warn');
   updateSensor(fp, st, spec);
   await listDevices();
 }
