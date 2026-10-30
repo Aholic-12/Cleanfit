@@ -37,7 +37,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 def main() -> None:
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8848
     url = f"http://127.0.0.1:{port}/"
-    print(f"Cleanfit · Pose Mirror")
+    print("Cleanfit · Pose Mirror")
     print(f"  目录 : {ROOT}")
     print(f"  地址 : {url}")
     print(f"  演示 : {url}?demo=1   （无摄像头也能看效果）")
