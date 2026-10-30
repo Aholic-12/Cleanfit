@@ -469,6 +469,20 @@ button.s-chip.off {
 }
 .btn.primary { color: #04121a; background: var(--cyan); border-color: var(--cyan); font-weight: 700; }
 .btn.primary:hover { background: #7ff3ff; box-shadow: 0 0 20px -2px rgba(34, 211, 238, .8); }
+
+/* 关闭态：红色描边，和「启动」形成明确的危险/安全对比 */
+.btn.danger {
+  color: #ffb4c0;
+  border-color: rgba(244, 63, 94, .55);
+  background: rgba(244, 63, 94, .10);
+}
+.btn.danger:hover {
+  color: #fff;
+  border-color: var(--red);
+  background: rgba(244, 63, 94, .22);
+  box-shadow: 0 0 14px -4px rgba(244, 63, 94, .7);
+}
+
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 
 .sel {

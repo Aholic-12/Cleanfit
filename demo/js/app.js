@@ -34,6 +34,8 @@ const els = {
   diag: $('diag'),
   diagBody: $('diagBody'),
   idleTip: $('idleTip'),
+  idleTitle: $('idleTitle'),
+  idleSub: $('idleSub'),
   sensorDot: $('sensorDot'),
   sensorTag: $('sensorTag'),
   sensorName: $('sensorName'),
@@ -75,6 +77,15 @@ function syncLoadInfo() {
   els.loadInfo.textContent = state.ready
     ? '引擎就绪 · BlazePose Lite'
     : state.engineErr ? '引擎初始化失败' : '推理引擎加载中…';
+}
+
+// 主按钮是启动/关闭双态开关，文字与配色都跟着 state.running 走
+function syncCamButton() {
+  const on = state.running;
+  els.btnCam.textContent = on ? '关闭摄像头' : '启动摄像头';
+  els.btnCam.classList.toggle('primary', !on);
+  els.btnCam.classList.toggle('danger', on);
+  els.btnCam.disabled = state.starting || DEMO;
 }
 
 // ---------------------------------------------------------------- 3D 场景
@@ -553,7 +564,8 @@ function loop(now) {
 
   state.frames++;
   if (state.fpsT === 0 || now - state.fpsT > 500) {
-    if (state.fpsT > 0) {
+    // 摄像头关掉后 3D 场景还在渲染，但这个数字已经不代表推理速度了，保持 -- 更诚实
+    if (state.fpsT > 0 && (state.running || DEMO)) {
       state.fps = Math.round((state.frames * 1000) / (now - state.fpsT));
       els.fpsInfo.textContent = `${state.fps} FPS`;
     }
@@ -847,8 +859,7 @@ async function attach(s, dev, fp, spec) {
 
   els.camIdle.classList.add('hide');
   state.running = true;
-  els.btnCam.textContent = '重新连接';
-  els.btnCam.classList.remove('primary');
+  syncCamButton();
   fitOverlay();
   syncLoadInfo();
   setStatus(state.ready ? '实时追踪中' : '摄像头就绪 · 引擎加载中', state.ready ? 'live' : 'warn');
@@ -859,7 +870,10 @@ async function attach(s, dev, fp, spec) {
 async function startCamera(preferredId) {
   if (state.starting) return;
   state.starting = true;
-  els.btnCam.disabled = true;
+  syncCamButton();
+  els.idleTitle.textContent = '正在连接…';
+  els.idleSub.textContent = '首次使用请在弹窗中允许访问';
+  els.idleTip.textContent = '';
   setStatus('正在请求摄像头权限…', 'warn');
 
   try {
@@ -915,19 +929,75 @@ async function startCamera(preferredId) {
     els.sensorTag.textContent = 'OFFLINE';
     els.sensorName.textContent = '未连接';
     els.sensorSpec.textContent = '';
+    els.idleTitle.textContent = '连接失败';
+    els.idleSub.textContent = '';
     els.idleTip.textContent = (e && e.fails && e.fails.length)
       ? `已尝试：${e.fails.join(' / ')}　点「诊断」看详情`
       : '点下方「诊断」查看详细原因';
   } finally {
     state.starting = false;
-    els.btnCam.disabled = false;
+    syncCamButton();
   }
+}
+
+// ---------------------------------------------------------------- 关闭摄像头
+
+function stopCamera() {
+  if (state.starting) return;
+
+  // 必须 stop 每一条 track，否则摄像头指示灯不会灭，设备也一直被占用
+  if (stream) {
+    stream.getTracks().forEach((t) => t.stop());
+    stream = null;
+  }
+  els.video.srcObject = null;
+
+  state.running = false;
+  state.world = null;      // rig 的 presence 会衰减到 0，人像自然淡出
+  state.norm = null;
+  state.mask = null;
+  state.rows = null;
+  state.scan = null;
+  state.scanTick = 0;
+  state.m = null;
+  state.sv = null;         // 平滑缓存清掉，下次启动重新测量，不继承旧值
+  state.gainNow = 1;
+  state.gainTick = 0;
+  state.frames = 0;
+  state.fpsT = 0;
+
+  els.camIdle.classList.remove('hide');
+  els.camIdle.style.display = '';
+  els.idleTitle.textContent = '摄像头已关闭';
+  els.idleSub.textContent = '点击下方「启动摄像头」重新连接';
+  els.idleTip.textContent = '';
+  els.camInfo.textContent = '--';
+  els.fpsInfo.textContent = '-- FPS';
+  els.hint.classList.remove('hide');
+
+  els.sensorDot.className = 's-dot';
+  els.sensorTag.textContent = 'OFFLINE';
+  els.sensorTag.className = 's-tag';
+  els.sensorName.textContent = '未连接';
+  els.sensorSpec.textContent = '';
+  els.sensorGain.hidden = true;
+
+  ctx.clearRect(0, 0, els.overlay.width, els.overlay.height);
+
+  renderMetrics();
+  syncLoadInfo();
+  setStatus('摄像头已关闭', '');
+  syncCamButton();
 }
 
 // ---------------------------------------------------------------- 事件
 
+// 主按钮：启动 / 关闭 双态切换。
 // 注意：直接绑 startCamera 会把 MouseEvent 当成 deviceId 传进去
-els.btnCam.addEventListener('click', () => startCamera(currentDeviceId || undefined));
+els.btnCam.addEventListener('click', () => {
+  if (state.running) stopCamera();
+  else startCamera(currentDeviceId || undefined);
+});
 
 // 增益开关：自动估亮度 ↔ 关闭
 els.sensorGain.addEventListener('click', () => {
