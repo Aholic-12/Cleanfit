@@ -26,6 +26,14 @@
         <span>CAMERA · LIVE</span>
         <span class="head-r" id="camInfo">--</span>
       </div>
+      <div class="sensor">
+        <i class="s-dot" id="sensorDot"></i>
+        <span class="s-tag" id="sensorTag">SENSOR</span>
+        <span class="s-name" id="sensorName">未连接</span>
+        <span class="s-spec" id="sensorSpec"></span>
+        <span class="s-chip" id="sensorDepth" hidden>DEPTH 待接入</span>
+        <button class="s-chip" id="sensorGain" hidden>GAIN 自动</button>
+      </div>
       <div class="cam-wrap" id="camWrap">
         <video id="video" playsinline muted autoplay></video>
         <canvas id="overlay"></canvas>
