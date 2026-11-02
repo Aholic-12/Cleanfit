@@ -51,3 +51,7 @@ desktop.ini
 
 # ---- 日志 ----
 *.log
+
+# 逆向分析临时产物（可随时删）
+_recon/
+_tmpvideo/
