@@ -171,45 +171,69 @@ export class FittingView {
     const sw = g.width;
     const sh = g.height;
 
-    const shXl = px(norm[11].x);
-    const shXr = px(norm[12].x);
+    const shLx = px(norm[11].x);
+    const shRx = px(norm[12].x);
     const shY = py((norm[11].y + norm[12].y) / 2);
-    const hpXl = px(norm[23].x);
-    const hpXr = px(norm[24].x);
+    const hpLx = px(norm[23].x);
+    const hpRx = px(norm[24].x);
     const hpY = py((norm[23].y + norm[24].y) / 2);
 
     // 领口略高于肩线（盖住斜方肌），下摆随「衣长」滑块向下延伸
     const topY = shY - (hpY - shY) * 0.12;
     const botY = hpY + (hpY - shY) * (this.scale - 1) * 0.5;
-    const padX = (shXr - shXl) * 0.06;   // 布料松量
+    const padX = (shRx - shLx) * 0.06;   // 布料松量
 
-    const Q = [
-      { x: shXl - padX, y: topY },   // TL
-      { x: shXr + padX, y: topY },   // TR
-      { x: hpXr + padX, y: botY },   // BR
-      { x: hpXl - padX, y: botY },   // BL
-    ];
+    // 收腰轮廓：肩 → 腰（收到肩宽 0.82）→ 胯。
+    // 单一四边形会把衣服贴成直筒，收腰后才像紧身衣裹在躯干上。
+    const cx = (shLx + shRx) / 2;
+    const shHalf = (shRx - shLx) / 2 + padX;
+    const waHalf = shHalf * 0.82;
+    const hpHalf = (hpRx - hpLx) / 2 + padX;
 
-    // 双线性网格变形：GX × GY 个小格，每格两个三角形
+    const prof = (t) => {
+      const y = topY + (botY - topY) * t;
+      const half = t <= 0.55
+        ? shHalf + (waHalf - shHalf) * (t / 0.55)
+        : waHalf + (hpHalf - waHalf) * ((t - 0.55) / 0.45);
+      return { l: cx - half, r: cx + half, y };
+    };
+    const at = (u, v) => {
+      const p = prof(v);
+      return { x: p.l + (p.r - p.l) * u, y: p.y };
+    };
+
     const GX = 6;
     const GY = 12;
-    for (let gy = 0; gy < GY; gy++) {
-      for (let gx = 0; gx < GX; gx++) {
-        const u0 = gx / GX;
-        const u1 = (gx + 1) / GX;
-        const v0 = gy / GY;
-        const v1 = (gy + 1) / GY;
-        const s0 = u0 * sw;
-        const s1 = u1 * sw;
-        const t0 = v0 * sh;
-        const t1 = v1 * sh;
-        const p00 = bilerp(Q, u0, v0);
-        const p10 = bilerp(Q, u1, v0);
-        const p11 = bilerp(Q, u1, v1);
-        const p01 = bilerp(Q, u0, v1);
-        mapTri(ctx, g, [s0, t0, s1, t0, s1, t1], [p00.x, p00.y, p10.x, p10.y, p11.x, p11.y]);
-        mapTri(ctx, g, [s0, t0, s1, t1, s0, t1], [p00.x, p00.y, p11.x, p11.y, p01.x, p01.y]);
+    const draw = () => {
+      for (let gy = 0; gy < GY; gy++) {
+        for (let gx = 0; gx < GX; gx++) {
+          const u0 = gx / GX;
+          const u1 = (gx + 1) / GX;
+          const v0 = gy / GY;
+          const v1 = (gy + 1) / GY;
+          const s0 = u0 * sw;
+          const s1 = u1 * sw;
+          const t0 = v0 * sh;
+          const t1 = v1 * sh;
+          const p00 = at(u0, v0);
+          const p10 = at(u1, v0);
+          const p11 = at(u1, v1);
+          const p01 = at(u0, v1);
+          mapTri(ctx, g, [s0, t0, s1, t0, s1, t1], [p00.x, p00.y, p10.x, p10.y, p11.x, p11.y]);
+          mapTri(ctx, g, [s0, t0, s1, t1, s0, t1], [p00.x, p00.y, p11.x, p11.y, p01.x, p01.y]);
+        }
       }
-    }
+    };
+
+    // 能量描边：先画一遍带青蓝阴影的，衣服边缘会晕出一圈光，
+    // 接近纳米战衣 / 共生体那种「附着在体表」的发光轮廓。
+    ctx.save();
+    ctx.shadowColor = 'rgba(34,211,238,0.85)';
+    ctx.shadowBlur = Math.max(8, sh * 0.02);
+    draw();
+    ctx.restore();
+
+    // 再画一遍正常层
+    draw();
   }
 }

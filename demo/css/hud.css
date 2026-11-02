@@ -50,6 +50,7 @@ body::before {
   flex-direction: column;
   padding: 14px 16px 10px;
   gap: 12px;
+  overflow-y: auto;
 }
 
 /* ---------- 顶栏 ---------- */
@@ -129,11 +130,12 @@ body::before {
 /* ---------- 主区 ---------- */
 
 .stage {
-  flex: 1;
-  min-height: 0;
+  flex: none;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr) minmax(0, 1fr);
+  /* 三栏宽度比 4:4:3（左摄像头 / 中 AD 试衣 / 右 3D 全息） */
+  grid-template-columns: 4fr 4fr 3fr;
   gap: 12px;
+  align-items: start;
 }
 
 .panel {
@@ -141,6 +143,8 @@ body::before {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  /* 每个窗口都是 3:4 竖版 */
+  aspect-ratio: 3 / 4;
   border: 1px solid var(--line);
   border-radius: 10px;
   background:

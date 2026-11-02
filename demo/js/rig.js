@@ -132,10 +132,10 @@ const HOLO_FRAG = `
     // 整体闪烁
     float flick = 0.92 + 0.08 * sin(uTime * 8.0 + vWorld.y * 12.0);
 
-    float a = (0.14 + fres * 0.78 + scan * 0.10) * flick;
-    a = clamp(a, 0.0, 0.95);
+    float a = (0.09 + fres * 0.62 + scan * 0.07) * flick;
+    a = clamp(a, 0.0, 0.92);
 
-    vec3 col = uColor * (0.55 + fres * 1.7 + scan * 0.35);
+    vec3 col = uColor * (0.5 + fres * 1.5 + scan * 0.28);
     gl_FragColor = vec4(col, a);
   }
 `;
@@ -152,7 +152,7 @@ export class HoloScene {
     this.el.appendChild(this.renderer.domElement);
 
     // 视角：球坐标，可拖拽旋转 / 滚轮缩放
-    this.orbit = { theta: 0, phi: 1.47, dist: 2.62, drag: false, lx: 0, ly: 0 };
+    this.orbit = { theta: 0, phi: 1.47, dist: 2.28, drag: false, lx: 0, ly: 0 };
     this._bindOrbit();
 
     this.rig = new THREE.Group();
@@ -205,7 +205,7 @@ export class HoloScene {
   _buildBody() {
     this.holoUniforms = {
       uTime: { value: 0 },
-      uColor: { value: new THREE.Color(0x3fd8f2) },
+      uColor: { value: new THREE.Color(0x8fe8ff) },
     };
     this.skinMat = new THREE.ShaderMaterial({
       uniforms: this.holoUniforms,
@@ -214,6 +214,17 @@ export class HoloScene {
       side: THREE.DoubleSide,
       vertexShader: HOLO_VERT,
       fragmentShader: HOLO_FRAG,
+    });
+
+    // 线框叠加层：参考图里人体是由发光细线织成的。实体壳之外再叠一层
+    // 加法混合的 wireframe，两层叠出「线框 + 体积」的全息感。
+    this.wireMat = new THREE.MeshBasicMaterial({
+      color: 0x9fe9ff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.13,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
     });
 
     this.sphereGeo = new THREE.SphereGeometry(1, 16, 12);
@@ -313,7 +324,56 @@ export class HoloScene {
       return { ...F, mesh: m };
     });
 
+    // 给所有实体 mesh 叠一层发光线框（子对象自动跟随父变换）
+    for (const m of [
+      this.torso, this.head, this.neck,
+      ...this.limbs.map((l) => l.mesh),
+      ...this.jointBalls.map((j) => j.mesh),
+      ...this.hands.map((h) => h.mesh),
+      ...this.feet.map((f) => f.mesh),
+    ]) {
+      this._wire(m);
+    }
+
+    this._buildBodyParticles();
+
     this.rig.visible = false;
+  }
+
+  /** 给一个 mesh 挂上发光线框子对象，位置/缩放跟随父 mesh。 */
+  _wire(mesh) {
+    const wf = new THREE.Mesh(mesh.geometry, this.wireMat);
+    wf.scale.setScalar(1.004);      // 略大一点，避免和实体壳 z-fighting
+    wf.renderOrder = 6;
+    mesh.add(wf);
+    return wf;
+  }
+
+  /** 人体周围的能量粒子：柱状分布，缓慢旋转 + 闪烁，营造全息能量场。 */
+  _buildBodyParticles() {
+    const count = 420;
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = 0.16 + Math.random() * 0.30;
+      pos[i * 3] = Math.cos(a) * r;
+      pos[i * 3 + 1] = -1.05 + Math.random() * 2.0;
+      pos[i * 3 + 2] = Math.sin(a) * r * 0.6;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    this.particleMat = new THREE.PointsMaterial({
+      color: 0x9fe9ff,
+      size: 0.013,
+      transparent: true,
+      opacity: 0.5,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      sizeAttenuation: true,
+    });
+    this.bodyDust = new THREE.Points(g, this.particleMat);
+    this.bodyDust.renderOrder = 4;
+    this.rig.add(this.bodyDust);
   }
 
   // ---------- 骨架叠加层 ----------
@@ -743,6 +803,10 @@ export class HoloScene {
     // 舞台动效 + 全息材质时间
     const t = this._clock.getElapsedTime();
     this.holoUniforms.uTime.value = t;
+    if (this.bodyDust) {
+      this.bodyDust.rotation.y = t * 0.16;
+      this.particleMat.opacity = 0.34 + 0.22 * Math.sin(t * 2.1);
+    }
     this.ticks.rotation.y = t * 0.16;
     this.dust.rotation.y = t * 0.02;
     const ph = (t * 0.55) % 1;
