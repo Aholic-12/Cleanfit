@@ -54,6 +54,9 @@ const els = {
   garmentKey: $('garmentKey'),
   garmentScale: $('garmentScale'),
   btnGarmentClear: $('btnGarmentClear'),
+  btnRefine: $('btnRefine'),
+  refineStrength: $('refineStrength'),
+  refineInfo: $('refineInfo'),
 };
 
 const state = {
@@ -1169,6 +1172,98 @@ els.btnGarmentClear.addEventListener('click', () => {
   els.fitInfo.textContent = '--';
   els.garmentTip.textContent = '点击或拖拽 · PNG / JPG';
 });
+
+// ---------------------------------------------------------------- AI 精修（本地 GPU）
+
+// 本地推理服务地址，可以在控制台改：localStorage.setItem('cleanfit.refineUrl', 'http://127.0.0.1:8787')
+const REFINE_BASE = (() => {
+  try {
+    return localStorage.getItem('cleanfit.refineUrl') || 'http://127.0.0.1:8787';
+  } catch (_) {
+    return 'http://127.0.0.1:8787';
+  }
+})();
+
+let refining = false;
+
+function setRefineNote(text, cls) {
+  if (!els.refineInfo) return;
+  els.refineInfo.textContent = text;
+  els.refineInfo.className = 'ai-note' + (cls ? ' ' + cls : '');
+}
+
+const toBlobPng = (cv) => new Promise((res, rej) => {
+  cv.toBlob((b) => (b ? res(b) : rej(new Error('toBlob 失败'))), 'image/png');
+});
+
+/**
+ * 把当前这一帧的躯干区域交给本地 SD 重绘，再烘焙回衣服贴图。
+ * 只重绘一次，之后的实时追踪仍然走 canvas —— 所以不会掉帧。
+ */
+async function refineGarment() {
+  if (refining) return;
+  if (!fitting.garment) { setRefineNote('先上传衣服', 'err'); return; }
+  if (!fitting.lastGeo) { setRefineNote('等姿态稳定', 'err'); return; }
+
+  refining = true;
+  els.btnRefine.classList.add('busy');
+  els.btnRefine.disabled = true;
+  setRefineNote('重绘中…');
+
+  try {
+    const W = els.fit.width;
+    const H = els.fit.height;
+    const mask = fitting.buildMask(W, H);
+    const fd = new FormData();
+    fd.append('image', await toBlobPng(els.fit), 'frame.png');
+    fd.append('mask', await toBlobPng(mask), 'mask.png');
+    fd.append('strength', String(Number(els.refineStrength.value) / 100));
+    fd.append('steps', '22');
+
+    const res = await fetch(REFINE_BASE + '/refine', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const secs = res.headers.get('X-Elapsed');
+
+    const bmp = await createImageBitmap(await res.blob());
+    const tmp = document.createElement('canvas');
+    tmp.width = W;
+    tmp.height = H;
+    tmp.getContext('2d').drawImage(bmp, 0, 0, W, H);
+
+    const ok = fitting.applyRefined(tmp);
+    setRefineNote(ok ? `已重绘${secs ? ' ' + secs + 's' : ''}` : '应用失败', ok ? 'ok' : 'err');
+  } catch (e) {
+    const msg = String((e && e.message) || e);
+    setRefineNote(/fetch|Network|Load failed/i.test(msg) ? '连不上本地服务' : msg.slice(0, 30), 'err');
+  } finally {
+    refining = false;
+    els.btnRefine.classList.remove('busy');
+    els.btnRefine.disabled = false;
+  }
+}
+
+if (els.btnRefine) els.btnRefine.addEventListener('click', refineGarment);
+
+// 页面加载时探一下本地服务；线上是 https，调 http://127.0.0.1 会被混合内容策略拦掉
+if (els.btnRefine) {
+  if (location.protocol === 'https:') {
+    setRefineNote('需本地 http 打开', 'err');
+    els.btnRefine.disabled = true;
+  } else {
+    const ac = typeof AbortController === 'function' ? new AbortController() : null;
+    const timer = ac ? setTimeout(() => ac.abort(), 1500) : null;
+    fetch(REFINE_BASE + '/health', ac ? { signal: ac.signal } : {})
+      .then((r) => r.json())
+      .then((j) => {
+        if (timer) clearTimeout(timer);
+        setRefineNote(j.loaded ? 'GPU 就绪' : '服务在线 · 未加载', 'ok');
+      })
+      .catch(() => {
+        if (timer) clearTimeout(timer);
+        setRefineNote('本地服务未启动', 'err');
+      });
+  }
+}
 
 // ---------------------------------------------------------------- 启动
 

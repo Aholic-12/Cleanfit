@@ -55,3 +55,8 @@ desktop.ini
 # 逆向分析临时产物（可随时删）
 _recon/
 _tmpvideo/
+
+# 本地 GPU 推理环境与权重（体积大，不入库）
+.venv/
+.wheels/
+.models/

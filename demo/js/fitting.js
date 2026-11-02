@@ -139,6 +139,15 @@ export class FittingView {
     this._probeCtx = null;
     this._amb = 0;
     this._ambTick = 0;
+
+    // 光照场：把躯干区域缩成 8×10 的小网格，得到「哪边亮、哪边暗」的低频光图。
+    // 衣服按这张图做提亮/压暗，就会跟着场景的真实打光走，而不是自己一套假光。
+    this._lfCv = null;
+    this._lfCtx = null;
+    this._darkCv = null;
+    this._brightCv = null;
+    this._lfReady = false;
+    this._lfTick = 0;
   }
 
   loadImage(img) {
@@ -146,6 +155,7 @@ export class FittingView {
     // flatten:false —— 真实人物贴图要保留衣服的 alpha 轮廓（T 恤形状），
     // 铺底色会变成一个矩形块，贴上去不像衣服。
     this.garment = prepareGarmentCanvas(img, { removeWhite: this.removeWhite, flatten: false });
+    this.baseGarment = this.garment;
     this._syncColor();
     return { width: this.garment.width, height: this.garment.height };
   }
@@ -154,6 +164,7 @@ export class FittingView {
     this.removeWhite = !!v;
     if (this.srcImg) {
       this.garment = prepareGarmentCanvas(this.srcImg, { removeWhite: this.removeWhite, flatten: false });
+      this.baseGarment = this.garment;
       this._syncColor();
     }
   }
@@ -293,6 +304,7 @@ export class FittingView {
 
   _compose(video, norm, px, py, W, H, mirror, t, hasVideo) {
     const geo = this._geometry(norm, px, py);
+    this.lastGeo = geo;
     const L = this._ensureLayer(W, H);
 
     // 衣服落地前先在下面垫一层接触阴影，下摆外沿会有一点「压在裤子上」的暗，
@@ -302,7 +314,7 @@ export class FittingView {
     this._cloth(L, geo);
     this._sleeves(L, norm, px, py, geo);
     this._neckOpening(L, geo);
-    this._shade(L, geo, t, hasVideo, video, W, H);
+    this._shade(L, geo, t, hasVideo, video, W, H, mirror);
 
     // 合成：先画一层轻微模糊的底（柔化边缘），再叠清晰层（保住印花细节）
     const ctx = this.ctx;
@@ -448,7 +460,7 @@ export class FittingView {
    * 光影：全部用 source-atop 叠加，只会落在已经画了布的像素上，
    * 不会漏到背景和皮肤上，也就不需要额外的遮罩。
    */
-  _shade(L, geo, t, hasVideo, video, W, H) {
+  _shade(L, geo, t, hasVideo, video, W, H, mirror) {
     const { cx, topY, botY, maxHalf } = geo;
     const h = Math.max(1, botY - topY);
     // 袖子伸在躯干轮廓之外，环境光和顶光要按更宽的范围铺，否则袖子和衣身
@@ -509,7 +521,18 @@ export class FittingView {
       L.fillRect(x - w, topY + h * 0.10, w * 2, h * 0.82);
     }
 
-    // ⑤ 领口内壁：贴着挖开的边缘压一圈很细的暗，布口就有了厚度。
+    // ⑤ 光照场：把场景里躯干那块的真实明暗贴到衣服上。
+    //    压暗层和提亮层分开画，alpha 来自 8×10 的采样网格，放大后是平滑渐变。
+    this._sampleLight(video, geo, mirror, W, H);
+    if (this._lfReady) {
+      L.imageSmoothingEnabled = true;
+      L.globalAlpha = 0.62;
+      L.drawImage(this._darkCv, wideL, topY - 4, wideW, h + 8);
+      L.drawImage(this._brightCv, wideL, topY - 4, wideW, h + 8);
+      L.globalAlpha = 1;
+    }
+
+    // ⑥ 领口内壁：贴着挖开的边缘压一圈很细的暗，布口就有了厚度。
     //    太粗会变成一条项圈，宁细勿粗。
     if (this._neck) {
       const { cx: ncx, cy: ncy, rx, ry } = this._neck;
@@ -527,9 +550,85 @@ export class FittingView {
     L.restore();
   }
 
+  /**
+   * 采样光照场：把躯干区域缩成 8×10 的小网格，得到一张「哪边亮、哪边暗」的
+   * 低频光图，再拆成「压暗」和「提亮」两张带 alpha 的蒙版。
+   *
+   * 之前只有全局平均亮度，等于假设整个躯干受光是均匀的 —— 衣服会像自带柔光箱。
+   * 有了这张图，光从左边来衣服左边就亮，人往暗处走衣服跟着暗，才是「在这个房间里」。
+   */
+  _sampleLight(video, geo, mirror, W, H) {
+    if (!video || !video.videoWidth) { this._lfReady = false; return; }
+    // 每 6 帧采一次：光不会一帧一变，采样本身也要 drawImage + 读像素
+    if (this._lfTick++ % 6 !== 0 && this._lfReady) return;
+
+    const GW = 8;
+    const GH = 10;
+    if (!this._lfCv) {
+      this._lfCv = document.createElement('canvas');
+      this._lfCv.width = GW;
+      this._lfCv.height = GH;
+      this._lfCtx = this._lfCv.getContext('2d', { willReadFrequently: true });
+      this._darkCv = document.createElement('canvas');
+      this._darkCv.width = GW;
+      this._darkCv.height = GH;
+      this._brightCv = document.createElement('canvas');
+      this._brightCv.width = GW;
+      this._brightCv.height = GH;
+      this._darkData = this._darkCv.getContext('2d').createImageData(GW, GH);
+      this._brightData = this._brightCv.getContext('2d').createImageData(GW, GH);
+    }
+
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    // 画布坐标 → 视频坐标
+    let sx = ((geo.cx - geo.maxHalf) / W) * vw;
+    const sy = (geo.topY / H) * vh;
+    let sw = ((geo.maxHalf * 2) / W) * vw;
+    const sh = ((geo.botY - geo.topY) / H) * vh;
+    if (mirror) sx = vw - sx - sw;          // 画布是镜像的，采样区要跟着翻
+    // 裁到画面内，否则 drawImage 会画歪
+    const cx0 = Math.max(0, Math.min(vw - 4, sx));
+    const cy0 = Math.max(0, Math.min(vh - 4, sy));
+    const cw = Math.max(4, Math.min(vw - cx0, sw));
+    const chh = Math.max(4, Math.min(vh - cy0, sh));
+
+    try {
+      this._lfCtx.drawImage(video, cx0, cy0, cw, chh, 0, 0, GW, GH);
+      const px = this._lfCtx.getImageData(0, 0, GW, GH).data;
+      const n = GW * GH;
+      const lum = new Float32Array(n);
+      let sum = 0;
+      for (let i = 0; i < n; i++) {
+        const o = i * 4;
+        const l = (0.2126 * px[o] + 0.7152 * px[o + 1] + 0.0722 * px[o + 2]) / 255;
+        lum[i] = l;
+        sum += l;
+      }
+      const mean = sum / n;
+
+      const dk = this._darkData.data;
+      const br = this._brightData.data;
+      for (let i = 0; i < n; i++) {
+        const o = i * 4;
+        const d = Math.max(0, mean - lum[i]) / Math.max(0.05, mean);
+        const b = Math.max(0, lum[i] - mean) / Math.max(0.05, 1 - mean);
+        // 压暗：纯黑 + alpha；提亮：纯白 + alpha
+        dk[o] = 0; dk[o + 1] = 0; dk[o + 2] = 0;
+        dk[o + 3] = Math.min(255, d * 255 * 1.7);
+        br[o] = 255; br[o + 1] = 255; br[o + 2] = 255;
+        br[o + 3] = Math.min(255, b * 255 * 1.7);
+      }
+      this._darkCv.getContext('2d').putImageData(this._darkData, 0, 0);
+      this._brightCv.getContext('2d').putImageData(this._brightData, 0, 0);
+      this._lfReady = true;
+    } catch (_) {
+      this._lfReady = false;
+    }
+  }
+
   /** 从视频帧取平均亮度，换算成环境光修正量（负=压暗，正=提亮）。 */
-  _ambient(hasVideo, video, W, H) {
-    if (!hasVideo || !video) return 0;
+  _ambient(hasVideo, video, W, H) {    if (!hasVideo || !video) return 0;
     // 每 12 帧采一次就够了，光照不会一帧一变
     if (this._ambTick++ % 12 !== 0) return this._amb;
     try {
@@ -594,6 +693,98 @@ export class FittingView {
       ctx.drawImage(video, 0, 0, W, H);
       ctx.restore();
     }
+  }
+
+  // ---------------------------------------------------------------- AI 精修
+
+  /** 生成躯干遮罩：白色 = 交给模型重绘的区域，边缘羽化避免出现硬缝。 */
+  buildMask(W, H) {
+    const geo = this.lastGeo;
+    const cv = document.createElement('canvas');
+    cv.width = W;
+    cv.height = H;
+    const c = cv.getContext('2d');
+    if (!geo) return cv;
+    c.fillStyle = '#000';
+    c.fillRect(0, 0, W, H);
+
+    const GX = 6;
+    const GY = 12;
+    const path = () => {
+      c.beginPath();
+      for (let i = 0; i <= GX; i++) {
+        const p = geo.at(i / GX, 0);
+        if (i === 0) c.moveTo(p.x, p.y); else c.lineTo(p.x, p.y);
+      }
+      for (let j = 1; j <= GY; j++) {
+        const p = geo.at(1, j / GY);
+        c.lineTo(p.x, p.y);
+      }
+      for (let i = GX - 1; i >= 0; i--) {
+        const p = geo.at(i / GX, 1);
+        c.lineTo(p.x, p.y);
+      }
+      for (let j = GY - 1; j >= 1; j--) {
+        const p = geo.at(0, j / GY);
+        c.lineTo(p.x, p.y);
+      }
+      c.closePath();
+    };
+
+    c.fillStyle = '#fff';
+    try { c.filter = 'blur(5px)'; } catch (_) {}
+    path();
+    c.fill();
+    c.filter = 'none';
+    return cv;
+  }
+
+  /**
+   * 把「重绘后的画面」烘焙回衣服贴图。
+   *
+   * 重绘结果是在画布坐标里的，直接当贴图用会跟着人一起漂。这里把每个网格单元
+   * 反向采样一遍（目标三角 → 源矩形，也就是把 mapTri 的 s/d 对调），得到一张
+   * 和原来 UV 空间对齐的新贴图，实时追踪就能继续用。
+   * 最后用原始衣服的 alpha 剪一遍，避免把脖子、背景也烘进贴图。
+   */
+  applyRefined(src) {
+    const geo = this.lastGeo;
+    const base = this.baseGarment || this.garment;
+    if (!geo || !base) return false;
+    const sw = base.width;
+    const sh = base.height;
+    const out = document.createElement('canvas');
+    out.width = sw;
+    out.height = sh;
+    const o = out.getContext('2d');
+
+    const GX = 6;
+    const GY = 12;
+    for (let gy = 0; gy < GY; gy++) {
+      for (let gx = 0; gx < GX; gx++) {
+        const u0 = gx / GX;
+        const u1 = (gx + 1) / GX;
+        const v0 = gy / GY;
+        const v1 = (gy + 1) / GY;
+        const s0 = u0 * sw;
+        const s1 = u1 * sw;
+        const t0 = v0 * sh;
+        const t1 = v1 * sh;
+        const p00 = geo.at(u0, v0);
+        const p10 = geo.at(u1, v0);
+        const p11 = geo.at(u1, v1);
+        const p01 = geo.at(u0, v1);
+        mapTri(o, src, [p00.x, p00.y, p10.x, p10.y, p11.x, p11.y], [s0, t0, s1, t0, s1, t1]);
+        mapTri(o, src, [p00.x, p00.y, p11.x, p11.y, p01.x, p01.y], [s0, t0, s1, t1, s0, t1]);
+      }
+    }
+
+    o.globalCompositeOperation = 'destination-in';
+    o.drawImage(base, 0, 0, sw, sh);
+
+    this.garment = out;
+    this._syncColor();
+    return true;
   }
 
   _backdrop(ctx, W, H, t) {

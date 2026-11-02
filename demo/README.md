@@ -76,6 +76,36 @@ http://127.0.0.1:8848/?demo=1
 要完全达到扩散模型那种效果（每一帧重新生成穿着衣服的你），必须接云端实时
 VTON —— 具体方案和成本见 [`docs/recon-tryanywear.md`](../docs/recon-tryanywear.md)。
 
+### AI 精修（本地 GPU，可选）
+
+纯 canvas 的短板是「布料是假的」。`tryon_server/` 里有一个本地 GPU 服务，
+用 SD1.5-inpainting 对**已经贴好的躯干区域**做一次局部重绘：模型看得见人物、
+姿势、光线和衣服的花纹，能把这块重新画成穿在身上的衣服。
+
+关键是它只重绘**一次**：重绘结果会做一次逆变换（`FittingView.applyRefined`，
+把每个网格单元从画布坐标采样回 UV 空间）烘焙成新的衣服贴图，之后的实时追踪
+仍然由 canvas 负责 —— 所以画质是 AI 的，帧率还是 60fps。
+
+```bash
+# 一条命令全起来（精修服务 + 静态站点 + 浏览器）
+start_demo.bat
+
+# 或者手动
+tryon_server/start.bat          # 精修服务，端口 8787
+python -m http.server 8851 --directory demo
+# → http://127.0.0.1:8851/
+```
+
+实测（RTX 5070 12G）：模型加载 4.6s，一次重绘 **1.3s**（768×576 / 22 步 / strength 0.45）。
+模型文件放在 `.models/sd15-inpaint/`（约 2.2GB，fp16）。
+
+面板上的「AI 精修」按钮：点一下，等 2-5 秒，衣服会被重绘并自动回贴。
+「重绘」滑块控制强度 —— 调高模型改动更多（褶皱更自然，但花纹可能走样），
+调低更忠于原图。
+
+> 注意：线上分享链接是 https，调 `http://127.0.0.1` 会被混合内容策略拦截，
+> 所以 AI 精修只在本地打开时可用；其余功能线上照常。
+
 ## 用 Intel RealSense 深度相机（SR300 / D4xx）
 
 RealSense 在 Windows 上会注册成**两个独立的视频设备**：

@@ -252,6 +252,29 @@ body::before {
 }
 .tryon-ctl .btn { padding: 4px 11px; font-size: 10px; }
 
+/* AI 精修：本地 GPU 重绘，和纯 canvas 的实时层区分开 */
+.tryon-ai { border-top: 1px solid rgba(34,211,238,0.12); padding-top: 7px; }
+.btn-ai {
+  background: rgba(34,211,238,0.14) !important;
+  border-color: rgba(34,211,238,0.45) !important;
+  color: #bdefff !important;
+}
+.btn-ai:disabled { opacity: .45; cursor: default; }
+.btn-ai.busy { animation: aiPulse 1.1s ease-in-out infinite; }
+@keyframes aiPulse { 0%,100% { opacity: .5 } 50% { opacity: 1 } }
+.ai-note {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.ai-note.ok { color: #7ef0c0; }
+.ai-note.err { color: #ff9a9a; }
+
 .chk { display: flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; }
 .chk input { accent-color: var(--cyan); width: 12px; height: 12px; cursor: pointer; }
 .rng { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
