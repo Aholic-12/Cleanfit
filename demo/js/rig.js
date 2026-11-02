@@ -50,13 +50,15 @@ const LIMBS = [
 
 // 实体层的关节球，用来填掉圆柱接缝，同时充当三角肌 / 髋部这些肉感部位
 // 肩球半径按盂肱关节算：它挂在肩峰内侧，球心 + 半径刚好和躯干肩宽齐平
+// 关节球只用来填圆柱接缝，半径必须小于等于相邻肢体半径，
+// 否则肩、肘、膝会鼓出一圈「串珠」，人体看起来像木偶。
 const JOINT_BALLS = [
-  { i: 11, r: 0.050 }, { i: 12, r: 0.050 },   // 肩（三角肌）
-  { i: 13, r: 0.040 }, { i: 14, r: 0.040 },   // 肘
-  { i: 15, r: 0.029 }, { i: 16, r: 0.029 },   // 腕
-  { i: 23, r: 0.080 }, { i: 24, r: 0.080 },   // 髋
-  { i: 25, r: 0.053 }, { i: 26, r: 0.053 },   // 膝
-  { i: 27, r: 0.034 }, { i: 28, r: 0.034 },   // 踝
+  { i: 11, r: 0.040 }, { i: 12, r: 0.040 },   // 肩（三角肌）
+  { i: 13, r: 0.033 }, { i: 14, r: 0.033 },   // 肘
+  { i: 15, r: 0.022 }, { i: 16, r: 0.022 },   // 腕
+  { i: 23, r: 0.060 }, { i: 24, r: 0.060 },   // 髋
+  { i: 25, r: 0.044 }, { i: 26, r: 0.044 },   // 膝
+  { i: 27, r: 0.026 }, { i: 28, r: 0.026 },   // 踝
 ];
 
 // 手：腕 → 食指，用椭球近似
@@ -227,11 +229,20 @@ export class HoloScene {
       depthWrite: false,
     });
 
+    // 关节填缝球：只负责补圆柱接缝，不用全息 shader（否则小球整颗发光，
+    // 肩肘膝像串了一串珠子）。用低亮度、低透明度，几乎隐形。
+    this.jointMat = new THREE.MeshBasicMaterial({
+      color: 0x8fe8ff,
+      transparent: true,
+      opacity: 0.10,
+      depthWrite: false,
+    });
+
     this.sphereGeo = new THREE.SphereGeometry(1, 16, 12);
 
     // 躯干：环状网格，半径逐层变化，才能做出肩宽 → 腰窄 → 胯宽的锥度
-    this.torsoSeg = 16;
-    this.torsoRings = 13;
+    this.torsoSeg = 20;
+    this.torsoRings = 17;
     const vCount = this.torsoRings * this.torsoSeg + 2;   // +2 是上下封盖中心
     const tg = new THREE.BufferGeometry();
     tg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vCount * 3), 3));
@@ -247,14 +258,8 @@ export class HoloScene {
         idx.push(a, c, b, b, c, d);
       }
     }
-    const topC = this.torsoRings * this.torsoSeg;
-    const botC = topC + 1;
-    for (let s = 0; s < this.torsoSeg; s++) {
-      const s2 = (s + 1) % this.torsoSeg;
-      idx.push(topC, s2, s);
-      const base = (this.torsoRings - 1) * this.torsoSeg;
-      idx.push(botC, base + s, base + s2);
-    }
+    // 不做上下封盖：封盖的扇形三角在 wireframe 下会在肩膀和髋部糊成一块
+    // 白斑。躯干两端本来就被脖子和髋部挡住，不封也看不出来。
     tg.setIndex(idx);
 
     this.torsoGroup = new THREE.Group();
@@ -276,7 +281,7 @@ export class HoloScene {
 
     // 关节球
     this.jointBalls = JOINT_BALLS.map((J) => {
-      const m = new THREE.Mesh(this.sphereGeo, this.skinMat);
+      const m = new THREE.Mesh(this.sphereGeo, this.jointMat);
       m.scale.setScalar(J.r);
       this.rig.add(m);
       return { ...J, mesh: m };
@@ -289,8 +294,15 @@ export class HoloScene {
     this.rig.add(this.headGroup);
 
     this.head = new THREE.Mesh(this.sphereGeo, this.skinMat);
-    this.head.scale.set(0.086, 0.110, 0.100);   // 17.2 × 22 × 20 cm，接近成人头围
+    // 成人头宽约 15.8cm、高 21.6cm、厚 19.2cm
+    this.head.scale.set(0.079, 0.108, 0.096);
     this.headGroup.add(this.head);
+
+    // 下颌：颅骨下方收窄，否则整颗头就是一个圆球，从侧面看像外星人
+    this.jaw = new THREE.Mesh(this.sphereGeo, this.skinMat);
+    this.jaw.scale.set(0.056, 0.050, 0.060);
+    this.jaw.position.set(0, -0.064, 0.010);
+    this.headGroup.add(this.jaw);
 
     this.eyeMat = new THREE.MeshBasicMaterial({ color: 0xbff6ff });
     this.eyes = [-1, 1].map((s) => {
@@ -326,9 +338,8 @@ export class HoloScene {
 
     // 给所有实体 mesh 叠一层发光线框（子对象自动跟随父变换）
     for (const m of [
-      this.torso, this.head, this.neck,
+      this.torso, this.head, this.jaw, this.neck,
       ...this.limbs.map((l) => l.mesh),
-      ...this.jointBalls.map((j) => j.mesh),
       ...this.hands.map((h) => h.mesh),
       ...this.feet.map((f) => f.mesh),
     ]) {

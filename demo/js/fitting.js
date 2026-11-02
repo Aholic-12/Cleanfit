@@ -4,7 +4,7 @@
 // 当前是「简单贴图」：用 BlazePose 的 2D 关键点（肩 11/12、胯 23/24）构造
 // 一个躯干四边形，把衣服图用双线性网格变形铺上去。后续深度细节（布料褶皱、
 // 光照匹配、遮挡、物理模拟）再在这个基础上加。
-import { prepareGarmentCanvas } from './garment.js';
+import { prepareGarmentCanvas, averageColor } from './garment.js';
 import { BONES } from './rig.js';
 
 const N = 33;
@@ -78,6 +78,7 @@ export class FittingView {
     // flatten:false —— 真实人物贴图要保留衣服的 alpha 轮廓（T 恤形状），
     // 铺底色会变成一个矩形块，贴上去不像衣服。
     this.garment = prepareGarmentCanvas(img, { removeWhite: this.removeWhite, flatten: false });
+    this._syncColor();
     return { width: this.garment.width, height: this.garment.height };
   }
 
@@ -85,7 +86,15 @@ export class FittingView {
     this.removeWhite = !!v;
     if (this.srcImg) {
       this.garment = prepareGarmentCanvas(this.srcImg, { removeWhite: this.removeWhite, flatten: false });
+      this._syncColor();
     }
+  }
+
+  // 取衣服平均色，给袖子 / 领口用，保证它们和主体同色系
+  _syncColor() {
+    if (!this.garment) return;
+    const c = averageColor(this.garment);
+    this.color = '#' + c.toString(16).padStart(6, '0');
   }
 
   setScale(s) {
@@ -235,5 +244,85 @@ export class FittingView {
 
     // 再画一遍正常层
     draw();
+
+    // 袖子和领口：让衣服像「穿」在身上，而不是一张贴在胸口的贴纸
+    this._sleeves(ctx, norm, px, py);
+    this._collar(ctx, norm, px, py);
+  }
+
+  /** 两只短袖：沿上臂方向画一段粗管，带袖口暗边和上缘高光。 */
+  _sleeves(ctx, norm, px, py) {
+    const col = this.color || '#2a4a7a';
+    for (const [a, b] of [[11, 13], [12, 14]]) {
+      if (!norm[a] || !norm[b]) continue;
+      const A = { x: px(norm[a].x), y: py(norm[a].y) };
+      const B = { x: px(norm[b].x), y: py(norm[b].y) };
+      const dx = B.x - A.x;
+      const dy = B.y - A.y;
+      const len = Math.hypot(dx, dy);
+      if (len < 4) continue;
+
+      const w = Math.max(10, len * 0.42);                 // 袖管直径 ≈ 上臂粗
+      const end = { x: A.x + dx * 0.52, y: A.y + dy * 0.52 };   // 短袖到上臂一半
+      const ux = dx / len;
+      const uy = dy / len;
+      const nxv = -uy;                                    // 垂直方向
+      const nyv = ux;
+
+      ctx.save();
+      ctx.lineCap = 'round';
+      // 袖管底色
+      ctx.strokeStyle = col;
+      ctx.lineWidth = w;
+      ctx.beginPath();
+      ctx.moveTo(A.x, A.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+
+      // 袖口暗边
+      ctx.strokeStyle = 'rgba(0,0,0,0.30)';
+      ctx.lineWidth = w * 0.18;
+      ctx.beginPath();
+      ctx.moveTo(end.x - ux * w * 0.10, end.y - uy * w * 0.10);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+
+      // 上缘高光
+      ctx.strokeStyle = 'rgba(255,255,255,0.20)';
+      ctx.lineWidth = w * 0.18;
+      ctx.beginPath();
+      ctx.moveTo(A.x + nxv * w * 0.26, A.y + nyv * w * 0.26);
+      ctx.lineTo(end.x + nxv * w * 0.26, end.y + nyv * w * 0.26);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  /** 领口：脖子根部的开口阴影 + 一圈领边，让衣服上沿「包住」脖子。 */
+  _collar(ctx, norm, px, py) {
+    if (!norm[0] || !norm[11] || !norm[12]) return;
+    const sx = (px(norm[11].x) + px(norm[12].x)) / 2;
+    const sy = (py(norm[11].y) + py(norm[12].y)) / 2;
+    const neckY = py(norm[0].y);
+    const span = Math.abs(sy - neckY);
+    if (span < 6) return;
+
+    const cx = sx;
+    const cy = sy - span * 0.16;                 // 肩线上方一点，脖子根部
+    const rx = Math.abs(px(norm[11].x) - px(norm[12].x)) * 0.13;
+    const ry = rx * 0.6;
+    if (rx < 3) return;
+
+    ctx.save();
+    // 领口开口
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.34)';
+    ctx.fill();
+    // 领边
+    ctx.strokeStyle = this.color || '#2a4a7a';
+    ctx.lineWidth = Math.max(2, rx * 0.26);
+    ctx.stroke();
+    ctx.restore();
   }
 }
