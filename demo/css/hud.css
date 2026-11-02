@@ -132,7 +132,7 @@ body::before {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr) minmax(0, 1fr);
   gap: 12px;
 }
 
@@ -463,6 +463,47 @@ button.s-chip.off {
   overflow: hidden;
 }
 .viewport canvas { display: block; width: 100%; height: 100%; }
+
+/* ---------- AD 试衣窗口（真实人物） ---------- */
+
+.fit-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 38%, #081a25, #04080d 72%);
+}
+#fit {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.fit-idle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  pointer-events: none;
+  text-align: center;
+  transition: opacity .35s;
+}
+.fit-idle.hide { opacity: 0; }
+.fit-idle b {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1.6px;
+  color: #9fd6e4;
+}
+.fit-idle span {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: rgba(91, 143, 163, .85);
+}
 
 .hint {
   position: absolute;

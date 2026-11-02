@@ -1,10 +1,10 @@
-// 全息人像渲染层：把 BlazePose 的 33 点世界坐标（米）映射成一具有体积的人体
+// 全息人像渲染层：把 BlazePose 的 33 点世界坐标（米）映射成一具「全息投影」人体
 //
-// 两套几何叠在一起：
-//   实体层 —— 受光照的躯干 / 四肢 / 头颈，负责「看起来是个 3D 人」
-//   骨架层 —— 原来的青色关节与骨线，depthTest=false + 叠加混合，做 X 光扫描感
+// 视觉参考：钢铁侠电影里 J.A.R.V.I.S / Friday 的全息台——半透明青蓝色人体、
+// 边缘菲涅尔辉光、水平扫描线、轻微闪烁，配合发光的骨架线（X 光扫描感）。
+// 衣服不在这里，衣服是「AD 渲染」单独开一个窗口实时贴到真实人物身上的
+// （见 fitting.js）。这里只负责一个干净的全息人体。
 import * as THREE from '../vendor/three.module.js';
-import { prepareGarmentCanvas, averageColor } from './garment.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const N = 33;
@@ -93,6 +93,53 @@ function torsoDepthRatio(t) {
   return LERP(0.58, 0.64, SMOOTH(Math.min(1, (t - 0.55) / 0.45)));
 }
 
+// ---------------------------------------------------------------- 全息材质
+//
+// 不用 Three 自带的受光材质，自己写一段 shader 做出「全息投影」质感：
+//   · 半透明，整体偏青蓝
+//   · 菲涅尔边缘辉光（edge glow）：越靠近轮廓越亮，像能量壳
+//   · 水平扫描线（scanline）：随时间从下往上扫，营造电子感
+//   · 轻微闪烁（flicker）：模拟投影不稳定
+// depthWrite 关掉，让多层半透明叠出通透的体积感，而不是互相遮挡。
+const HOLO_VERT = `
+  varying vec3 vN;
+  varying vec3 vView;
+  varying vec3 vWorld;
+  void main() {
+    vec4 wp = modelMatrix * vec4(position, 1.0);
+    vWorld = wp.xyz;
+    vN = normalize(mat3(modelMatrix) * normal);
+    vView = normalize(cameraPosition - wp.xyz);
+    gl_Position = projectionMatrix * viewMatrix * wp;
+  }
+`;
+
+const HOLO_FRAG = `
+  uniform float uTime;
+  uniform vec3 uColor;
+  varying vec3 vN;
+  varying vec3 vView;
+  varying vec3 vWorld;
+  void main() {
+    // 镜像（rig.scale.x = -1）会让法线翻面，菲涅尔取绝对值，边缘对称不受影响
+    float ndv = abs(dot(normalize(vN), normalize(vView)));
+    float fres = pow(1.0 - ndv, 2.2);
+
+    // 水平扫描线：世界 Y 方向的正弦，随时间向上扫
+    float scan = 0.5 + 0.5 * sin(vWorld.y * 34.0 - uTime * 2.2);
+    scan = smoothstep(0.5, 1.0, scan);
+
+    // 整体闪烁
+    float flick = 0.92 + 0.08 * sin(uTime * 8.0 + vWorld.y * 12.0);
+
+    float a = (0.14 + fres * 0.78 + scan * 0.10) * flick;
+    a = clamp(a, 0.0, 0.95);
+
+    vec3 col = uColor * (0.55 + fres * 1.7 + scan * 0.35);
+    gl_FragColor = vec4(col, a);
+  }
+`;
+
 export class HoloScene {
   constructor(container) {
     this.el = container;
@@ -123,14 +170,13 @@ export class HoloScene {
     this._basis = new THREE.Matrix4();
     this._q = new THREE.Quaternion();
 
-    // 肩关节锚点（11/12）：从肩峰往身体中线内侧挪，上臂与袖子都挂在这儿
+    // 肩关节锚点（11/12）：从肩峰往身体中线内侧挪，上臂都挂在这儿
     this._armRoot = {};
     this._frameOk = false;
     this.mirrored = false;
 
     this._buildLights();
     this._buildBody();
-    this._buildGarment();
     this._buildSkeleton();
     this._buildStage();
 
@@ -140,44 +186,34 @@ export class HoloScene {
     this.hasPoint = new Array(N).fill(false);
     this.presence = 0;
     this.footY = -0.95;
-    this.garmentScale = 1;
 
     this._clock = new THREE.Clock();
     this.resize();
   }
 
   // ---------- 光照 ----------
-
+  // 全息不靠真实光照（shader 自发光），但天光给舞台一点氛围；主光/轮廓光其实
+  // 对 shader 材质无效，这里只留一盏很弱的暖光点缀骨架层的高光，避免死黑。
   _buildLights() {
-    // 天光压低一些，否则整体发灰、没有体积感
-    this.scene.add(new THREE.HemisphereLight(0x9fe8ff, 0x0a1418, 0.62));
-
-    // 主光：右上前方，负责形体和投影感
-    const key = new THREE.DirectionalLight(0xfff2e8, 2.9);
-    key.position.set(1.8, 2.6, 2.4);
-    this.scene.add(key);
-
-    // 轮廓光：背后偏左，青色，勾出边缘，呼应 HUD 配色
-    const rim = new THREE.DirectionalLight(0x2fd4f0, 2.2);
+    this.scene.add(new THREE.HemisphereLight(0x9fe8ff, 0x0a1418, 0.5));
+    const rim = new THREE.DirectionalLight(0x2fd4f0, 1.0);
     rim.position.set(-2.4, 1.4, -2.2);
     this.scene.add(rim);
-
-    // 补光：左前方暖色，压掉死黑
-    const fill = new THREE.DirectionalLight(0xffc9a8, 0.45);
-    fill.position.set(-1.6, 0.4, 1.8);
-    this.scene.add(fill);
   }
 
-  // ---------- 实体人体 ----------
-
+  // ---------- 全息人体 ----------
   _buildBody() {
-    this.skinMat = new THREE.MeshStandardMaterial({
-      color: 0xe0b096,
-      roughness: 0.76,
-      metalness: 0.03,
-      emissive: 0x0d1a22,
-      emissiveIntensity: 1,
+    this.holoUniforms = {
+      uTime: { value: 0 },
+      uColor: { value: new THREE.Color(0x3fd8f2) },
+    };
+    this.skinMat = new THREE.ShaderMaterial({
+      uniforms: this.holoUniforms,
+      transparent: true,
+      depthWrite: false,
       side: THREE.DoubleSide,
+      vertexShader: HOLO_VERT,
+      fragmentShader: HOLO_FRAG,
     });
 
     this.sphereGeo = new THREE.SphereGeometry(1, 16, 12);
@@ -237,6 +273,7 @@ export class HoloScene {
 
     // 头：椭球 + 一点五官提示。没有五官时球体从背后看和正面一模一样，
     // 人分不清人物朝向；加两个眼窝和一个鼻凸，正面一眼就能认出来。
+    // 全息下眼睛是发光亮点，而不是深色凹陷。
     this.headGroup = new THREE.Group();
     this.rig.add(this.headGroup);
 
@@ -244,13 +281,11 @@ export class HoloScene {
     this.head.scale.set(0.086, 0.110, 0.100);   // 17.2 × 22 × 20 cm，接近成人头围
     this.headGroup.add(this.head);
 
-    this.eyeMat = new THREE.MeshStandardMaterial({
-      color: 0x1b2a33, roughness: 0.35, metalness: 0.05,
-    });
+    this.eyeMat = new THREE.MeshBasicMaterial({ color: 0xbff6ff });
     this.eyes = [-1, 1].map((s) => {
       const m = new THREE.Mesh(this.sphereGeo, this.eyeMat);
-      m.scale.set(0.013, 0.011, 0.009);
-      m.position.set(s * 0.029, 0.014, 0.088);
+      m.scale.set(0.0085, 0.0075, 0.006);   // 全息下是小亮点，别做成两颗大眼球
+      m.position.set(s * 0.028, 0.013, 0.090);
       this.headGroup.add(m);
       return m;
     });
@@ -281,123 +316,6 @@ export class HoloScene {
     this.rig.visible = false;
   }
 
-  // ---------- 衣服 ----------
-
-  _buildGarment() {
-    this.garmentSeg = 20;
-    this.garmentRings = 16;
-    const vCount = this.garmentSeg * this.garmentRings;
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vCount * 3), 3));
-
-    const uv = new Float32Array(vCount * 2);
-    for (let r = 0; r < this.garmentRings; r++) {
-      for (let s = 0; s < this.garmentSeg; s++) {
-        const i = r * this.garmentSeg + s;
-        uv[i * 2] = s / (this.garmentSeg - 1);
-        uv[i * 2 + 1] = 1 - r / (this.garmentRings - 1);
-      }
-    }
-    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-
-    const idx = [];
-    for (let r = 0; r < this.garmentRings - 1; r++) {
-      for (let s = 0; s < this.garmentSeg - 1; s++) {
-        const a = r * this.garmentSeg + s;
-        const b = a + 1;
-        const c = a + this.garmentSeg;
-        const d = c + 1;
-        idx.push(a, c, b, b, c, d);
-      }
-    }
-    g.setIndex(idx);
-
-    this.garmentMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.86,
-      metalness: 0.02,
-      side: THREE.DoubleSide,
-      // 布料是不透明的，用 alphaTest 硬裁而不是 alpha 混合：
-      // 混合模式下抠图边缘那圈半透明像素会糊成一排锯齿
-      transparent: false,
-      alphaTest: 0.45,
-    });
-    this.garment = new THREE.Mesh(g, this.garmentMat);
-    this.garment.visible = false;
-    this.garmentReady = false;
-    this.torsoGroup.add(this.garment);
-
-    // 短袖：贴在左右上臂外侧，用衣服平均色做纯色，避免纹理在圆柱上扭成一团
-    // openEnded：不要端盖，否则袖山那个圆片会从肩膀里支出来，像一圈亮边
-    this.sleeveMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.88,
-      metalness: 0.02,
-      side: THREE.DoubleSide,
-    });
-    const sg = new THREE.CylinderGeometry(1, 1.05, 1, 12, 1, true);
-    this.sleeves = [
-      { a: 11, b: 13 },
-      { a: 12, b: 14 },
-    ].map((S) => {
-      const m = new THREE.Mesh(sg, this.sleeveMat);
-      m.visible = false;
-      this.rig.add(m);
-      return { ...S, mesh: m };
-    });
-  }
-
-  /** 载入一张衣服图片。返回贴图尺寸，方便界面提示。 */
-  setGarmentImage(img, { removeWhite = true } = {}) {
-    const cv = prepareGarmentCanvas(img, { removeWhite });
-    if (this.garmentTex) this.garmentTex.dispose();
-    const tex = new THREE.CanvasTexture(cv);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
-    this.garmentTex = tex;
-    this.garmentMat.map = tex;
-    this.garmentMat.needsUpdate = true;
-    this.garmentReady = true;
-    this.sleeveMat.color.setHex(averageColor(cv));
-    this._applyTexMirror();
-    return { width: cv.width, height: cv.height };
-  }
-
-  /**
-   * 镜像：摄像头画面是 scaleX(-1) 的（自拍视角），2D 叠加层也跟着翻了，
-   * 3D 不翻的话左右会正好反过来。整体把 rig 沿 x 轴翻一下即可，
-   * 材质都是 DoubleSide，翻面后法线由 gl_FrontFacing 纠正，光照仍然正确。
-   */
-  setMirror(on) {
-    this.mirrored = !!on;
-    this.rig.scale.x = on ? -1 : 1;
-    this._applyTexMirror();
-  }
-
-  // 整体镜像会把衣服图案也翻成镜像字，这里再翻一次抵消掉，保证 logo 正着读
-  _applyTexMirror() {
-    if (!this.garmentTex) return;
-    this.garmentTex.repeat.x = this.mirrored ? -1 : 1;
-    this.garmentTex.offset.x = this.mirrored ? 1 : 0;
-    this.garmentTex.needsUpdate = true;
-  }
-
-  setGarmentScale(s) {
-    this.garmentScale = Math.max(0.7, Math.min(1.35, s));
-  }
-
-  clearGarment() {
-    this.garmentReady = false;
-    this.garment.visible = false;
-    for (const S of this.sleeves) S.mesh.visible = false;
-    if (this.garmentTex) {
-      this.garmentTex.dispose();
-      this.garmentTex = null;
-    }
-    this.garmentMat.map = null;
-    this.garmentMat.needsUpdate = true;
-  }
-
   // ---------- 骨架叠加层 ----------
 
   _buildSkeleton() {
@@ -405,9 +323,8 @@ export class HoloScene {
     this.skeleton.renderOrder = 20;
     this.rig.add(this.skeleton);
 
-    // depthTest=false 让骨线透过实体显示，形成 X 光扫描感
+    // depthTest=false 让骨线透过实体显示，形成 X 光扫描感；加法混合做出辉光
     const common = { transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending };
-    // 关节亮点压暗一点：太亮会像模型上破了几个洞
     this.skelJointMat = new THREE.MeshBasicMaterial({ color: 0xd8f8ff, opacity: 0.14, ...common });
     this.skelBoneMat = new THREE.MeshBasicMaterial({ color: 0x6fe4f7, opacity: 0.09, ...common });
 
@@ -533,6 +450,11 @@ export class HoloScene {
       e.preventDefault();
       this.orbit.dist = Math.max(1.8, Math.min(7, this.orbit.dist + e.deltaY * 0.0022));
     }, { passive: false });
+  }
+
+  setMirror(on) {
+    this.mirrored = !!on;
+    this.rig.scale.x = on ? -1 : 1;
   }
 
   // ---------- 各部位更新 ----------
@@ -669,7 +591,6 @@ export class HoloScene {
   _updateTorso(metrics) {
     const ok = this.hasPoint[11] && this.hasPoint[12] && this.hasPoint[23] && this.hasPoint[24];
     this.torso.visible = ok;
-    this.garment.visible = ok && this.garmentReady;
     this._frameOk = false;
     if (!ok) return;
 
@@ -680,13 +601,12 @@ export class HoloScene {
     const len = up.length();
     if (len < 1e-3) {
       this.torso.visible = false;
-      this.garment.visible = false;
       return;
     }
     up.normalize();
 
     // 左右轴取「左肩 - 右肩」，这样 fwd = side × up 正好指向人物正前方；
-    // 人转身时左右互换，衣服会跟着转到正面去。
+    // 人转身时左右互换，骨架和躯干也会跟着转。
     const side = this._side.subVectors(this.smooth[11], this.smooth[12]);
     side.addScaledVector(up, -side.dot(up));
     if (side.lengthSq() < 1e-8) return;
@@ -736,67 +656,6 @@ export class HoloScene {
     pa.setXYZ(RINGS * SEG + 1, 0, yBot, 0);
     pa.needsUpdate = true;
     this.torso.geometry.computeVertexNormals();
-
-    if (this.garmentReady) this._updateGarment(w, len);
-  }
-
-  _updateGarment(w, len) {
-    const SEG = this.garmentSeg;
-    const RINGS = this.garmentRings;
-    // 领口要爬到颈根：躯干顶环在肩线上方 0.10m，领口贴着它下面一点，
-    // 否则斜方肌会光着一大片，看起来像件抹胸而不是 T 恤
-    const torsoTopT = -0.10 / len;
-    const t0 = Math.max(-0.17, torsoTopT + 0.02);
-    // 衣长滑块直接控制下摆：1.0 = 刚好过胯线，0.7 = 露腰，1.35 = 盖住大腿根
-    const t1 = Math.max(t0 + 0.6, Math.min(1.35, this.garmentScale));
-    const arc = Math.PI * 1.05;          // 约 189°，正面 + 两侧
-    const OUT = 1.07;                    // 略大于身体，避免 z-fighting，也留一点布料松量
-    const pa = this.garment.geometry.attributes.position;
-
-    for (let r = 0; r < RINGS; r++) {
-      const u = r / (RINGS - 1);
-      const t = LERP(t0, t1, u);
-      const y = (0.5 - t) * len;
-      const hw = torsoHalfWidth(t, w) * OUT;
-      const hd = hw * torsoDepthRatio(t);
-      const base = r * SEG;
-      for (let s = 0; s < SEG; s++) {
-        const ang = -arc / 2 + (s / (SEG - 1)) * arc;
-        pa.setXYZ(base + s, Math.sin(ang) * hw, y, Math.cos(ang) * hd);
-      }
-    }
-    pa.needsUpdate = true;
-    this.garment.geometry.computeVertexNormals();
-  }
-
-  _updateSleeves() {
-    if (!this.garmentReady) {
-      for (const S of this.sleeves) S.mesh.visible = false;
-      return;
-    }
-    for (const S of this.sleeves) {
-      const ok = this.hasPoint[S.a] && this.hasPoint[S.b];
-      if (!ok) {
-        S.mesh.visible = false;
-        continue;
-      }
-      const root = this._armRoot[S.a];
-      const A = this._a.copy(root && this._frameOk ? root : this.smooth[S.a]);
-      const B = this._b.copy(this.smooth[S.b]);
-      const D = this._d.subVectors(B, A);
-      const len = D.length();
-      if (len < 1e-4) {
-        S.mesh.visible = false;
-        continue;
-      }
-      D.normalize();
-      const sl = len * 0.46;                       // 盖住上臂近端不到一半
-      // 往上臂根部退一点，袖山塞进躯干里，不然肩膀和袖子之间会有一道缝
-      S.mesh.position.copy(A).addScaledVector(D, sl * 0.5 - 0.018);
-      S.mesh.quaternion.setFromUnitVectors(UP, D);
-      S.mesh.scale.set(0.059, sl, 0.059);
-      S.mesh.visible = true;
-    }
   }
 
   _updateSkeleton() {
@@ -864,10 +723,9 @@ export class HoloScene {
         }
       }
 
-      // 躯干先算：它给出肩关节锚点和朝向基，四肢 / 袖子 / 头都要用
+      // 躯干先算：它给出肩关节锚点和朝向基，四肢 / 头都要用
       this._updateTorso(metrics);
       this._updateLimbs();
-      this._updateSleeves();
       this._updateHeadNeck(metrics);
       this._updateHandsFeet();
       this._updateSkeleton();
@@ -882,8 +740,9 @@ export class HoloScene {
 
     this.stage.position.y = this.footY + 0.02;
 
-    // 舞台动效
+    // 舞台动效 + 全息材质时间
     const t = this._clock.getElapsedTime();
+    this.holoUniforms.uTime.value = t;
     this.ticks.rotation.y = t * 0.16;
     this.dust.rotation.y = t * 0.02;
     const ph = (t * 0.55) % 1;

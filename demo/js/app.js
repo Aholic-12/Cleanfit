@@ -1,6 +1,7 @@
 // Cleanfit · Pose Mirror
 // 摄像头取景 + BlazePose 实时姿态估计 + 3D 全息人像复刻
 import { HoloScene, BONES } from './rig.js';
+import { FittingView } from './fitting.js';
 import { mockPose, projectToNorm } from './mock.js';
 
 const $ = (id) => document.getElementById(id);
@@ -42,9 +43,11 @@ const els = {
   sensorSpec: $('sensorSpec'),
   sensorDepth: $('sensorDepth'),
   sensorGain: $('sensorGain'),
-  btnTryon: $('btnTryon'),
-  btnTryonClose: $('btnTryonClose'),
   tryon: $('tryon'),
+  fit: $('fit'),
+  fitWrap: $('fitWrap'),
+  fitIdle: $('fitIdle'),
+  fitInfo: $('fitInfo'),
   garmentDrop: $('garmentDrop'),
   garmentFile: $('garmentFile'),
   garmentTip: $('garmentTip'),
@@ -103,6 +106,9 @@ function syncCamButton() {
 const holo = new HoloScene(els.viewport);
 holo.setMirror(state.mirror);      // 摄像头默认是镜像的，3D 必须一起镜像，否则左右反掉
 new ResizeObserver(() => holo.resize()).observe(els.viewport);
+
+// AD 试衣是独立窗口，渲染到真实人物画面上
+const fitting = new FittingView(els.fit);
 
 // ---------------------------------------------------------------- 指标面板
 
@@ -299,6 +305,8 @@ function fitOverlay() {
   if (!v.videoWidth) return;
   els.overlay.width = v.videoWidth;
   els.overlay.height = v.videoHeight;
+  els.fit.width = v.videoWidth;
+  els.fit.height = v.videoHeight;
   els.camInfo.textContent = `${v.videoWidth}×${v.videoHeight}`;
 }
 
@@ -306,6 +314,8 @@ function fitOverlay() {
 function fitOverlayDemo() {
   els.overlay.width = 960;
   els.overlay.height = 720;
+  els.fit.width = 960;
+  els.fit.height = 720;
 }
 
 function drawOverlay() {
@@ -572,6 +582,9 @@ function loop(now) {
   holo.update(state.world, dt, state.m);
   holo.render();
   drawOverlay();
+  fitting.draw(els.video, state.norm, state.mirror, els.fit.width, els.fit.height, {
+    showBones: state.showBones,
+  });
 
   state.frames++;
   if (state.fpsT === 0 || now - state.fpsT > 500) {
@@ -1093,8 +1106,10 @@ function loadGarmentFile(file) {
   const img = new Image();
   img.onload = () => {
     try {
-      const size = holo.setGarmentImage(img, { removeWhite: els.garmentKey.checked });
+      const size = fitting.loadImage(img);
       state.garmentImg = img;
+      els.fitIdle.classList.add('hide');
+      els.fitInfo.textContent = `${size.width}×${size.height}`;
       els.garmentTip.textContent =
         `已载入 ${size.width}×${size.height}${els.garmentKey.checked ? ' · 已抠白底' : ''}`;
     } catch (e) {
@@ -1108,11 +1123,6 @@ function loadGarmentFile(file) {
   };
   img.src = url;
 }
-
-els.btnTryon.addEventListener('click', () => {
-  els.tryon.hidden = !els.tryon.hidden;
-});
-els.btnTryonClose.addEventListener('click', () => { els.tryon.hidden = true; });
 
 els.garmentFile.addEventListener('change', () => {
   loadGarmentFile(els.garmentFile.files && els.garmentFile.files[0]);
@@ -1137,23 +1147,27 @@ els.garmentDrop.addEventListener('drop', (e) => {
 els.garmentKey.addEventListener('change', () => {
   if (!state.garmentImg) return;
   try {
-    const size = holo.setGarmentImage(state.garmentImg, { removeWhite: els.garmentKey.checked });
+    fitting.setRemoveWhite(els.garmentKey.checked);
+    const g = fitting.garment;
+    if (g) els.fitInfo.textContent = `${g.width}×${g.height}`;
     els.garmentTip.textContent =
-      `已载入 ${size.width}×${size.height}${els.garmentKey.checked ? ' · 已抠白底' : ''}`;
+      `已载入 ${g.width}×${g.height}${els.garmentKey.checked ? ' · 已抠白底' : ' · 保留原图'}`;
   } catch (e) {
     els.garmentTip.textContent = '处理失败：' + (e && e.message ? e.message : e);
   }
 });
 
 els.garmentScale.addEventListener('input', () => {
-  holo.setGarmentScale(Number(els.garmentScale.value) / 100);
+  fitting.setScale(Number(els.garmentScale.value) / 100);
 });
 
 els.btnGarmentClear.addEventListener('click', () => {
-  holo.clearGarment();
+  fitting.clear();
   state.garmentImg = null;
   els.garmentFile.value = '';
-  els.garmentTip.textContent = '或拖拽图片 · PNG / JPG';
+  els.fitIdle.classList.remove('hide');
+  els.fitInfo.textContent = '--';
+  els.garmentTip.textContent = '点击或拖拽 · PNG / JPG';
 });
 
 // ---------------------------------------------------------------- 启动
