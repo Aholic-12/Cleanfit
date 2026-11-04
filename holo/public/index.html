@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Cleanfit · Decart 实时换装</title>
+  <link rel="stylesheet" href="./css/hud.css" />
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">CLEANFIT</span>
+      <span class="brand-sub">DECART · LUCY VTON</span>
+    </div>
+    <div class="top-right">
+      <span id="statusPill" class="pill pill--idle"><i class="dot"></i><span id="statusText">未连接</span></span>
+      <button id="btnSettings" class="btn btn--ghost" type="button" title="设置 API Key">设置</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <!-- Result: Decart transformed stream -->
+    <section class="viewer">
+      <video id="out" class="video video--out" autoplay playsinline muted></video>
+
+      <div id="placeholder" class="placeholder">
+        <div class="ph-ring"></div>
+        <h2>真·一比一 实时换装</h2>
+        <p>上传一件衣服，点「开始试穿」，AI 会把衣服实时穿到你身上</p>
+      </div>
+
+      <!-- Local camera PiP -->
+      <div class="pip" id="pip" hidden>
+        <video id="cam" class="video video--cam" autoplay playsinline muted></video>
+        <span class="pip-label">原始画面</span>
+      </div>
+
+      <div class="viewer-badge" id="viewerBadge" hidden>
+        <span id="metric">--</span>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <aside class="panel">
+      <div class="panel-block">
+        <label class="label">衣服参考图</label>
+        <div id="dropZone" class="dropzone" tabindex="0">
+          <img id="garmentPreview" class="garment-preview" alt="" hidden />
+          <div id="dropHint" class="drop-hint">
+            <span class="drop-icon">＋</span>
+            <span>点击或拖拽上传 · PNG / JPG</span>
+          </div>
+        </div>
+        <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+        <button id="btnClearGarment" class="btn btn--tiny" type="button" hidden>移除</button>
+      </div>
+
+      <div class="panel-block">
+        <label class="label" for="prompt">描述（可选）</label>
+        <textarea id="prompt" class="input" rows="2"
+          placeholder="例如：一件黑色飞行员夹克，胸前有蓝色 logo"></textarea>
+      </div>
+
+      <div class="panel-block row">
+        <label class="switch">
+          <input id="mirror" type="checkbox" checked />
+          <span class="switch-track"></span>
+          <span class="switch-text">镜像</span>
+        </label>
+        <label class="switch">
+          <input id="fast" type="checkbox" />
+          <span class="switch-track"></span>
+          <span class="switch-text">Fast 模式</span>
+        </label>
+      </div>
+
+      <div class="panel-block">
+        <button id="btnConnect" class="btn btn--primary" type="button" disabled>开始试穿</button>
+        <div id="hint" class="hint">先上传一件衣服</div>
+      </div>
+
+      <div class="panel-foot">
+        <span>720p · 实时</span>
+        <span id="creditNote">2 信用/秒</span>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Setup banner -->
+  <div id="notice" class="notice" hidden>
+    <div class="notice-inner">
+      <strong>需要 Decart API Key</strong>
+      <p>去 <a href="https://platform.decart.ai" target="_blank" rel="noopener">platform.decart.ai</a> 申请后，点右上角「设置」粘贴。</p>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div id="settingsModal" class="modal" hidden>
+    <div class="modal-card">
+      <h3>Decart API Key</h3>
+      <p class="modal-sub">仅保存在本机浏览器（localStorage），不会上传到我们的服务器以外的地方。</p>
+      <input id="keyInput" class="input" type="password" placeholder="ek_..." autocomplete="off" />
+      <div class="modal-actions">
+        <button id="btnCloseSettings" class="btn btn--ghost" type="button">取消</button>
+        <button id="btnSaveKey" class="btn btn--primary" type="button">保存</button>
+      </div>
+      <p class="modal-note">安全提示：这是个人原型。把链接公开分享时，任何拿到链接的人都能用你的 key 额度，请勿公开传播。</p>
+    </div>
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

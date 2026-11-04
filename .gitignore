@@ -60,3 +60,9 @@ _tmpvideo/
 .venv/
 .wheels/
 .models/
+
+# ---- Node (holo / Decart 实时换装) ----
+node_modules/
+npm-debug.log*
+# 允许提交示例，但仍忽略真实密钥
+!.env.example

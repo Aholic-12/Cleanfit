@@ -1,0 +1,15 @@
+{
+  "name": "cleanfit-decarts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cleanfit 全息试衣 —— Decart Lucy VTON Realtime 真·一比一换装",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@decartai/sdk": "^0.2.14",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2"
+  }
+}

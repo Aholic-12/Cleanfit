@@ -1,0 +1,219 @@
+import { ERROR_CODES } from "../utils/errors.js";
+//#region src/realtime/config-realtime.ts
+/** Publish bitrate floor for the primary video layer (bps). */
+const MIN_VIDEO_BITRATE_BPS = 11e5;
+/** Publish bitrate cap for the primary video layer (bps). */
+const MAX_VIDEO_BITRATE_BPS = 35e5;
+/** Combined max bitrate of livekit-client's default lower simulcast layers (bps); pinned by a unit test. */
+const SIMULCAST_LOWER_LAYERS_BPS = 61e4;
+/** Fraction of the bandwidth estimate available to the video encoders. */
+const BWE_VIDEO_SHARE = .8;
+/** Bandwidth estimate (kbps) needed for the primary layer to reach `primaryBps`. */
+function estimateKbpsFor(primaryBps) {
+	return Math.round((primaryBps + SIMULCAST_LOWER_LAYERS_BPS) / BWE_VIDEO_SHARE / 1e3);
+}
+const REALTIME_CONFIG = {
+	signaling: {
+		connectTimeoutMs: 6e4,
+		handshakeTimeoutMs: 15e3,
+		requestTimeoutMs: 3e4
+	},
+	session: {
+		connectionTimeoutMs: 6e4 * 5,
+		retry: {
+			retries: 5,
+			factor: 2,
+			minTimeout: 1e3,
+			maxTimeout: 1e4
+		},
+		/**
+		* `generation_ended` reasons the server will not change its mind about.
+		* The rest of its vocabulary (`error`, `disconnect`, `timeout`) is generic
+		* or overloaded, so those still retry.
+		*/
+		terminalEndReasons: ["moderation_violation", "insufficient_credits"],
+		/** Close code for a policy termination. */
+		terminalCloseCode: 1008,
+		/**
+		* The server's concurrent-session refusal: an `error` message carrying
+		* `errorText`, then close `closeCode` with `closeReason`. Retrying it only
+		* takes a slot from whoever is next in line. 1013 with any other reason
+		* ("Try Again Later": upstream at capacity) is transient and still retries.
+		* Matched case-insensitively.
+		*/
+		sessionLimit: {
+			closeCode: 1013,
+			closeReason: "session limit reached",
+			errorText: "concurrent session limit reached"
+		},
+		/**
+		* The server's capacity refusal: an `error` message with `error_type: errorType` and
+		* `retry_after` (seconds, may be fractional), then close 1013 "Try Again Later". `connect()`
+		* waits `retry_after` ± `jitter`, at least `minWaitMs`, and dials again for as long as `budgetMs`
+		* since its first dial allows (`capacityRetryBudgetMs` per connect). Servers that predate
+		* `error_type` send the close alone, which keeps the `retry` backoff above.
+		*/
+		capacity: {
+			errorType: "capacity",
+			jitter: .2,
+			minWaitMs: 1e3,
+			budgetMs: 6e4
+		},
+		/**
+		* Client-token expiry preflight: a JWT credential whose `exp` is more than this many seconds
+		* in the past by the local clock is refused before the dial with TOKEN_EXPIRED, instead of by
+		* the server after a round trip. The allowance covers clock skew only: the server grants none,
+		* so a token this late would be refused anyway.
+		*/
+		clientTokenExpiryToleranceSeconds: 5,
+		/**
+		* SDK errors a dial can fail with before the socket opens that no re-dial would change: the
+		* credential itself was refused (see credential.ts). Any other SDK error an `apiKeyProvider`
+		* rejects with, such as a failed mint, is transient and retried.
+		*/
+		permanentErrorCodes: [ERROR_CODES.TOKEN_EXPIRED, ERROR_CODES.INVALID_API_KEY],
+		permanentErrorSubstrings: [
+			"permission denied",
+			"not allowed",
+			"invalid session",
+			"401",
+			"invalid api key",
+			"unauthorized",
+			"failed to create livekit frame-metadata worker"
+		]
+	},
+	methods: {
+		promptTimeoutMs: 15e3,
+		updateTimeoutMs: 3e4
+	},
+	livekit: {
+		inferenceServerIdentityPrefix: "inference-server-",
+		roomOptions: {
+			adaptiveStream: false,
+			dynacast: false
+		},
+		defaultVideoCodec: "h264",
+		defaultMaxVideoBitrateBps: MAX_VIDEO_BITRATE_BPS,
+		vp9MaxVideoBitrateBps: 3e6,
+		/** Seeds the publisher's bandwidth estimate (a start bitrate, not a minimum). */
+		minVideoBitrateBps: MIN_VIDEO_BITRATE_BPS,
+		simulcastLowerLayersBitrateBps: SIMULCAST_LOWER_LAYERS_BPS,
+		bweVideoShare: BWE_VIDEO_SHARE,
+		defaultPublishFps: 30
+	},
+	observability: {
+		stallFpsThreshold: .5,
+		statsDefaultIntervalMs: 1e3,
+		statsMinIntervalMs: 500,
+		telemetryReportIntervalMs: 1e4,
+		telemetryUrl: "https://platform.decart.ai/api/v1/telemetry",
+		telemetryMaxItemsPerReport: 120,
+		/**
+		* Thresholds for the derived in-session connection-quality signal
+		* (see observability/connection-quality.ts). Tuned for a camera-up
+		* real-time pipeline (~3–3.5 Mbps upstream, model fps ~25–30). All
+		* values are tunable here so behaviour can change without code edits.
+		*/
+		connectionQuality: {
+			/** Rolling-window size used to smooth raw per-sample metrics. */
+			windowSamples: 5,
+			/**
+			* Samples to wait before the bitrate dimensions count — the encoder
+			* and BWE ramp for several seconds after connect, so early low
+			* bitrate is not a slow network. RTT/loss/stall start scoring sooner.
+			* `decart-try-on` waits 30 samples watching inbound bitrate alone.
+			*/
+			warmupSamples: 8,
+			/** Consecutive worse samples required before the level downgrades. */
+			downgradeConsecutive: 5,
+			/** Consecutive better samples required before the level upgrades (recover slow). */
+			upgradeConsecutive: 5,
+			/** Round-trip time bands (ms). Bands widen by relayExtraMs on TURN-relayed paths. */
+			rtt: {
+				goodMs: 150,
+				fairMs: 300,
+				poorMs: 500,
+				relayExtraMs: 100
+			},
+			/**
+			* Mid-stream (steady-state) true glass-to-glass latency bands (ms) — the
+			* real per-frame camera→display latency through the model, used for the
+			* latency dimension *instead of* RTT when frame-metadata measurement is on.
+			* Already includes both network legs, so relayExtraMs does not apply.
+			* Excludes startup (see `ttff`). Anchored to Datadog
+			* `rt.stream.pipeline_latency_ms` (server-side median ~285ms / p95 ~510ms)
+			* plus network + jitter-buffer + decode headroom. Tune with real data.
+			*/
+			glassToGlass: {
+				goodMs: 500,
+				fairMs: 900,
+				poorMs: 1500
+			},
+			/**
+			* Time-to-first-frame bands (ms) — startup latency from connect to the
+			* first rendered model frame. An order of magnitude larger than mid-stream
+			* and judged separately (a slow first frame is a different problem from a
+			* laggy steady state). ~4–5s is an acceptable ("fair") cold start today.
+			*/
+			ttff: {
+				goodMs: 4e3,
+				fairMs: 6e3,
+				poorMs: 1e4
+			},
+			/** Fraction of outbound packets the server reports lost (0..1). */
+			loss: {
+				good: .001,
+				fair: .01,
+				poor: .05
+			},
+			/** End-to-end frame drop ratio (0..1), when a frame identity is available. */
+			g2gDrop: {
+				good: .001,
+				fair: .01,
+				poor: .05
+			},
+			/** Available upstream bandwidth bands (kbps). Chromium-only. */
+			upstream: {
+				goodKbps: estimateKbpsFor(MAX_VIDEO_BITRATE_BPS),
+				fairKbps: estimateKbpsFor(MIN_VIDEO_BITRATE_BPS),
+				poorKbps: estimateKbpsFor(MIN_VIDEO_BITRATE_BPS / 2)
+			},
+			/** Rendered (inbound) frames-per-second. */
+			stall: {
+				goodFps: 20,
+				fairFps: 12,
+				poorFps: 5
+			}
+		}
+	},
+	/**
+	* SDK-only preflight (see preflight.ts). Validates WebRTC reachability
+	* (does UDP egress work / will the path need TURN) and latency via a
+	* throwaway RTCPeerConnection — no backend session, no media server.
+	*/
+	preflight: {
+		/** Public STUN servers used to gather server-reflexive candidates. */
+		defaultStunUrls: ["stun:stun.l.google.com:19302"],
+		/** Abort candidate gathering after this long. */
+		iceGatherTimeoutMs: 5e3,
+		/** RTT bands (ms) for the preflight verdict. */
+		rtt: {
+			goodMs: 150,
+			marginalMs: 300
+		},
+		/**
+		* Deep probe (`checkConnectivity({ deep: true, model })`): briefly opens a
+		* real session with a synthetic source + frame-metadata measurement to get a
+		* true glass-to-glass verdict, then tears it down. Costs a short GPU session.
+		* The verdict reuses the in-session `connectionQuality` bands. Duration must
+		* cover TTFF (~4–5s) + mid-stream warm-up (~2s) before steady-state samples
+		* accrue; resolves early once `minSamples` exist.
+		*/
+		active: {
+			durationMs: 12e3,
+			minSamples: 5
+		}
+	}
+};
+//#endregion
+export { REALTIME_CONFIG };
