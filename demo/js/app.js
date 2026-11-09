@@ -61,6 +61,14 @@ const els = {
   respVal: $('respVal'),
 };
 
+// 把分享码透传给测量页：托管站点靠 sharecode 下发会话 cookie，
+// 直接跳 measure.html 且没会话时，子资源会被 403 拦掉。
+try {
+  const sc = new URLSearchParams(location.search).get('sharecode');
+  const link = document.getElementById('measureLink');
+  if (sc && link) link.href = `measure.html?sharecode=${encodeURIComponent(sc)}`;
+} catch { /* 本地开发无 sharecode，忽略 */ }
+
 const state = {
   mirror: true,
   showMask: false,

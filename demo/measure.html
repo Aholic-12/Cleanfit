@@ -113,8 +113,17 @@
     if (el) el.textContent = '错误：' + msg;
     if (dot) dot.className = 'err';
   };
-  window.addEventListener('error', function (e) { show(e.message || 'unknown'); }, true);
+  window.addEventListener('error', function (e) {
+    // 托管站点靠 sharecode 下发会话 cookie；冷启动直接打开本页时子资源可能 403
+    var src = e.target && (e.target.src || e.target.href);
+    if (src) show('资源加载失败：' + String(src).split('/').pop() + ' · 请先打开带 sharecode 的首页链接再进入本页');
+    else show(e.message || 'unknown');
+  }, true);
   window.addEventListener('unhandledrejection', function (e) { show((e.reason && e.reason.message) || String(e.reason)); });
+  setTimeout(function () {
+    var body = document.getElementById('resultBody');
+    if (body && !body.children.length) show('页面脚本未就绪：请从带 sharecode 的首页链接进入，或刷新重试');
+  }, 4000);
 })();
 </script>
 <script src="vendor/mediapipe/pose.js"></script>
