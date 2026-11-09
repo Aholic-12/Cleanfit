@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cleanfit · 4D 人体尺寸测量</title>
+<link rel="stylesheet" href="css/hud.css" />
+<link rel="stylesheet" href="css/measure.css" />
+</head>
+<body>
+<div class="m-app">
+
+  <header class="m-top">
+    <div class="brand">
+      <span class="logo"><i></i><i></i><i></i></span>
+      <b>CLEANFIT</b><span class="sub">ANTHRO&nbsp;SCAN · 4D</span>
+    </div>
+    <div class="status"><i id="dot"></i><span id="statusText">初始化推理引擎…</span></div>
+    <a class="btn" href="index.html">← 返回试衣</a>
+  </header>
+
+  <main class="m-main">
+
+    <!-- 左：取景 + ROI 框选 -->
+    <section class="m-panel m-left">
+      <div class="m-head"><span>CAMERA · 4D 采样</span><span class="head-r" id="camInfo">--</span></div>
+
+      <div class="m-view" id="view">
+        <video id="video" playsinline muted autoplay></video>
+        <canvas id="overlay"></canvas>
+        <div class="m-idle" id="idle">
+          <b>摄像头未启动</b>
+          <span>点下方「启动摄像头」并允许访问</span>
+        </div>
+        <div class="m-guide" id="guide" hidden>在画面上拖拽，框出限定测量区域</div>
+        <div class="m-bucket-tag" id="bucketTag" hidden></div>
+      </div>
+
+      <div class="m-foot">
+        <select id="camSelect" class="sel" title="选择摄像头"><option value="">检测设备…</option></select>
+        <button id="btnCam" class="btn primary">启动摄像头</button>
+        <button id="btnSample" class="btn" disabled>开始采样</button>
+        <button id="btnReset" class="btn">清空样本</button>
+        <span class="m-sep"></span>
+        <button id="btnRoiDraw" class="btn">框选区域</button>
+        <button id="btnRoiClear" class="btn">清除区域</button>
+        <button id="btnRefDraw" class="btn">框参照物</button>
+      </div>
+
+      <div class="m-note" id="note">
+        流程：① 框住被测者（全身或只框上半身）→ ② 填尺度标定 → ③ 点「开始采样」并按右侧引导做 5 组动作 → ④ 收敛后导出。
+        切换不同摄像头继续采样，会自动并入同一份多视角样本。
+      </div>
+    </section>
+
+    <!-- 右：标定 / 收敛 / 结果 -->
+    <aside class="m-panel m-right">
+      <div class="m-head"><span>CALIBRATION · 尺度标定</span><span class="head-r" id="depthTag">深度源 未接入</span></div>
+      <div class="m-cal">
+        <label class="m-row"><span>标定方式</span>
+          <select id="calMode" class="sel">
+            <option value="height">已知身高（推荐）</option>
+            <option value="ref">参照物 A4 · 同平面</option>
+            <option value="laser+ref">激光测距 + 参照物</option>
+            <option value="laser">仅激光测距（粗）</option>
+            <option value="none">不标定 · 仅比例</option>
+          </select>
+        </label>
+        <label class="m-row" data-mode="height"><span>真实身高</span><input id="knownHeight" type="number" value="175" step="0.1" /><em>cm</em></label>
+        <label class="m-row" data-mode="ref laser+ref"><span>参照物宽度</span><input id="refRealM" type="number" value="21" step="0.1" /><em>cm</em></label>
+        <label class="m-row" data-mode="laser laser+ref"><span>激光：人到相机</span><input id="laserDist" type="number" value="2.0" step="0.05" /><em>m</em></label>
+        <label class="m-row" data-mode="laser+ref"><span>参照物距离</span><input id="refDist" type="number" value="2.0" step="0.05" /><em>m</em></label>
+        <div class="m-row"><span>参照物框</span><span class="m-val" id="refInfo">未框选</span></div>
+        <div class="m-calout" id="calOut">—</div>
+      </div>
+
+      <div class="m-head"><span>CONVERGENCE · 收敛</span><span class="head-r" id="sampleInfo">0 帧</span></div>
+      <div class="m-conv">
+        <div class="m-bar"><i id="confBar"></i></div>
+        <div class="m-stats">
+          <span>置信度 <b id="confVal">0%</b></span>
+          <span>离散度 <b id="cvVal">--</b></span>
+          <span>有效样本 <b id="nVal">0</b></span>
+          <span>姿态覆盖 <b id="covVal">0/5</b></span>
+        </div>
+        <div class="m-buckets" id="buckets"></div>
+        <div class="m-next" id="nextHint">先启动摄像头</div>
+      </div>
+
+      <div class="m-head"><span>ANTHROPOMETRY · 尺寸</span><span class="head-r" id="calTag">未标定</span></div>
+      <div class="m-table-wrap">
+        <table class="m-table">
+          <thead><tr><th>项目</th><th>数值</th><th>CV</th><th>n</th><th>卷尺锚点 cm</th></tr></thead>
+          <tbody id="resultBody"></tbody>
+        </table>
+      </div>
+      <div class="m-foot">
+        <button id="btnJson" class="btn">导出 JSON</button>
+        <button id="btnCsv" class="btn">导出 CSV</button>
+        <span class="m-note2">「估算」项为经验系数推算，其余为 3D 段长多帧融合值</span>
+      </div>
+    </aside>
+
+  </main>
+</div>
+
+<script>
+// 任何未捕获异常显示在状态栏，避免白屏无提示
+(function () {
+  var show = function (msg) {
+    var el = document.getElementById('statusText');
+    var dot = document.getElementById('dot');
+    if (el) el.textContent = '错误：' + msg;
+    if (dot) dot.className = 'err';
+  };
+  window.addEventListener('error', function (e) { show(e.message || 'unknown'); }, true);
+  window.addEventListener('unhandledrejection', function (e) { show((e.reason && e.reason.message) || String(e.reason)); });
+})();
+</script>
+<script src="vendor/mediapipe/pose.js"></script>
+<script type="module" src="js/measure-app.js"></script>
+</body>
+</html>
