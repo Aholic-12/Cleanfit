@@ -57,6 +57,8 @@ const els = {
   btnRefine: $('btnRefine'),
   refineStrength: $('refineStrength'),
   refineInfo: $('refineInfo'),
+  respSlider: $('respSlider'),
+  respVal: $('respVal'),
 };
 
 const state = {
@@ -81,6 +83,8 @@ const state = {
   gainTick: 0,
   luma: 1,
   garmentImg: null,  // 最近一次载入的衣服图片，改「抠白底」时要重处理
+  response: 8,       // 跟随灵敏度 1..10（越大越快跟手），由滑块持久化
+  mockT: 0,          // 演示模式累计相位，保证调速度时不跳帧
 };
 
 function setStatus(text, kind) {
@@ -109,6 +113,28 @@ function syncCamButton() {
 const holo = new HoloScene(els.viewport);
 holo.setMirror(state.mirror);      // 摄像头默认是镜像的，3D 必须一起镜像，否则左右反掉
 new ResizeObserver(() => holo.resize()).observe(els.viewport);
+
+// ---------------------------------------------------------------- 跟随灵敏度
+// 一个值统一驱动：3D 小人关节插值速度、尺寸测量平滑、演示动画速度。
+// 高档 = 低延迟跟手；低档 = 强平滑、抗抖动。
+function applyResponse(v) {
+  let r = Math.round(Number(v));
+  if (!isFinite(r)) r = 8;
+  r = Math.min(10, Math.max(1, r));
+  state.response = r;
+  holo.response = r;
+  if (els.respSlider) els.respSlider.value = String(r);
+  if (els.respVal) {
+    els.respVal.textContent = r >= 8 ? `${r} · 灵敏` : r >= 5 ? `${r} · 均衡` : `${r} · 稳定`;
+  }
+  try { localStorage.setItem('cleanfit.response', String(r)); } catch { /* 隐私模式忽略 */ }
+}
+try {
+  const saved = Number(localStorage.getItem('cleanfit.response'));
+  applyResponse(saved > 0 ? saved : 8);
+} catch {
+  applyResponse(8);
+}
 
 // AD 试衣是独立窗口，渲染到真实人物画面上
 const fitting = new FittingView(els.fit);
@@ -269,10 +295,15 @@ function measure() {
     return sv[key];
   };
 
-  const h = smooth('height', height, 0.08);
-  const sh = smooth('shoulder', shW, 0.15);
-  const hp = smooth('hip', hpW, 0.15);
-  const wa = smooth('waist', waW, 0.15);
+  // 尺寸测量也跟着灵敏度走：默认 8 档 ≈0.29 / 0.36（原来 0.08 / 0.15），
+  // 走近走远、转身时体型数据不再慢半拍。
+  const rk = Math.min(10, Math.max(1, state.response || 8));
+  const kSlow = Math.min(0.6, 0.05 + rk * 0.03);
+  const kFast = Math.min(0.8, 0.10 + rk * 0.033);
+  const h = smooth('height', height, kSlow);
+  const sh = smooth('shoulder', shW, kFast);
+  const hp = smooth('hip', hpW, kFast);
+  const wa = smooth('waist', waW, kFast);
 
   const shr = hp > 0.02 ? sh / hp : null;
   const whr = hp > 0.02 && wa ? wa / hp : null;
@@ -458,7 +489,9 @@ async function initPose() {
   });
   pose.setOptions({
     modelComplexity: 0,
-    smoothLandmarks: true,
+    // 关掉 MediaPipe 内置时域低通：它带来约 5 帧延迟，是「小人跟不上」的最大来源。
+    // 平滑改由我们自己的自适应插值承担（rig.js + smoothNorm），受跟随灵敏度控制。
+    smoothLandmarks: false,
     enableSegmentation: true,
     smoothSegmentation: true,
     minDetectionConfidence: 0.5,
@@ -481,9 +514,32 @@ async function initPose() {
   }
 }
 
+// 关掉 MediaPipe 内置平滑后，原始关键点会抖；这里用一层很轻的自适应插值兜底：
+// 默认 8 档基础系数 ≈0.78（约 1 帧延迟），大幅移动时直接拉到 1，不牺牲跟手速度。
+let normCache = null;
+function smoothNorm(P) {
+  if (!P || !P.length) { normCache = null; return P; }
+  if (!normCache || normCache.length !== P.length) {
+    normCache = P.map((p) => ({ ...p }));
+    return normCache;
+  }
+  const kBase = Math.min(1, 0.18 + state.response * 0.075);
+  for (let i = 0; i < P.length; i++) {
+    const p = P[i], c = normCache[i];
+    if (!p || !c) continue;
+    const d = Math.abs(p.x - c.x) + Math.abs(p.y - c.y) + Math.abs(p.z - c.z);
+    const k = Math.min(1, kBase * (1 + Math.min(1.5, d * 6)));
+    c.x += (p.x - c.x) * k;
+    c.y += (p.y - c.y) * k;
+    c.z += (p.z - c.z) * k;
+    c.visibility = p.visibility;
+  }
+  return normCache;
+}
+
 function onResults(res) {
   state.world = res.poseWorldLandmarks || res.ea || null;
-  state.norm = res.poseLandmarks || res.eb || null;
+  state.norm = smoothNorm(res.poseLandmarks || res.eb || null);
   state.mask = res.segmentationMask || null;
   state.m = measure();
 
@@ -576,7 +632,9 @@ function loop(now) {
   lastT = now;
 
   if (DEMO) {
-    state.world = mockPose(now / 1000);
+    // 演示动画速度也随灵敏度提高（默认 8 档 ≈1.35×）；用累计相位，调档时不跳帧
+    state.mockT += dt * (0.75 + state.response * 0.075);
+    state.world = mockPose(state.mockT);
     state.norm = projectToNorm(state.world);
     state.m = measure();
     els.hint.classList.add('hide');
@@ -940,8 +998,11 @@ async function startCamera(preferredId) {
       }
     }
 
+    // 汇总真实失败原因：被占用 / 被拒绝 / 确实没有设备，别一律报「没有摄像头」
     const err = new Error('没有可用的摄像头');
-    err.name = 'NotFoundError';
+    if (fails.some((f) => f.includes('NotReadableError'))) err.name = 'NotReadableError';
+    else if (fails.some((f) => f.includes('NotAllowedError'))) err.name = 'NotAllowedError';
+    else err.name = 'NotFoundError';
     err.fails = fails;
     throw err;
   } catch (e) {
@@ -1243,6 +1304,7 @@ async function refineGarment() {
 }
 
 if (els.btnRefine) els.btnRefine.addEventListener('click', refineGarment);
+if (els.respSlider) els.respSlider.addEventListener('input', (e) => applyResponse(e.target.value));
 
 // 页面加载时探一下本地服务；线上是 https，调 http://127.0.0.1 会被混合内容策略拦掉
 if (els.btnRefine) {

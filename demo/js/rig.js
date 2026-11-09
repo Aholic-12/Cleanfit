@@ -188,6 +188,9 @@ export class HoloScene {
     this.hasPoint = new Array(N).fill(false);
     this.presence = 0;
     this.footY = -0.95;
+    // 跟随灵敏度 1..10：越大越贴原始姿态（延迟低），越小越平滑（抖动少）
+    // 由 app.js 的「跟随灵敏度」滑块驱动
+    this.response = 8;
 
     this._clock = new THREE.Clock();
     this.resize();
@@ -768,12 +771,14 @@ export class HoloScene {
     this.camera.lookAt(0, 0.05, 0);
 
     const live = world && world.length === N;
-    this.presence += ((live ? 1 : 0) - this.presence) * Math.min(1, dt * 6);
+    const resp = Math.min(10, Math.max(1, this.response || 8));
+    this.presence += ((live ? 1 : 0) - this.presence) * Math.min(1, dt * (6 + resp * 0.6));
     this.rig.visible = this.presence > 0.03;
 
     if (live) {
       // 世界坐标：x 右、y 下、z 越负越近 → three：x 右、y 上、z 朝观察者
-      const k = Math.min(1, dt * 14);
+      // 基础跟随系数：默认 8 档 → dt*30（60fps 下 k≈0.5，比原来的 dt*14 快一倍多）
+      const kBase = Math.min(1, dt * (6 + resp * 3));
       for (let i = 0; i < N; i++) {
         const p = world[i];
         const vis = p && (p.visibility === undefined ? 1 : p.visibility);
@@ -788,6 +793,10 @@ export class HoloScene {
           v.set(tx, ty, tz);
           this.inited[i] = true;
         } else {
+          // 速度自适应：误差越大（动作越快）临时提高系数，快速挥手不拖尾；
+          // 静止时保持基础系数，仍然平滑不抖。
+          const d = Math.abs(tx - v.x) + Math.abs(ty - v.y) + Math.abs(tz - v.z);
+          const k = Math.min(1, kBase * (1 + Math.min(1.8, d * 9)));
           v.x += (tx - v.x) * k;
           v.y += (ty - v.y) * k;
           v.z += (tz - v.z) * k;
@@ -806,7 +815,7 @@ export class HoloScene {
       for (const i of [29, 30, 31, 32]) {
         if (this.hasPoint[i]) foot = foot === null ? this.smooth[i].y : Math.min(foot, this.smooth[i].y);
       }
-      if (foot !== null) this.footY += (foot - this.footY) * Math.min(1, dt * 5);
+      if (foot !== null) this.footY += (foot - this.footY) * Math.min(1, dt * (5 + resp * 1.2));
     }
 
     this.stage.position.y = this.footY + 0.02;
