@@ -11,7 +11,7 @@
  * ================================================================== */
 
 import {
-  AnthroMeter, METRIC_DEFS, BUCKETS, calibrateHeight, depthSource,
+  AnthroMeter, METRIC_DEFS, BUCKETS, calibrateHeight, depthSource, framingCheck,
 } from './anthro.js';
 import { mockPose, projectToNorm } from './mock.js';
 
@@ -33,14 +33,36 @@ const els = {
   confBar: $('confBar'), confVal: $('confVal'), cvVal: $('cvVal'),
   nVal: $('nVal'), covVal: $('covVal'), sampleInfo: $('sampleInfo'),
   buckets: $('buckets'), nextHint: $('nextHint'), resultBody: $('resultBody'),
+  viewMode: $('viewMode'), sensSlider: $('sensSlider'), sensVal: $('sensVal'),
+  modeSel: $('modeSel'), autoStop: $('autoStop'), frameTip: $('frameTip'),
+  fpsVal: $('fpsVal'), qVal: $('qVal'),
 };
 
-const meter = new AnthroMeter({ minQuality: 0.4, maxSamples: 1200 });
+// 采集模式：达标即收尾，不必凑满 5 个姿态桶
+const MODE_CFG = {
+  // 快速档只要「一种姿态 + 40 帧」就收尾，站着不动也能几秒出结果；
+  // 想压随机误差再切标准/高精度，让系统引导你多做几组动作。
+  fast:    { minSamples: 40,  minCoverage: 1, maxCv: 0.060, perBucket: 12, target: 12, label: '快速' },
+  normal:  { minSamples: 90,  minCoverage: 2, maxCv: 0.040, perBucket: 25, target: 25, label: '标准' },
+  precise: { minSamples: 200, minCoverage: 4, maxCv: 0.025, perBucket: 45, target: 45, label: '高精度' },
+};
+
+// 4:3 是传感器的原生比例，16:9 往往是上下裁切出来的 → 4:3 垂直视野更大，更容易拍全
+const VIEW_CFG = {
+  full: { width: { ideal: 640 },  height: { ideal: 480 },  frameRate: { ideal: 30 } },
+  auto: { width: { ideal: 1280 }, height: { ideal: 720 },  frameRate: { ideal: 30 } },
+  wide: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
+};
+const FULL_ROI = { x0: 0, y0: 0, x1: 1, y1: 1 };
+
+const meter = new AnthroMeter({ minQuality: 0.26, minVis: 0.26, maxSamples: 1200 });
 const state = {
   stream: null, pose: null, ready: false, running: false, busy: false,
   sampling: false, world: null, norm: null,
   roi: null, refBox: null, drawMode: null, drag: null,
   overrides: {}, pxH: [], devices: new Set(), lastBucket: null,
+  sensitivity: 8, mode: 'fast', autoStop: true,
+  fps: 0, fpsT: 0, fpsN: 0, lastQ: 0,
 };
 
 const NEXT_TEXT = {
@@ -55,6 +77,27 @@ function setStatus(text, kind = '') {
   els.statusText.textContent = text;
   els.dot.className = kind;
 }
+
+// 灵敏度同时放宽「整帧质量门槛」和「单个关键点可见度门槛」：
+// 高档几乎每帧都收，低档只留最稳的帧。
+function applySensitivity(v) {
+  let s = Math.round(Number(v));
+  if (!isFinite(s)) s = 8;
+  s = Math.max(1, Math.min(10, s));
+  state.sensitivity = s;
+  meter.minQuality = +(0.62 - s * 0.045).toFixed(3);   // 8 → 0.26（原来固定 0.40）
+  meter.minVis = +(0.50 - s * 0.030).toFixed(3);       // 8 → 0.26（原来固定 0.45）
+  els.sensSlider.value = String(s);
+  els.sensVal.textContent = String(s);
+  try { localStorage.setItem('cleanfit.sens', String(s)); } catch { /* 隐私模式 */ }
+}
+function applyMode(v) {
+  const k = MODE_CFG[v] ? v : 'fast';
+  state.mode = k;
+  els.modeSel.value = k;
+  try { localStorage.setItem('cleanfit.mode', k); } catch { /* 隐私模式 */ }
+}
+const cfg = () => MODE_CFG[state.mode] || MODE_CFG.fast;
 
 /* ---------------------------------------------------------------- 表格 */
 
@@ -147,7 +190,8 @@ function camError(e) {
 async function startCamera(preferredId) {
   stopCamera();
   setStatus('正在打开摄像头…', '');
-  const base = { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } };
+  // 默认 4:3 全身优先：传感器原生比例，垂直视野比 16:9 大
+  const base = VIEW_CFG[els.viewMode.value] || VIEW_CFG.full;
   const tries = [];
   if (preferredId) tries.push({ video: { ...base, deviceId: { exact: preferredId } }, audio: false });
   tries.push({ video: { ...base }, audio: false });
@@ -233,6 +277,7 @@ function feed(world, norm) {
   if (state.sampling) {
     const r = meter.push(world, norm);
     if (r) state.lastBucket = r.bucket;
+    state.lastQ = meter.lastQuality;
   }
   drawOverlay();
 }
@@ -319,6 +364,22 @@ function strokeBox(ctx, box, color, dash, fill) {
   ctx.restore();
 }
 
+// 8 个手柄让「可以拖」这件事一眼可见
+function drawHandles(ctx, box, color) {
+  if (!box) return;
+  const a = toC(box.x0, box.y0), b = toC(box.x1, box.y1);
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  const pts = [[a.x, a.y], [mx, a.y], [b.x, a.y], [a.x, my], [b.x, my],
+    [a.x, b.y], [mx, b.y], [b.x, b.y]];
+  ctx.save();
+  ctx.fillStyle = color; ctx.strokeStyle = '#04121a'; ctx.lineWidth = 1;
+  for (const [x, y] of pts) {
+    ctx.fillRect(x - 3.5, y - 3.5, 7, 7);
+    ctx.strokeRect(x - 3.5, y - 3.5, 7, 7);
+  }
+  ctx.restore();
+}
+
 function drawOverlay() {
   const c = els.overlay;
   const ctx = c.getContext('2d');
@@ -344,21 +405,24 @@ function drawOverlay() {
     ctx.restore();
   }
 
-  strokeBox(ctx, state.roi, 'rgba(34,211,238,0.9)', [6, 4], 'rgba(34,211,238,0.055)');
+  strokeBox(ctx, state.roi, state.drag ? '#eafcff' : 'rgba(34,211,238,0.9)',
+    state.drag ? [] : [6, 4], 'rgba(34,211,238,0.055)');
   strokeBox(ctx, state.refBox, 'rgba(251,191,36,0.95)', [4, 3], 'rgba(251,191,36,0.07)');
-  if (state.drag) strokeBox(ctx, clampBox(state.drag.a, state.drag.b), '#eafcff', [3, 3], null);
 
   if (state.roi) {
+    drawHandles(ctx, state.roi, '#22d3ee');
     const a = toC(state.roi.x0, state.roi.y0);
-    ctx.fillStyle = 'rgba(34,211,238,0.9)';
+    ctx.fillStyle = '#7ff3ff';
     ctx.font = '10px Consolas, monospace';
-    ctx.fillText('ROI · 限定测量区域', a.x + 4, a.y - 5);
+    const pct = `${((state.roi.x1 - state.roi.x0) * 100).toFixed(0)}% × ${((state.roi.y1 - state.roi.y0) * 100).toFixed(0)}%`;
+    ctx.fillText(`ROI ${pct} · 拖边缩放 / 双击删除`, a.x + 4, Math.max(12, a.y - 5));
   }
   if (state.refBox) {
+    drawHandles(ctx, state.refBox, '#fbbf24');
     const a = toC(state.refBox.x0, state.refBox.y0);
     ctx.fillStyle = 'rgba(251,191,36,0.95)';
     ctx.font = '10px Consolas, monospace';
-    ctx.fillText('REF · 参照物', a.x + 4, a.y - 5);
+    ctx.fillText('REF · 参照物', a.x + 4, Math.max(12, a.y - 5));
   }
 }
 
@@ -367,51 +431,136 @@ function pointerPos(e) {
   return toN(e.clientX - r.left, e.clientY - r.top);
 }
 
+/* ---- 直接鼠标交互：空白处拖出新框 / 框内拖动 / 拖边与四角缩放 / 双击删除 ---- */
+
+function hitROI(p) {
+  const b = state.roi;
+  if (!b) return null;
+  const r = frameRect();
+  const tx = 10 / Math.max(1, r.w), ty = 10 / Math.max(1, r.h);
+  const l = Math.abs(p.x - b.x0) < tx, rr = Math.abs(p.x - b.x1) < tx;
+  const t = Math.abs(p.y - b.y0) < ty, bb = Math.abs(p.y - b.y1) < ty;
+  const inside = p.x > b.x0 - tx && p.x < b.x1 + tx && p.y > b.y0 - ty && p.y < b.y1 + ty;
+  if (!inside) return null;
+  const edges = { l, r: rr, t, b: bb };
+  if (l || rr || t || bb) return { edges };
+  return { move: true };
+}
+const hitRef = (p) => {
+  const b = state.refBox;
+  return !!b && p.x >= b.x0 && p.x <= b.x1 && p.y >= b.y0 && p.y <= b.y1;
+};
+function cursorFor(hit) {
+  if (!hit) return 'crosshair';
+  if (hit.move) return 'move';
+  const e = hit.edges;
+  if ((e.l && e.t) || (e.r && e.b)) return 'nwse-resize';
+  if ((e.r && e.t) || (e.l && e.b)) return 'nesw-resize';
+  if (e.l || e.r) return 'ew-resize';
+  return 'ns-resize';
+}
+function dragBox(d, cur) {
+  if (d.kind === 'draw' || d.kind === 'ref') return clampBox(d.start, cur);
+  const b0 = d.box0 || FULL_ROI;
+  const dx = cur.x - d.start.x, dy = cur.y - d.start.y;
+  if (d.kind === 'move') {
+    const w = b0.x1 - b0.x0, h = b0.y1 - b0.y0;
+    const x0 = Math.max(0, Math.min(1 - w, b0.x0 + dx));
+    const y0 = Math.max(0, Math.min(1 - h, b0.y0 + dy));
+    return { x0, y0, x1: x0 + w, y1: y0 + h };
+  }
+  let { x0, y0, x1, y1 } = b0;
+  const e = d.edges;
+  if (e.l) x0 = Math.min(b0.x1 - 0.02, Math.max(0, b0.x0 + dx));
+  if (e.r) x1 = Math.max(b0.x0 + 0.02, Math.min(1, b0.x1 + dx));
+  if (e.t) y0 = Math.min(b0.y1 - 0.02, Math.max(0, b0.y0 + dy));
+  if (e.b) y1 = Math.max(b0.y0 + 0.02, Math.min(1, b0.y1 + dy));
+  return { x0, y0, x1, y1 };
+}
+function commitROI(box) {
+  state.roi = box;
+  meter.setROI(box || FULL_ROI);
+}
+
 els.overlay.addEventListener('pointerdown', (e) => {
-  if (!state.drawMode) return;
+  if (!state.running || e.detail >= 2) return;   // 双击交给 dblclick
   const p = pointerPos(e);
-  state.drag = { a: p, b: p };
-  els.overlay.setPointerCapture(e.pointerId);
+  // 「重画区域 / 框参照物」按钮按下后强制画新框，不受已有框的命中影响
+  const forceDraw = state.drawMode === 'ref' || state.drawMode === 'roi';
+  const hit = forceDraw ? null : hitROI(p);
+  let d;
+  if (state.drawMode === 'ref') d = { kind: 'ref', start: p, box0: state.refBox ? { ...state.refBox } : null };
+  else if (hit && hit.move) d = { kind: 'move', start: p, box0: { ...state.roi } };
+  else if (hit) d = { kind: 'resize', start: p, box0: { ...state.roi }, edges: hit.edges };
+  else d = { kind: 'draw', start: p, box0: state.roi ? { ...state.roi } : null };
+  state.drag = d;
+  state.drawMode = null;                          // 一次操作后回到直接编辑模式
+  els.guide.hidden = true;
+  els.overlay.classList.remove('drawing');
+  try { els.overlay.setPointerCapture(e.pointerId); } catch { /* 合成事件无 capture */ }
   drawOverlay();
 });
+
 els.overlay.addEventListener('pointermove', (e) => {
-  if (!state.drag) return;
-  state.drag.b = pointerPos(e);
+  const p = pointerPos(e);
+  if (!state.drag) { els.overlay.style.cursor = cursorFor(hitROI(p)); return; }
+  const box = dragBox(state.drag, p);
+  if (state.drag.kind === 'ref') {
+    state.refBox = box;
+    els.overlay.style.cursor = 'crosshair';
+  } else {
+    commitROI(box);                               // 实时生效，采样立刻按新区域过滤
+    els.overlay.style.cursor = state.drag.kind === 'move' ? 'move' : 'crosshair';
+  }
   drawOverlay();
 });
-els.overlay.addEventListener('pointerup', (e) => {
-  if (!state.drag) return;
-  state.drag.b = pointerPos(e);
-  const box = clampBox(state.drag.a, state.drag.b);
+
+function endDrag(e) {
+  const d = state.drag;
+  if (!d) return;
+  const box = dragBox(d, pointerPos(e));
   state.drag = null;
   try { els.overlay.releasePointerCapture(e.pointerId); } catch { /* 已释放 */ }
-
-  if (box.x1 - box.x0 < 0.02 || box.y1 - box.y0 < 0.02) {
-    setStatus('框太小了，请拖出一个有效区域', 'err');
-  } else if (state.drawMode === 'roi') {
-    state.roi = box;
-    meter.setROI(box);
-    setStatus('测量区域已设定 · 只统计框内关键点', 'ok');
-  } else {
+  const valid = box && box.x1 - box.x0 >= 0.02 && box.y1 - box.y0 >= 0.02;
+  if (!valid) {
+    if (d.kind === 'ref') state.refBox = d.box0;
+    else commitROI(d.box0);
+    setStatus('框太小了，已恢复原区域', 'err');
+  } else if (d.kind === 'ref') {
     state.refBox = box;
     const px = (box.x1 - box.x0) * (els.video.videoWidth || 1280);
     els.refInfo.textContent = `${px.toFixed(0)} px 宽`;
-    setStatus('参照物框已记录', 'ok');
+    setStatus('参照物框已记录 · 可直接重拖', 'ok');
+  } else {
+    commitROI(box);
+    setStatus('测量区域已更新 · 可拖动 / 拖边缩放 / 双击删除', 'ok');
   }
-  state.drawMode = null;
-  els.guide.hidden = true;
-  els.overlay.classList.remove('drawing');
+  drawOverlay();
+}
+els.overlay.addEventListener('pointerup', endDrag);
+els.overlay.addEventListener('pointercancel', endDrag);
+
+els.overlay.addEventListener('dblclick', (e) => {
+  const p = pointerPos(e);
+  if (hitROI(p)) { commitROI(null); setStatus('测量区域已删除 · 恢复全画面', ''); }
+  else if (hitRef(p)) {
+    state.refBox = null;
+    els.refInfo.textContent = '未框选';
+    setStatus('参照物框已删除', '');
+  }
   drawOverlay();
 });
 
+// 按钮只是「强制重画」，正常情况直接在画面上拖即可
 function beginDraw(mode) {
   if (!state.running) { setStatus('请先启动摄像头', 'err'); return; }
   state.drawMode = mode;
   els.guide.hidden = false;
   els.guide.textContent = mode === 'roi'
-    ? '拖拽框出「限定测量区域」：框全身测全身，框上半身只出上半身指标'
+    ? '按住鼠标拖出新区域（已有框也能直接拖边/拖角调整）'
     : '拖拽框住参照物（如 A4 纸短边 21cm），尽量与人体处在同一深度';
   els.overlay.classList.add('drawing');
+  els.overlay.style.cursor = 'crosshair';
 }
 
 /* ---------------------------------------------------------------- 标定 */
@@ -459,7 +608,8 @@ function refresh() {
   els.calOut.classList.toggle('warn', cal.quality === 'none' || cal.quality === 'rough');
   els.calTag.textContent = cal.heightM ? `${(cal.heightM * 100).toFixed(1)} cm 已标定` : '未标定';
 
-  const r = meter.result({ heightM: cal.heightM, overrides: state.overrides });
+  const C = cfg();
+  const r = meter.result({ heightM: cal.heightM, overrides: state.overrides }, C);
   for (const def of METRIC_DEFS) {
     const m = r.metrics[def.key];
     const e = rowEls[def.key];
@@ -469,34 +619,60 @@ function refresh() {
     e.n.textContent = m ? m.n : '0';
   }
 
+  // 实时采集速率与本帧质量，方便判断「灵敏度」够不够；停采后保留最后一次读数
+  if (state.sampling) {
+    const now = performance.now();
+    if (state.fpsT === 0) { state.fpsT = now; state.fpsN = meter.accepted; }
+    else if (now - state.fpsT > 250) {
+      state.fps = (meter.accepted - state.fpsN) / ((now - state.fpsT) / 1000);
+      state.fpsT = now; state.fpsN = meter.accepted;
+    }
+  }
+  els.fpsVal.textContent = `${state.fps.toFixed(0)} fps`;
+  els.qVal.textContent = `Q ${state.lastQ.toFixed(2)}`;
+
   els.confBar.style.width = (r.confidence * 100).toFixed(0) + '%';
   els.confVal.textContent = (r.confidence * 100).toFixed(0) + '%';
   els.cvVal.textContent = (r.avgCv * 100).toFixed(2) + '%';
   els.nVal.textContent = String(r.samples);
   els.covVal.textContent = `${r.coverage}/5`;
-  els.sampleInfo.textContent = `${r.samples} 帧 · 丢弃 ${r.rejected} · ${state.devices.size} 个视角`;
+  els.sampleInfo.textContent = `${C.label} · 目标 ${C.minSamples} 帧 / ${C.minCoverage} 类姿态 · 丢弃 ${r.rejected} · ${state.devices.size} 个视角`;
 
   let weakest = null;
   for (const b of BUCKETS) {
     const c = r.buckets[b.key] || 0;
     const el = bucketEls[b.key];
-    el.fill.style.width = Math.min(100, (c / 60) * 100).toFixed(0) + '%';
+    el.fill.style.width = Math.min(100, (c / C.target) * 100).toFixed(0) + '%';
     el.ct.textContent = String(c);
-    el.row.classList.toggle('done', c >= 40);
+    el.row.classList.toggle('done', c >= C.perBucket);
     el.row.classList.toggle('cur', state.sampling && b.key === state.lastBucket);
     if (!weakest || c < weakest.c) weakest = { key: b.key, c };
   }
 
+  // 人物是否完整入画 + 具体可行的补救建议
+  const fc = framingCheck(state.norm);
+  els.frameTip.hidden = fc.ok || !state.running;
+  if (!fc.ok) els.frameTip.textContent = `⚠ ${fc.issues.join(' / ')} — ${fc.advice.join('；')}`;
+
+  // 达标自动收尾：不用一直等，也不必凑满 5 个姿态桶
+  if (state.sampling && els.autoStop.checked && r.converged && r.samples >= C.minSamples) {
+    state.sampling = false;
+    syncButtons();
+    setStatus(`采集完成 · ${r.samples} 帧 · 置信度 ${(r.confidence * 100).toFixed(0)}% · 可以导出了`, 'ok');
+  }
+
   let hint;
-  if (!state.running) hint = '先启动摄像头，再框出测量区域';
+  if (!state.running) hint = '先启动摄像头，再在画面上直接拖出测量区域';
   else if (!state.ready) hint = '推理引擎加载中…';
-  else if (!state.sampling) hint = '设定 ROI 与标定方式后，点「开始采样」';
-  else if (r.converged && r.coverage >= 4 && cal.heightM) hint = '已收敛 · 数据稳定，可以导出了';
+  else if (!state.sampling) hint = r.samples
+    ? `已采 ${r.samples} 帧 · 可继续采样，或直接导出（${C.label}模式）`
+    : '在画面上拖框 → 填标定 → 点「开始采样」';
+  else if (r.converged && cal.heightM) hint = `已达标 · ${r.samples} 帧 · 置信度 ${(r.confidence * 100).toFixed(0)}%，可继续或导出`;
   else if (!cal.heightM) hint = '注意：当前未标定尺度，数值仅为模型先验，建议填真实身高';
-  else if (weakest) hint = `下一步：${NEXT_TEXT[weakest.key]}（该类样本 ${weakest.c}/60）`;
+  else if (weakest) hint = `下一步：${NEXT_TEXT[weakest.key]}（该类 ${weakest.c}/${C.target}）`;
   else hint = '继续采样…';
   els.nextHint.textContent = hint;
-  els.nextHint.classList.toggle('ok', /已收敛/.test(hint));
+  els.nextHint.classList.toggle('ok', /已达标|已采|采集完成/.test(hint));
 
   els.bucketTag.hidden = !(state.sampling && state.lastBucket);
   if (state.sampling && state.lastBucket) {
@@ -512,8 +688,9 @@ function refresh() {
 
 function doExport(kind) {
   const cal = currentCalibration();
-  const data = meter.export({ heightM: cal.heightM, overrides: state.overrides });
+  const data = meter.export({ heightM: cal.heightM, overrides: state.overrides }, cfg());
   data.calibration = { mode: els.calMode.value, detail: cal.detail, quality: cal.quality };
+  data.capture = { mode: state.mode, sensitivity: state.sensitivity, viewMode: els.viewMode.value, ...cfg() };
   data.roi = state.roi;
   data.referenceBox = state.refBox;
   data.viewports = state.devices.size;
@@ -562,16 +739,23 @@ els.btnSample.addEventListener('click', () => {
 });
 els.btnReset.addEventListener('click', () => {
   meter.reset(); state.pxH.length = 0; state.devices.clear(); state.lastBucket = null;
+  state.fpsT = 0; state.fpsN = 0; state.fps = 0; state.lastQ = 0;
   setStatus('样本已清空，ROI 与标定保留', '');
 });
 els.btnRoiDraw.addEventListener('click', () => beginDraw('roi'));
 els.btnRefDraw.addEventListener('click', () => beginDraw('ref'));
 els.btnRoiClear.addEventListener('click', () => {
-  state.roi = null; state.refBox = null;
-  meter.setROI({ x0: 0, y0: 0, x1: 1, y1: 1 });
+  commitROI(null);
+  state.refBox = null;
   els.refInfo.textContent = '未框选';
   drawOverlay();
   setStatus('区域已清除，恢复全画面', '');
+});
+els.sensSlider.addEventListener('input', (e) => applySensitivity(e.target.value));
+els.modeSel.addEventListener('change', (e) => applyMode(e.target.value));
+els.viewMode.addEventListener('change', () => {
+  // 换画面比例必须重新协商摄像头分辨率
+  if (state.running && !DEMO) startCamera(els.camSelect.value || undefined);
 });
 els.calMode.addEventListener('change', syncCalRows);
 els.btnJson.addEventListener('click', () => doExport('json'));
@@ -584,6 +768,14 @@ buildTable();
 buildBuckets();
 syncCalRows();
 fitOverlay();
+try {
+  const s = Number(localStorage.getItem('cleanfit.sens'));
+  applySensitivity(s > 0 ? s : 8);
+  applyMode(localStorage.getItem('cleanfit.mode') || 'fast');
+} catch {
+  applySensitivity(8);
+  applyMode('fast');
+}
 
 if (DEMO) {
   state.running = true; state.ready = true;

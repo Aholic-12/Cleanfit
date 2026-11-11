@@ -23,7 +23,7 @@
 
     <!-- 左：取景 + ROI 框选 -->
     <section class="m-panel m-left">
-      <div class="m-head"><span>CAMERA · 4D 采样</span><span class="head-r" id="camInfo">--</span></div>
+      <div class="m-head"><span>CAMERA · 4D 采样</span><span class="head-r"><span id="fpsVal">0 fps</span> · <span id="qVal">Q --</span> · <span id="camInfo">--</span></span></div>
 
       <div class="m-view" id="view">
         <video id="video" playsinline muted autoplay></video>
@@ -36,20 +36,45 @@
         <div class="m-bucket-tag" id="bucketTag" hidden></div>
       </div>
 
+      <div class="m-frame-tip" id="frameTip" hidden></div>
+
       <div class="m-foot">
         <select id="camSelect" class="sel" title="选择摄像头"><option value="">检测设备…</option></select>
         <button id="btnCam" class="btn primary">启动摄像头</button>
         <button id="btnSample" class="btn" disabled>开始采样</button>
         <button id="btnReset" class="btn">清空样本</button>
         <span class="m-sep"></span>
-        <button id="btnRoiDraw" class="btn">框选区域</button>
+        <button id="btnRoiDraw" class="btn">重画区域</button>
         <button id="btnRoiClear" class="btn">清除区域</button>
         <button id="btnRefDraw" class="btn">框参照物</button>
       </div>
 
+      <div class="m-foot m-foot2">
+        <label class="m-ctl">画面
+          <select id="viewMode" class="sel" title="4:3 的垂直视野比 16:9 大，更容易把全身拍进去">
+            <option value="full">4:3 全身优先</option>
+            <option value="auto">16:9 高清</option>
+            <option value="wide">宽屏 1080p</option>
+          </select>
+        </label>
+        <label class="m-ctl">灵敏度
+          <input id="sensSlider" type="range" min="1" max="10" step="1" value="8" title="越高越容易收进样本，越低越严格" />
+          <b id="sensVal">8</b>
+        </label>
+        <label class="m-ctl">采集
+          <select id="modeSel" class="sel" title="达标即自动收尾，不必一直等">
+            <option value="fast">快速</option>
+            <option value="normal">标准</option>
+            <option value="precise">高精度</option>
+          </select>
+        </label>
+        <label class="chk"><input type="checkbox" id="autoStop" checked />达标自动停止</label>
+      </div>
+
       <div class="m-note" id="note">
-        流程：① 框住被测者（全身或只框上半身）→ ② 填尺度标定 → ③ 点「开始采样」并按右侧引导做 5 组动作 → ④ 收敛后导出。
-        切换不同摄像头继续采样，会自动并入同一份多视角样本。
+        <b>框选直接上手</b>：在画面空白处按住鼠标拖出新区域；框内拖动可移动，拖边框/四角可缩放，双击删除，无需先点按钮。
+        <b>拍不全怎么办</b>：切「4:3 全身优先」或后退；仍装不下就分两段采 —— 先框上半身采一轮，再框下半身采一轮，样本会自动合并成全身数据。
+        切换不同摄像头继续采样也会并入同一份多视角样本。
       </div>
     </section>
 

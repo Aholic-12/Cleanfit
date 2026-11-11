@@ -166,9 +166,9 @@ function inROI(norm, id, roi) {
   return !!p && p.x >= roi.x0 && p.x <= roi.x1 && p.y >= roi.y0 && p.y <= roi.y1;
 }
 
-export function extractSegments(P, norm = null, roi = null) {
+export function extractSegments(P, norm = null, roi = null, minVis = 0.45) {
   if (!P || P.length < 33) return null;
-  const has = (...ids) => ids.every((i) => ok(P[i]));
+  const has = (...ids) => ids.every((i) => ok(P[i], minVis));
   const s = {};
 
   if (has(IDX.lSh, IDX.rSh, IDX.lHip, IDX.rHip, IDX.nose)) {
@@ -273,6 +273,7 @@ export class AnthroMeter {
   constructor(opts = {}) {
     this.roi = opts.roi || { x0: 0, y0: 0, x1: 1, y1: 1 };
     this.minQuality = opts.minQuality ?? 0.45;
+    this.minVis = opts.minVis ?? 0.45;      // 单点可见度门槛，跟随「采样灵敏度」变化
     this.maxSamples = opts.maxSamples || 900;
     this.samples = {};                 // key -> [{v,w,bucket,t}]
     this.frames = 0;
@@ -301,7 +302,7 @@ export class AnthroMeter {
     this.lastBucket = fq.bucket;
     if (fq.q < this.minQuality) { this.rejected++; return null; }
 
-    const seg = extractSegments(world, norm, this.roi);
+    const seg = extractSegments(world, norm, this.roi, this.minVis);
     if (!seg || !Object.keys(seg).length) { this.rejected++; return null; }
     this.accepted++;
     this.qualitySum += fq.q;
@@ -322,8 +323,10 @@ export class AnthroMeter {
     return c;
   }
 
-  /** calib: { heightM, overrides: {key: cm} } —— 输出单位统一为 cm */
-  result(calib = {}) {
+  /** calib: { heightM, overrides: {key: cm} }
+   *  opts:  { minSamples, minCoverage, maxCv, perBucket } —— 由「采集模式」决定收敛快慢
+   *  输出单位统一为 cm */
+  result(calib = {}, opts = {}) {
     const per = {};
     const heightModel = (this.samples.height && robustCombine(this.samples.height)) || null;
     const k = calib.heightM && heightModel ? calib.heightM / heightModel.value : 1;
@@ -342,17 +345,22 @@ export class AnthroMeter {
       };
     }
 
+    const perBucket = opts.perBucket ?? 12;
+    const minSamples = opts.minSamples ?? 60;
+    const minCoverage = opts.minCoverage ?? 2;
+    const maxCv = opts.maxCv ?? 0.05;
+
     const counts = this.bucketCounts();
-    const coverage = BUCKETS.filter((b) => counts[b.key] >= 8).length;
+    const coverage = BUCKETS.filter((b) => counts[b.key] >= perBucket).length;
     const avgQ = this.accepted ? this.qualitySum / this.accepted : 0;
     const avgCv = cvN ? cvSum / cvN : 1;
     const n = this.accepted;
     const confidence = clamp(
-      0.28 * Math.min(1, n / 150) +
-      0.24 * (coverage / BUCKETS.length) +
+      0.28 * Math.min(1, n / (minSamples * 1.6)) +
+      0.24 * (coverage / Math.max(1, minCoverage)) +
       0.28 * avgQ +
       0.20 * (1 - Math.min(1, avgCv / 0.08)), 0, 1);
-    const converged = n >= 90 && coverage >= 3 && avgCv < 0.035;
+    const converged = n >= minSamples && coverage >= minCoverage && avgCv < maxCv;
 
     return {
       metrics: per, scale: k, calibrated: !!calib.heightM,
@@ -362,8 +370,8 @@ export class AnthroMeter {
     };
   }
 
-  export(calib = {}) {
-    const r = this.result(calib);
+  export(calib = {}, opts = {}) {
+    const r = this.result(calib, opts);
     const rows = METRIC_DEFS.map((d) => ({
       key: d.key, label: d.label, kind: d.kind,
       cm: r.metrics[d.key] ? +r.metrics[d.key].value.toFixed(2) : null,
@@ -378,6 +386,48 @@ export class AnthroMeter {
       samples: r.samples, buckets: r.buckets, rows,
     };
   }
+}
+
+/* ------------------------------------------------------------------ *
+ *  入画检查：人物是否被摄像头拍全
+ *  16:9 通常是 4:3 传感器上下裁切出来的，切 4:3 能多拿到一截垂直视野。
+ *  实在拍不全时，正确做法是分段采集（上半身 + 下半身），样本会自动合并。
+ * ------------------------------------------------------------------ */
+export function framingCheck(norm) {
+  if (!norm || norm.length < 33) {
+    return { ok: false, issues: ['未检测到人体'], advice: ['请让人物进入画面'], headY: 0, footY: 0 };
+  }
+  const v = (i) => {
+    const p = norm[i];
+    return p && (p.visibility ?? 1) > 0.35 ? p : null;
+  };
+  const head = v(0);
+  const ears = [v(7), v(8)].filter(Boolean);
+  const feet = [27, 28, 29, 30, 31, 32].map(v).filter(Boolean);
+  const pts = [0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28].map(v).filter(Boolean);
+  if (!head && !ears.length) {
+    return { ok: false, issues: ['头部未检出'], advice: ['请正对摄像头'], headY: 0, footY: 0 };
+  }
+
+  const headY = Math.min(...[head ? head.y : 1, ...ears.map((p) => p.y)]);
+  const footY = feet.length ? Math.max(...feet.map((p) => p.y)) : 0;
+  const leftX = pts.length ? Math.min(...pts.map((p) => p.x)) : 0.5;
+  const rightX = pts.length ? Math.max(...pts.map((p) => p.x)) : 0.5;
+
+  const issues = [];
+  if (headY < 0.055) issues.push('头顶出画');
+  if (footY > 0.945 || feet.length < 2) issues.push('脚部出画');
+  if (leftX < 0.035 || rightX > 0.965) issues.push('左右出画');
+
+  return {
+    ok: issues.length === 0,
+    issues, headY, footY,
+    advice: issues.length ? [
+      '请后退 30–60cm 或把摄像头放低、稍微仰拍',
+      '把「画面比例」切到 4:3 全身优先（垂直视野更大）',
+      '或分两段采集：先框上半身采一轮，再框下半身采一轮，样本自动合并成全身',
+    ] : [],
+  };
 }
 
 /* 可选深度/多设备数据源挂载点。

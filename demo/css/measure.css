@@ -70,7 +70,7 @@
   overflow: hidden;
 }
 .m-view video { display: block; width: 100%; height: 100%; object-fit: contain; }
-.m-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+.m-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
 .m-view canvas.drawing { cursor: crosshair; }
 
 .m-idle {
@@ -127,7 +127,29 @@
 .m-foot .btn { font-size: 10px; padding: 5px 10px; }
 .m-foot .sel { max-width: 190px; font-size: 10px; }
 .m-sep { width: 1px; height: 18px; background: var(--line); margin: 0 2px; }
-.m-note { flex: none; padding: 7px 10px; font-size: 10.5px; line-height: 1.6; color: var(--muted); border-top: 1px solid var(--line); }
+
+/* 第二行工具条：画面比例 / 灵敏度 / 采集模式 */
+.m-foot2 { padding-top: 5px; padding-bottom: 5px; border-top: 0; background: rgba(6, 16, 25, .72); }
+.m-ctl { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); white-space: nowrap; }
+.m-ctl .sel { max-width: 122px; font-size: 10px; }
+.m-ctl input[type=range] { width: 78px; accent-color: var(--cyan); cursor: pointer; }
+.m-ctl b { font-family: var(--mono); color: var(--cyan); font-size: 11px; }
+.m-foot2 .chk { font-size: 10px; }
+
+/* 人物未完整入画提示 */
+.m-frame-tip {
+  flex: none;
+  padding: 6px 10px;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--amber);
+  background: rgba(251, 191, 36, .08);
+  border-top: 1px solid rgba(251, 191, 36, .32);
+}
+.m-frame-tip[hidden] { display: none; }
+
+.m-note { flex: none; padding: 7px 10px; font-size: 10.5px; line-height: 1.65; color: var(--muted); border-top: 1px solid var(--line); }
+.m-note b { color: var(--text); font-weight: 600; }
 .m-note2 { font-size: 9.5px; color: var(--muted); margin-left: auto; }
 
 /* ---------- 标定 ---------- */
