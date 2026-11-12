@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cleanfit · 人体比例精准测量</title>
+<meta name="description" content="Cleanfit：浏览器端 4D 人体比例精准测量。3D 骨骼段长 × 多帧多姿态稳健融合 × 外部尺度标定，输出 14 项尺寸与置信度。" />
+<style>
+  :root {
+    --green: #76b900;
+    --green-hi: #8ed600;
+    --green-dk: #5c9100;
+    --ink: #0b0d0c;
+    --ink-2: #151815;
+    --ink-3: #1e221e;
+    --white: #ffffff;
+    --gray: #f4f6f2;
+    --gray-2: #e9ede6;
+    --line: #dfe4da;
+    --muted: #6b736a;
+    --cyan: #22d3ee;
+    --amber: #fbbf24;
+    --sans: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+    --mono: "JetBrains Mono", Consolas, "Cascadia Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--white); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  img, svg { display: block; }
+  .wrap { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 40px; }
+  .mono { font-family: var(--mono); }
+
+  /* ---------- 顶部导航（仿 NVIDIA 浅色细条） ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,.96); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line); height: 58px;
+  }
+  .nav-in { height: 100%; display: flex; align-items: center; gap: 36px; }
+  .logo { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 800; letter-spacing: 2.2px; }
+  .logo svg { width: 26px; height: 26px; }
+  .menu { display: flex; align-items: center; gap: 26px; font-size: 13px; color: #3b423a; }
+  .menu a { padding: 18px 0; border-bottom: 2px solid transparent; transition: color .2s, border-color .2s; }
+  .menu a:hover { color: var(--green-dk); border-bottom-color: var(--green); }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 20px; font-size: 12.5px; color: #3b423a; }
+  .nav-right > a:first-child:hover { color: var(--green-dk); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 13px 24px; font-size: 13.5px; font-weight: 700; letter-spacing: .3px;
+    border-radius: 2px; border: 1px solid transparent; cursor: pointer; transition: all .2s;
+  }
+  .btn-green { background: var(--green); color: #0b0d0c; border-color: var(--green); }
+  .btn-green:hover { background: var(--green-hi); border-color: var(--green-hi); transform: translateY(-1px); }
+  .btn-ghost { background: transparent; color: var(--white); border-color: rgba(255,255,255,.55); }
+  .btn-ghost:hover { border-color: var(--white); background: rgba(255,255,255,.08); }
+  .btn-outline { background: transparent; color: var(--ink); border-color: #b9c2b3; }
+  .btn-outline:hover { border-color: var(--green); color: var(--green-dk); }
+  .btn-sm { padding: 8px 16px; font-size: 12px; }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; background: #080a08; color: var(--white); overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 55% 70% at 78% 45%, rgba(118,185,0,.13), transparent 68%),
+      radial-gradient(ellipse 45% 60% at 12% 100%, rgba(34,211,238,.07), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, transparent 1px 56px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.022) 0 1px, transparent 1px 56px);
+  }
+  .hero-in {
+    position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr .95fr;
+    gap: 40px; align-items: center; min-height: 610px; padding-top: 56px; padding-bottom: 46px;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 2.4px; color: var(--green-hi);
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+  .eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--green); }
+  .hero h1 { margin: 0 0 22px; font-size: clamp(42px, 5.2vw, 72px); line-height: 1.12; font-weight: 800; letter-spacing: -1.5px; }
+  .hero h1 em { font-style: normal; color: var(--green-hi); }
+  .hero-lead { margin: 0 0 32px; max-width: 560px; font-size: 16px; line-height: 1.95; color: #c9d2c6; }
+  .hero-lead b { color: var(--white); font-weight: 600; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .hero-meta { margin-top: 30px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 1.2px; color: #6d7a6a; }
+
+  /* 全息人体视觉（纯内联 SVG + CSS 动画，零外链） */
+  .hero-visual { position: relative; display: flex; align-items: center; justify-content: center; min-height: 480px; }
+  .figure { width: min(100%, 440px); height: auto; filter: drop-shadow(0 0 22px rgba(34,211,238,.18)); }
+  .bone { fill: none; stroke: rgba(127,243,255,.72); stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+  .bone-soft { fill: none; stroke: rgba(34,211,238,.28); stroke-width: 1.2; }
+  .node { fill: #7ff3ff; }
+  .node-glow { fill: rgba(34,211,238,.18); }
+  .measure { fill: none; stroke: var(--green-hi); stroke-width: 1.4; stroke-dasharray: 5 4; }
+  .measure-txt { fill: var(--green-hi); font-family: var(--mono); font-size: 11px; letter-spacing: .5px; }
+  .scan { stroke: rgba(118,185,0,.75); stroke-width: 1.5; }
+  .pulse { animation: pulse 2.6s ease-in-out infinite; transform-origin: center; }
+  @keyframes pulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+  .scanline { animation: scan 5.5s ease-in-out infinite; }
+  @keyframes scan { 0%,100% { transform: translateY(0); opacity: .15; } 50% { transform: translateY(360px); opacity: .9; } }
+  .hud {
+    position: absolute; right: 0; bottom: 26px; width: 210px;
+    background: rgba(9,16,12,.88); border: 1px solid rgba(118,185,0,.38);
+    border-left: 3px solid var(--green); padding: 14px 16px;
+    font-family: var(--mono); font-size: 10.5px; line-height: 1.9; color: #9fb39a;
+  }
+  .hud b { color: var(--green-hi); font-size: 15px; }
+  .hud .row { display: flex; justify-content: space-between; }
+  .hud .ok { color: #7ff3ff; }
+
+  /* Hero 底部能力标签条（仿 NVIDIA 新闻条） */
+  .tabs-shell { position: relative; z-index: 2; border-top: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.5); }
+  .tabs { display: grid; grid-template-columns: repeat(6, 1fr); }
+  .tab {
+    position: relative; padding: 18px 16px 17px; text-align: left; cursor: pointer;
+    background: transparent; border: 0; border-right: 1px solid rgba(255,255,255,.08);
+    color: #8b9688; font-family: var(--sans); font-size: 12.5px; line-height: 1.5;
+    transition: color .2s, background .2s;
+  }
+  .tab:last-child { border-right: 0; }
+  .tab::before { content: ""; position: absolute; top: -1px; left: 0; right: 0; height: 2px; background: transparent; }
+  .tab:hover { color: #dbe4d8; background: rgba(255,255,255,.03); }
+  .tab.active { color: var(--white); background: rgba(118,185,0,.07); }
+  .tab.active::before { background: var(--green); }
+  .tab span { display: block; font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.4px; color: var(--green-hi); margin-bottom: 5px; }
+  .tab-panel {
+    padding: 15px 0 18px; font-size: 12.5px; line-height: 1.8; color: #aeb9aa;
+    border-top: 1px solid rgba(255,255,255,.07);
+  }
+  .tab-panel b { color: var(--green-hi); }
+
+  /* ---------- 通用区块 ---------- */
+  section { scroll-margin-top: 58px; }
+  .section { padding: 88px 0; }
+  .section.gray { background: var(--gray); }
+  .section.dark { background: var(--ink); color: var(--white); }
+  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 2.2px; color: var(--green-dk); text-transform: uppercase; margin-bottom: 14px; }
+  .section.dark .kicker { color: var(--green-hi); }
+  h2 { margin: 0 0 16px; font-size: clamp(28px, 3.4vw, 42px); line-height: 1.25; font-weight: 800; letter-spacing: -.8px; }
+  .sub { margin: 0; max-width: 720px; font-size: 14.5px; line-height: 1.95; color: var(--muted); }
+  .section.dark .sub { color: #9daa99; }
+  .head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; margin-bottom: 42px; }
+
+  /* 数字条 */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 2px solid var(--green); background: var(--white); }
+  .stat { padding: 30px 28px; border-right: 1px solid var(--line); }
+  .stat:last-child { border-right: 0; }
+  .stat .n { font-family: var(--mono); font-size: clamp(30px, 3.6vw, 46px); font-weight: 700; letter-spacing: -2px; line-height: 1; color: var(--ink); }
+  .stat .n small { font-size: 17px; letter-spacing: 0; margin-left: 3px; color: var(--green-dk); }
+  .stat .t { margin-top: 10px; font-size: 12px; color: var(--muted); }
+
+  /* 产品卡片 */
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .card {
+    position: relative; display: flex; flex-direction: column; min-height: 288px;
+    padding: 26px 24px 22px; background: var(--white); border: 1px solid var(--line);
+    transition: border-color .2s, transform .2s, box-shadow .2s;
+  }
+  .card:hover { border-color: var(--green); transform: translateY(-3px); box-shadow: 0 16px 36px -24px rgba(20,40,0,.55); }
+  .card.primary { border-top: 3px solid var(--green); }
+  .badge {
+    position: absolute; top: 14px; right: 14px; padding: 4px 9px;
+    background: var(--green); color: #0b0d0c; font-family: var(--mono); font-size: 9px; letter-spacing: 1px;
+  }
+  .ico { width: 46px; height: 46px; margin-bottom: 22px; }
+  .card h3 { margin: 0 0 10px; font-size: 17px; font-weight: 700; }
+  .card p { margin: 0 0 18px; font-size: 12.5px; line-height: 1.85; color: var(--muted); flex: 1; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .tags i { font-style: normal; padding: 3px 8px; background: var(--gray-2); font-family: var(--mono); font-size: 9.5px; color: #59634f; }
+  .card .go { font-family: var(--mono); font-size: 11px; color: var(--green-dk); letter-spacing: .5px; }
+  .card:hover .go { color: var(--green); }
+
+  /* 技术区 */
+  .tech-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 60px; align-items: start; }
+  .method { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.09); }
+  .method > div { background: var(--ink-2); padding: 22px 22px 24px; }
+  .method .idx { font-family: var(--mono); font-size: 11px; color: var(--green-hi); letter-spacing: 1.5px; }
+  .method h4 { margin: 10px 0 8px; font-size: 14.5px; font-weight: 700; }
+  .method p { margin: 0; font-size: 11.8px; line-height: 1.8; color: #9daa99; }
+
+  /* 数据表 */
+  .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .panel { border: 1px solid var(--line); background: var(--white); }
+  .panel-h { padding: 16px 22px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .panel-h .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+  .panel.warn .panel-h .dot { background: var(--amber); }
+  .panel table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .panel td { padding: 11px 22px; border-bottom: 1px solid #eef1eb; color: #4d574b; vertical-align: top; }
+  .panel tr:last-child td { border-bottom: 0; }
+  .panel td.v { font-family: var(--mono); color: var(--green-dk); white-space: nowrap; text-align: right; font-weight: 600; }
+  .panel.warn td.v { color: #a8760d; }
+
+  /* 提示条 */
+  .notice {
+    display: flex; gap: 18px; align-items: flex-start; padding: 22px 26px; margin-top: 22px;
+    background: #fffaf0; border-left: 4px solid var(--amber); font-size: 12.5px; line-height: 1.9; color: #6b5a33;
+  }
+  .notice b { color: #8a6a12; }
+  .notice .n-ico { font-family: var(--mono); font-size: 18px; color: var(--amber); line-height: 1.2; }
+
+  /* 路线 CTA */
+  .cta-band { position: relative; overflow: hidden; background: var(--ink); color: var(--white); padding: 78px 0; }
+  .cta-band::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 50% 100% at 100% 50%, rgba(118,185,0,.16), transparent 70%);
+  }
+  .cta-in { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+  .todo { list-style: none; margin: 0; padding: 0; }
+  .todo li { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.1); font-size: 12.5px; color: #b3bfae; }
+  .todo li span { font-family: var(--mono); font-size: 10px; color: var(--green-hi); flex: none; width: 26px; }
+
+  /* Footer */
+  .footer { background: #060806; color: #98a594; padding: 62px 0 26px; font-size: 12px; }
+  .f-grid { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 40px; }
+  .f-brand .logo { color: var(--white); margin-bottom: 14px; }
+  .f-brand p { margin: 0; max-width: 300px; font-size: 11.5px; line-height: 1.9; color: #6f7c6b; }
+  .f-col h5 { margin: 0 0 16px; font-size: 11px; letter-spacing: 1.6px; color: var(--white); text-transform: uppercase; }
+  .f-col a { display: block; padding: 5px 0; color: #8d9a89; font-size: 11.5px; }
+  .f-col a:hover { color: var(--green-hi); }
+  .f-bottom { margin-top: 46px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.09); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-family: var(--mono); font-size: 10px; letter-spacing: .8px; color: #5c6859; }
+
+  /* 滚动显现 */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 1000px) {
+    .menu { display: none; }
+    .hero-in { grid-template-columns: 1fr; padding-top: 44px; }
+    .hero-visual { min-height: 340px; }
+    .figure { width: min(100%, 300px); }
+    .hud { right: 4px; bottom: 4px; width: 180px; }
+    .tabs { grid-template-columns: repeat(3, 1fr); }
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .tech-grid, .cta-in, .data-grid { grid-template-columns: 1fr; gap: 32px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat:nth-child(2) { border-right: 0; }
+    .f-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 620px) {
+    .wrap { padding: 0 20px; }
+    .nav-right > a:first-child { display: none; }
+    .tabs { grid-template-columns: repeat(2, 1fr); }
+    .cards, .method, .stats, .f-grid { grid-template-columns: 1fr; }
+    .stat { border-right: 0; border-bottom: 1px solid var(--line); }
+    .head-row { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= 顶部导航 ================= -->
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="logo" href="#top" aria-label="Cleanfit 首页">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="4" fill="#76b900"/>
+        <circle cx="16" cy="16" r="8.5" fill="none" stroke="#0b0d0c" stroke-width="1.7"/>
+        <path d="M16 3v7M16 22v7M3 16h7M22 16h7" stroke="#0b0d0c" stroke-width="1.7" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="2.6" fill="#0b0d0c"/>
+      </svg>
+      <span>CLEANFIT</span>
+    </a>
+    <nav class="menu">
+      <a href="#product">产品</a>
+      <a href="#tech">技术</a>
+      <a href="#data">精度数据</a>
+      <a href="#roadmap">路线</a>
+      <a href="#dev">开发者</a>
+    </nav>
+    <div class="nav-right">
+      <a href="https://github.com/Aholic-12/Cleanfit" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn-green btn-sm" href="https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX" target="_blank" rel="noopener">进入工作台</a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= Hero ================= -->
+<section class="hero" id="top">
+  <div class="wrap hero-in">
+
+    <div class="hero-copy">
+      <div class="eyebrow">4D Anthropometry · 2026</div>
+      <h1>把人体比例<br><em>测到可复现</em></h1>
+      <p class="hero-lead">
+        <b>3D 骨骼段长 × 多帧 / 多姿态 / 多视角稳健融合 × 外部尺度标定</b>。<br>
+        浏览器端实时采集，直接鼠标框选限定区域，输出 14 项尺寸、变异系数与置信度，
+        一键导出 JSON / CSV。试衣、AI 精修、3D 全息原型保持原样。
+      </p>
+      <div class="cta">
+        <a class="btn btn-green" href="https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX" target="_blank" rel="noopener">进入 4D 测量工作台 <span>→</span></a>
+        <a class="btn btn-ghost" href="https://github.com/Aholic-12/Cleanfit" target="_blank" rel="noopener">查看源代码</a>
+      </div>
+      <div class="hero-meta">BLAZEPOSE · 33 关键点 &nbsp;/&nbsp; 零外链 · 可离线 &nbsp;/&nbsp; MIT LICENSE</div>
+    </div>
+
+    <!-- 全息人体线框 + 测量标注（纯内联 SVG） -->
+    <div class="hero-visual" aria-hidden="true">
+      <svg class="figure" viewBox="0 0 420 540">
+        <defs>
+          <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#7ff3ff" stop-opacity=".13"/>
+            <stop offset="100%" stop-color="#22d3ee" stop-opacity=".02"/>
+          </linearGradient>
+        </defs>
+        <!-- 扫描线 -->
+        <line class="scanline scan" x1="40" y1="60" x2="380" y2="60"/>
+        <!-- 头部 -->
+        <ellipse cx="210" cy="66" rx="27" ry="33" fill="url(#body)" stroke="rgba(127,243,255,.7)" stroke-width="2"/>
+        <path class="bone-soft" d="M188 60h44M210 36v60"/>
+        <!-- 躯干轮廓 -->
+        <path d="M170 112 L250 112 L240 200 L232 258 L188 258 L180 200 Z" fill="url(#body)" stroke="rgba(34,211,238,.35)" stroke-width="1.4"/>
+        <!-- 骨架 -->
+        <path class="bone" d="M170 118 L250 118"/>
+        <path class="bone" d="M210 118 L210 258"/>
+        <path class="bone" d="M188 258 L232 258"/>
+        <path class="bone" d="M170 118 L146 176 L132 232"/>
+        <path class="bone" d="M250 118 L274 176 L288 232"/>
+        <path class="bone" d="M188 258 L178 352 L172 448"/>
+        <path class="bone" d="M232 258 L242 352 L248 448"/>
+        <path class="bone-soft" d="M172 448 L158 462M248 448 L262 462"/>
+        <!-- 关节点 -->
+        <g class="pulse">
+          <circle class="node-glow" cx="170" cy="118" r="9"/><circle class="node-glow" cx="250" cy="118" r="9"/>
+          <circle class="node-glow" cx="188" cy="258" r="9"/><circle class="node-glow" cx="232" cy="258" r="9"/>
+        </g>
+        <g>
+          <circle class="node" cx="170" cy="118" r="3.5"/><circle class="node" cx="250" cy="118" r="3.5"/>
+          <circle class="node" cx="146" cy="176" r="3"/><circle class="node" cx="274" cy="176" r="3"/>
+          <circle class="node" cx="132" cy="232" r="3"/><circle class="node" cx="288" cy="232" r="3"/>
+          <circle class="node" cx="188" cy="258" r="3.5"/><circle class="node" cx="232" cy="258" r="3.5"/>
+          <circle class="node" cx="178" cy="352" r="3"/><circle class="node" cx="242" cy="352" r="3"/>
+          <circle class="node" cx="172" cy="448" r="3"/><circle class="node" cx="248" cy="448" r="3"/>
+        </g>
+        <!-- 测量标注：肩宽（线放在头底与肩线之间，文字移到左侧避开头部） -->
+        <path class="measure" d="M170 106 L250 106"/>
+        <path class="measure" d="M170 101v10M250 101v10"/>
+        <text class="measure-txt" x="164" y="110" text-anchor="end">肩宽 39.8 cm</text>
+        <!-- 测量标注：身高 -->
+        <path class="measure" d="M326 32 L326 466"/>
+        <path class="measure" d="M320 32h12M320 466h12"/>
+        <text class="measure-txt" x="334" y="250" transform="rotate(90 334 250)" text-anchor="middle">身高 175.0 cm</text>
+        <!-- 网格基准 -->
+        <path class="bone-soft" d="M60 466 H360" stroke-dasharray="3 6"/>
+      </svg>
+      <div class="hud">
+        <div class="row"><span>SAMPLES</span><span class="ok">49 FRAMES</span></div>
+        <div class="row"><span>CONFIDENCE</span><b>100%</b></div>
+        <div class="row"><span>AVG CV</span><span class="ok">0.58%</span></div>
+        <div class="row"><span>MODE</span><span>FAST · 4:3</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 能力标签条（仿 NVIDIA 首页新闻条） -->
+  <div class="tabs-shell">
+    <div class="wrap">
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-i="0"><span>01 / FUSION</span>4D 融合采集</button>
+        <button class="tab" data-i="1"><span>02 / ROI</span>限定区域框选</button>
+        <button class="tab" data-i="2"><span>03 / POSE</span>五类姿态分桶</button>
+        <button class="tab" data-i="3"><span>04 / ROBUST</span>稳健统计抗噪</button>
+        <button class="tab" data-i="4"><span>05 / SCALE</span>外部尺度标定</button>
+        <button class="tab" data-i="5"><span>06 / DEVICE</span>多设备与深度源</button>
+      </div>
+      <div class="tab-panel" id="tabPanel"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 数字条 ================= -->
+<div class="wrap"><div class="stats reveal" id="stats">
+  <div class="stat"><div class="n">14<small>项</small></div><div class="t">人体尺寸输出（含 CV / 样本数 / 置信度）</div></div>
+  <div class="stat"><div class="n">5<small>类</small></div><div class="t">姿态分桶：正面 / 抬臂 / 斜侧 / 侧身 / 移动</div></div>
+  <div class="stat"><div class="n">4<small>种</small></div><div class="t">尺度标定：身高 / A4 / 激光 + A4 / 激光</div></div>
+  <div class="stat"><div class="n">0.79<small>%</small></div><div class="t">合成序列 400 帧融合后的平均变异系数</div></div>
+</div></div>
+
+<!-- ================= 产品 ================= -->
+<section class="section" id="product">
+  <div class="wrap">
+    <div class="head-row reveal">
+      <div>
+        <div class="kicker">Products / 产品矩阵</div>
+        <h2>一个主攻，三个保留的原型</h2>
+        <p class="sub">当前所有新工作都围绕「把尺寸测准」。试衣、GPU 精修与实时换装原型保持原样、暂不迭代，仍可直接使用。</p>
+      </div>
+      <a class="btn btn-outline" href="https://github.com/Aholic-12/Cleanfit#-当前进度--聚焦测量精度" target="_blank" rel="noopener">查看当前进度 →</a>
+    </div>
+
+    <div class="cards reveal">
+      <article class="card primary">
+        <span class="badge">主攻</span>
+        <svg class="ico" viewBox="0 0 48 48" aria-hidden="true">
+          <rect x="5" y="5" width="38" height="38" rx="3" fill="none" stroke="#76b900" stroke-width="2"/>
+          <path d="M14 14h8v-3M34 14h-8v-3M14 34h8v3M34 34h-8v3M14 14v8M34 14v8M14 34v-8M34 34v-8" fill="none" stroke="#76b900" stroke-width="2" stroke-linecap="square"/>
+          <circle cx="24" cy="24" r="3.5" fill="#76b900"/>
+        </svg>
+        <h3>4D 人体尺寸测量</h3>
+        <p>直接在画面上拖出限定区域，按引导变换姿态，快速档达标自动停止；14 项尺寸与置信度一键导出。</p>
+        <div class="tags"><i>ROI</i><i>MAD 融合</i><i>尺度标定</i><i>JSON/CSV</i></div>
+        <a class="go" href="https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX" target="_blank" rel="noopener">进入工作台 →</a>
+      </article>
+
+      <article class="card">
+        <svg class="ico" viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="11" r="5" fill="none" stroke="#5a6655" stroke-width="2"/>
+          <path d="M24 16v16M14 22l10-3 10 3M24 32l-7 11M24 32l7 11" fill="none" stroke="#5a6655" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <h3>Pose Mirror 试衣</h3>
+        <p>摄像头取景 + 实时 3D 全息人像 + 网格贴衣，光照场、袖缝几何、领口挖空与手臂遮挡还原。</p>
+        <div class="tags"><i>Three.js</i><i>60 FPS</i><i>本地 GPU</i></div>
+        <a class="go" href="./demo/" target="_blank" rel="noopener">打开原型 →</a>
+      </article>
+
+      <article class="card">
+        <svg class="ico" viewBox="0 0 48 48" aria-hidden="true">
+          <rect x="8" y="8" width="32" height="32" rx="3" fill="none" stroke="#5a6655" stroke-width="2"/>
+          <path d="M8 20h32M20 8v32M28 8v32" stroke="#5a6655" stroke-width="1" opacity=".5"/>
+          <path d="M14 32l6-8 5 4 9-11" fill="none" stroke="#76b900" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <h3>本地 GPU 精修</h3>
+        <p>SD1.5-inpainting 对贴好的躯干重绘一次，逆变换烘焙回贴图；画质是 AI 的，帧率仍由 canvas 保持。</p>
+        <div class="tags"><i>SD 1.5</i><i>RTX 5070</i><i>1.7s</i></div>
+        <a class="go" href="https://github.com/Aholic-12/Cleanfit/tree/main/tryon_server" target="_blank" rel="noopener">查看服务 →</a>
+      </article>
+
+      <article class="card">
+        <svg class="ico" viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M10 34V14l10-6 10 6v20l-10 6z" fill="none" stroke="#5a6655" stroke-width="2"/>
+          <path d="M10 14l10 6 10-6M20 20v20" fill="none" stroke="#5a6655" stroke-width="2"/>
+          <circle cx="36" cy="16" r="2.5" fill="#76b900"/><circle cx="38" cy="26" r="1.8" fill="#76b900"/>
+        </svg>
+        <h3>实时换装（保留）</h3>
+        <p>Decart Lucy VTON 生成式视频扩散原型，WebRTC 实时回传；需 API key，当前未启用，代码完整保留。</p>
+        <div class="tags"><i>WebRTC</i><i>Lucy VTON</i><i>未启用</i></div>
+        <a class="go" href="https://github.com/Aholic-12/Cleanfit/tree/main/holo" target="_blank" rel="noopener">查看代码 →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 技术 ================= -->
+<section class="section dark" id="tech">
+  <div class="wrap">
+    <div class="tech-grid">
+      <div class="reveal">
+        <div class="kicker">Technology / 精度主线</div>
+        <h2>精度不来自<br>更重的单帧模型</h2>
+        <p class="sub">BlazePose 的世界坐标是「模型先验尺度」，会把个体拉向人群平均值；单帧还有关键点抖动、遮挡误检与侧身透视缩短。Cleanfit 把精度拆成六个可验证的环节。</p>
+        <div style="margin-top:30px">
+          <a class="btn btn-green" href="https://github.com/Aholic-12/Cleanfit/blob/main/demo/README.md" target="_blank" rel="noopener">阅读算法说明 →</a>
+        </div>
+      </div>
+
+      <div class="method reveal">
+        <div><div class="idx">01 / 4D</div><h4>3D 段长 × 时间序列</h4><p>段长绕 Y 轴旋转不变（实测转体 90° 变化 0.000000），把「单帧猜测」变成跨时间的可复现测量。</p></div>
+        <div><div class="idx">02 / ROI</div><h4>限定区域 · 段级过滤</h4><p>鼠标直接拖框、拖边缩放、双击删除。框全身出全身数据，只框上半身只出上半身指标，可分段采集自动合并。</p></div>
+        <div><div class="idx">03 / POSE</div><h4>姿态分桶 + 质量评分</h4><p>五类姿态引导采样，避免 500 帧全是同一个姿势；可见度、ROI 命中率、朝向与运动模糊共同决定该帧是否收进。</p></div>
+        <div><div class="idx">04 / ROBUST</div><h4>MAD 离群剔除</h4><p>中位数绝对偏差剔除误检尖峰，再做 10% 截尾加权均值；每项输出 CV、离群数、样本数与收敛度。</p></div>
+        <div><div class="idx">05 / SCALE</div><h4>外部尺度标定</h4><p>已知身高、A4 同平面参照物、激光测距 + 参照物、仅激光四种方式，把模型先验尺度映射成真实厘米。</p></div>
+        <div><div class="idx">06 / DEVICE</div><h4>多设备与深度源</h4><p>多摄像头切换并入同一份样本；预留 <span class="mono">CleanfitDepthSource</span> 接口，接上 D4xx / LiDAR 即可自动并入标定。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 精度数据 ================= -->
+<section class="section gray" id="data">
+  <div class="wrap">
+    <div class="head-row reveal">
+      <div>
+        <div class="kicker">Validation / 精度数据</div>
+        <h2>哪些已经验证，哪些还没有</h2>
+        <p class="sub">下面左侧是算法收敛性与工程链路的实测结果；右侧是明确尚未完成的部分。把两者分开写，是不想把合成数据的结论当成真人精度。</p>
+      </div>
+    </div>
+
+    <div class="data-grid reveal">
+      <div class="panel">
+        <div class="panel-h"><span class="dot"></span>已验证 · 合成序列 / 浏览器端到端</div>
+        <table>
+          <tr><td>转体 90° 后 3D 段长变化</td><td class="v">0.000000</td></tr>
+          <tr><td>400 帧 + 4mm 噪声 + 5% 离群 · 身高误差</td><td class="v">0.000 cm</td></tr>
+          <tr><td>同序列 · 肩宽误差</td><td class="v">0.009 cm</td></tr>
+          <tr><td>同序列 · 平均变异系数 / 剔除离群</td><td class="v">0.79% / 19 帧</td></tr>
+          <tr><td>快速档浏览器端到端</td><td class="v">49 帧 · 100%</td></tr>
+          <tr><td>ROI 段级过滤 / 4:3 入画</td><td class="v">通过</td></tr>
+          <tr><td>本地 GPU 重绘（RTX 5070）</td><td class="v">1.70 s</td></tr>
+        </table>
+      </div>
+      <div class="panel warn">
+        <div class="panel-h"><span class="dot"></span>尚未验证 / 当前限制</div>
+        <table>
+          <tr><td>真人卷尺对照实验（Bland–Altman / 相对误差）</td><td class="v">未开展</td></tr>
+          <tr><td>「≤5% 误差」长期目标</td><td class="v">目标，非结论</td></tr>
+          <tr><td>真实深度帧（SR300 Depth 设备 Error，librealsense 已弃用该型号）</td><td class="v">当前不可用</td></tr>
+          <tr><td>胸 / 腰 / 臀围、臂展</td><td class="v">经验系数估算</td></tr>
+          <tr><td>多摄像头外参标定 / 真三维重建</td><td class="v">规划中</td></tr>
+          <tr><td>同一人跨天、跨衣物的纵向复测</td><td class="v">规划中</td></tr>
+          <tr><td>全场景泛化（不限于受控室内）</td><td class="v">不做承诺</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="notice reveal">
+      <div class="n-ico">!</div>
+      <div><b>关于硬件：</b>本机 Intel RealSense SR300 的 Depth 设备在 Windows 中为 Error 状态，<code>pyrealsense2 2.59</code> 已移除该型号支持（<code>query_devices()</code> 返回 0 台），浏览器也读不了 Z16 / Y8 格式。因此当前绝对尺度由<b>激光测距 / 已知参照物 / 已知身高</b>这类外部基准提供，而不是假装已有深度真值。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 路线 / CTA ================= -->
+<section class="cta-band" id="roadmap">
+  <div class="wrap cta-in">
+    <div class="reveal">
+      <div class="kicker">Roadmap / 当前阶段</div>
+      <h2>下一步只做一件事：<br>把精度变成有数据支撑的结论</h2>
+      <p class="sub">18 个月的长期规划保留在仓库 README 里；近期清单只围绕测量精度，其余模块冻结。</p>
+      <div style="margin-top:30px; display:flex; gap:12px; flex-wrap:wrap">
+        <a class="btn btn-green" href="https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX" target="_blank" rel="noopener">开始测量 →</a>
+        <a class="btn btn-ghost" href="https://github.com/Aholic-12/Cleanfit" target="_blank" rel="noopener">GitHub 仓库</a>
+      </div>
+    </div>
+    <ul class="todo reveal">
+      <li><span>[x]</span> 4D 测量工作台：ROI / 分桶 / 稳健融合 / 尺度标定 / 导出</li>
+      <li><span>[x]</span> 采样灵敏度、快速达标停止、4:3 全身入画、半身拼接</li>
+      <li><span>[ ]</span> 真人卷尺对照实验，把「目标 ≤5%」变成实测结论</li>
+      <li><span>[ ]</span> 接入 D4xx / LiDAR 深度源，消除模型先验比例的系统偏差</li>
+      <li><span>[ ]</span> 多摄像头外参标定，让「多视角」升级为三维重建</li>
+      <li><span>[ ]</span> 同一人跨天 / 跨衣物纵向复测与误差来源拆解</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= Footer ================= -->
+<footer class="footer" id="dev">
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-brand">
+        <a class="logo" href="#top">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="4" fill="#76b900"/><circle cx="16" cy="16" r="8.5" fill="none" stroke="#0b0d0c" stroke-width="1.7"/><path d="M16 3v7M16 22v7M3 16h7M22 16h7" stroke="#0b0d0c" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="16" r="2.6" fill="#0b0d0c"/></svg>
+          <span>CLEANFIT</span>
+        </a>
+        <p>浏览器端人体比例精准测量。限定场景深耕精度，不做全场景泛化，不堆砌冗余功能。</p>
+      </div>
+      <div class="f-col">
+        <h5>产品</h5>
+        <a href="https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX" target="_blank" rel="noopener">4D 测量工作台</a>
+        <a href="./demo/measure.html" target="_blank" rel="noopener">测量页（Pages）</a>
+        <a href="./demo/" target="_blank" rel="noopener">Pose Mirror 试衣</a>
+        <a href="./demo/measure.html?demo" target="_blank" rel="noopener">无摄像头演示</a>
+      </div>
+      <div class="f-col">
+        <h5>文档</h5>
+        <a href="https://github.com/Aholic-12/Cleanfit#-当前进度--聚焦测量精度" target="_blank" rel="noopener">当前进度</a>
+        <a href="https://github.com/Aholic-12/Cleanfit/blob/main/demo/README.md" target="_blank" rel="noopener">算法与标定说明</a>
+        <a href="https://github.com/Aholic-12/Cleanfit/blob/main/README.md" target="_blank" rel="noopener">项目 README</a>
+        <a href="https://github.com/Aholic-12/Cleanfit/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">贡献指南</a>
+      </div>
+      <div class="f-col">
+        <h5>资源</h5>
+        <a href="https://github.com/Aholic-12/Cleanfit" target="_blank" rel="noopener">GitHub 仓库</a>
+        <a href="https://aholic-12.github.io/Cleanfit/" target="_blank" rel="noopener">GitHub Pages</a>
+        <a href="https://github.com/Aholic-12/Cleanfit/tree/main/docs" target="_blank" rel="noopener">逆向报告与截图</a>
+        <a href="https://github.com/Aholic-12/Cleanfit/blob/main/LICENSE" target="_blank" rel="noopener">MIT 许可证</a>
+      </div>
+    </div>
+    <div class="f-bottom">
+      <span>© 2026 CLEANFIT · MIT LICENSE · 全部图形为内联 SVG，零外链</span>
+      <span>BLAZEPOSE / THREE.JS / WEBGL · BUILT FOR MEASUREMENT ACCURACY</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var PANELS = [
+    '<b>4D 融合采集</b> —— 用与视角无关的 3D 骨骼段长做基础量，再沿时间序列累积数百帧；快速档 40 帧 + 1 类姿态即可收敛，达标自动停止。',
+    '<b>限定区域框选</b> —— 画面上直接按住鼠标拖出新区域，框内拖动移动、拖边与四角缩放、双击删除；过滤下沉到「段」级，只框上半身就只出上半身指标。',
+    '<b>五类姿态分桶</b> —— 系统按肩向量朝向与髋部位移自动分桶（正面 / 抬臂 / 斜侧 / 侧身 / 移动），逐步引导换动作，重复同一姿态不再增加信息。',
+    '<b>稳健统计抗噪</b> —— 每帧先打质量分，再用 MAD 剔除离群、10% 截尾加权均值融合，输出 CV、样本数、置信度与收敛度，抗误检尖峰。',
+    '<b>外部尺度标定</b> —— 已知身高 / A4 同平面参照物 / 激光测距 + 参照物 / 仅激光四种方式，把模型先验尺度映射成真实厘米；每项可填卷尺实测锚点。',
+    '<b>多设备与深度源</b> —— 切换不同摄像头继续采样会并入同一份多视角样本；预留 <span class="mono">window.CleanfitDepthSource</span>，接上 D4xx / LiDAR 即自动并入标定。'
+  ];
+  var tabs = document.querySelectorAll('.tab');
+  var panel = document.getElementById('tabPanel');
+  function select(i) {
+    tabs.forEach(function (t, k) { t.classList.toggle('active', k === i); });
+    panel.innerHTML = PANELS[i];
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () { select(Number(t.dataset.i)); });
+  });
+  select(0);
+
+  // 轻量滚动显现
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+  }
+})();
+</script>
+</body>
+</html>
