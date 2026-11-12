@@ -1,0 +1,110 @@
+# 人体比例 / 3D 人体 / 虚拟试衣开源数据集调研
+
+> 调研日期：2026-11-12 · 面向 Cleanfit 当前两条线：
+> **A. 人体测量比例的精准度**（主攻）、**B. 试衣 / AR 渲染**（保留）。
+> 规模与许可均优先取自官方项目页 / 论文页；社区清单转述的条目标注为「待核实」，不当结论用。
+
+## 先看结论
+
+| 你项目当前缺什么 | 最值得先拿的数据 | 为什么 |
+|:---|:---|:---|
+| 算法验证只有**合成骨架序列**，缺真实体型分布 | **BEDLAM**（30fps 视频 + SMPL-X 真值 + 深度图）、**AGORA**（4,240 个真人扫描拟合 SMPL-X） | 可以把「4D 多帧融合」直接跑在**带 3D 真值的视频序列**上，画出真实误差曲线，而不是只证明收敛 |
+| 缺「真人卷尺对照」的比例先验 | **ANSUR 2 (2012)**、**NHANES** | 公开人体测量统计，用来校验输出的比例是否落在人群合理区间 |
+| 试衣贴图 / 遮挡缺标准回归集 | **VITON-HD**、**Dress Code**、**LIP / CIHP / ATR** | 现成的人—衣配对、人体解析掩码、DensePose，可直接做回归测试 |
+| 想要可商用的「体型—尺寸」真值 | **目前基本没有完全开放的数据集** | 带人工实测尺寸的 3D 扫描数据几乎都是商业或需协议，这反而是自建数据的壁垒 |
+
+⚠️ **一句话风险提示**：下表绝大多数是 **research-only / 需注册 / 需签署协议 / 禁止再分发**，不等于「开源可商用」。若 Cleanfit 有商业化打算，逐条核对许可。
+
+---
+
+## A. 3D 人体形状、比例与测量真值
+
+### A1. 参数化人体模型（生成带真值的合成人体）
+
+| 名称 | 内容 | 规模 / 许可 | 对 Cleanfit 的用法 |
+|:---|:---|:---|:---|
+| **SMPL** | 从数千个 3D 人体扫描学得的蒙皮线性模型，形状参数 β 控制体型，可输出顶点与关节位置 | 需注册并同意许可；官方明确 **"available for research purposes"**；最多 300 个形状主成分。<https://smpl.is.tue.mpg.de/> | 生成已知真实段长的骨架序列，替换现有 `mockPose` 合成骨架；β 空间能覆盖不同身高/胖瘦，验证算法对**体型偏差**的稳定性 |
+| **SMPL-X / SMPL+H / MANO / STAR / SUPR / SKEL** | SMPL 家族扩展：手/脸、稀疏校正、身体部件、生物力学骨架 | 同官网注册 + 各自许可。<https://smpl-x.is.tue.mpg.de/>、<https://star.is.tue.mpg.de/> | 需要手指、足部或更精确关节时再用；当前 33 关键点阶段用 SMPL 就够 |
+| **MakeHuman**（+ MPFB Blender 插件） | 开源参数化人体建模工具，可调身高、体重、比例，导出网格 | 开源；**注意 `makehuman.org` 已不是有效官网**，现行站点 <https://www.makehumancommunity.org/>（2026 年论坛/资产库关闭，静态站与 GitHub 仓库仍在线）。商用前逐个核对资产许可 | 快速批量造不同体型的人体网格，做尺度标定的仿真场景；比 SMPL 易用但学术严谨性弱 |
+
+### A2. 合成 3D 人体数据集（有精确真值，最适合算法验证）
+
+| 名称 | 内容 | 规模（官方页核实） | 获取 / 许可 |
+|:---|:---|:---|:---|
+| **BEDLAM** ⭐ | 单目 RGB **视频** + SMPL-X 3D 真值 + 深度图 + 人体/衣物/头发分割 + 3D 服装；衣物用物理仿真，体型/肤色/发型/光照/相机运动多样 | **10,450 段序列，30fps，1280×720**；另有 6fps 子集；CVPR 2023 | 注册并接受许可，**禁止再分发**；2026-02 起有 Hugging Face 镜像。<https://bedlam.is.tue.mpg.de/> · 代码 `github.com/pixelite1201/BEDLAM` · BEDLAM2.0 已被 NeurIPS 2025 收录 |
+| **AGORA** ⭐ | 高真实感合成图像 + SMPL-X 拟合真值，含儿童、自然衣物、多人遮挡 | **4,240 个商业纹理人体扫描**（含 257 名儿童）；约 14K 训练 + 3K 测试图像，**173K person crops**；每图 5–15 人 | 官网注册。<https://agora.is.tue.mpg.de/> |
+| **SURREAL** | SMPL 生成的 RGB 视频，带 depth / body parts / optical flow / 2D-3D pose / 表面法线真值 | **6M frames**，CVPR 2017 | 项目页 + GitHub `gulvarol/surreal`。<https://www.di.ens.fr/willow/research/surreal/data/> |
+| **Human3.6M** | 实验室多视角 3D 姿态基准；4 台标定相机 50Hz、Vicon 3D 关节、24 部位像素标注、ToF 距离、**演员 3D 激光扫描** | **3.6M 3D 姿态**，11 名演员（6 男 5 女），17 个场景 | 需接受 EULA，且**必须引用两篇指定论文**（只引 URL 不合规）。<http://vision.imar.ro/human3.6m/> |
+
+> **为什么 BEDLAM 对你最有用**：Cleanfit 的「4D = 3D 段长 × 时间序列」目前只在合成骨架上验证过收敛性。BEDLAM 提供了「连续帧 + 已知 SMPL-X 体型 + 真实感衣物遮挡 + 深度图」，可以直接喂给 `AnthroMeter`，把 `result()` 的输出和 GT 段长做 Bland–Altman / 相对误差统计 —— 这正好是 README 路线图里「把 ≤5% 从目标变成结论」的第一步，而且不用先招募真人。
+
+### A3. 真实 3D 扫描 / 人体测量统计（比例先验与真值）
+
+| 名称 | 内容 | 规模 / 状态 | 获取 / 许可 |
+|:---|:---|:---|:---|
+| **ANSUR 2 (2012)** | 美军 2012 人体测量调查的公开样本，含方法报告、汇总报告与数据表，可分析各测量项之间的相关关系 | 官方页**未列样本量**，数据字典在 zip 内；军方样本**不代表普通人群** | 公开下载 `ANSUR2Distribution.zip`，见 <http://mreed.umtri.umich.edu/mreed/downloads.html>；旧的 ANSUR 88 也在同页（需引用 Gordon et al. 1989） |
+| **NHANES**（CDC/NCHS） | 美国国民健康与营养调查的基础人体测量（身高、体重、各段长度等统计） | 自 1960s 起多轮调查，公开数据文件 | CDC 官方发布；UMTRI 页面只放了相关报告与在线计算器，原始数据去 CDC/NCHS 取 |
+| **BodyShapeLab（UMTRI）** | 基于**高分辨率激光扫描 + 人体测量数据**的统计人体形状模型，可用身高 / BMI / 坐高比等少数参数生成 3D 人体，含解剖标志点 | 交互式 demo **不提供模型、标志点、测量文件下载**；CAESAR 是商业 3D 人体测量库 | <https://bodyshapelab.org/>（原 humanshape.org 已迁移）；相关论文：Park et al. 2024 *Efficient Model-Based Anthropometry under Clothing Using Low-Cost Depth Sensors* —— 与你的低成本深度传感器思路高度相关 |
+| **MPI FAUST** | 真实高分辨率人体扫描 + 自动计算的网格对应关系 | 10 人、**300 个扫描**（OpenDataLab 镜像口径） | 官方 `faust.is.tue.mpg.de`；另有 OpenDataLab 镜像。用于配准/形状评估，不含尺寸标注 |
+| **3D 扫描 + 服装围度测量**（Yan et al., 2019） | 商业点云扫描 → SMPL 非刚性 ICP 拟合 → 围度路径测量 + 非线性回归 | **194 男 + 181 女**；各测量项平均绝对误差 **2.5mm–16.0mm** | 论文 <https://arxiv.org/abs/1911.00694>（Mach. Vis. Appl. 2020）。**目前未找到公开数据下载**，可作为方法参考与误差量级基准 |
+| **3DBodyTex** | 带纹理的穿衣 3D 人体扫描（V1/V2） | 2018 3DV 论文；**官方下载链接已不稳定** | 需向作者索取或从社区镜像找，用前确认许可 |
+
+---
+
+## B. 虚拟试衣 / 穿搭 AR 渲染
+
+| 名称 | 内容 | 规模（官方核实） | 许可 / 获取 |
+|:---|:---|:---|:---|
+| **VITON-HD** ⭐ | 正面女性 + 上装配对，1024×768；含 cloth-agnostic person、分割图、DensePose | **11,647 训练 + 2,032 测试 = 13,679 对** | **仅研究用途，CC BY-NC 4.0**（禁商用、需署名、需注明改动）。<https://github.com/shadow2496/VITON-HD> |
+| **Dress Code** ⭐ | 高分辨率多品类试衣，含 OpenPose 18 关键点、骨架图、18 类人体解析标签图、DensePose | **53,792 件服装 / 107,584 张图 / 3 类（上衣、下装、连衣裙）/ 1024×768**；ECCV 2022 | **限制最严**：不向私企发布、必须机构邮箱、必须签署协议（不接受电子签名）、人工周审、代码不开源。<https://github.com/aimagelab/dress-code> |
+| **VITON / MPV / StreetTryOn** | 早期图像试衣基准、多姿态试衣、自然场景非配对试衣 | 规模见各自论文；社区清单确认存在，本轮未逐个核实数字 | 见 <https://github.com/shamrock7/awesome-virtual-try-on> 数据集章节（共 14 个具名数据集） |
+| **IDM-VTON** | ECCV 2024 扩散式试衣，**官方实现同时支持 VITON-HD 与 DressCode**，含人体解析（ATR/LIP）、DensePose、OpenPose 预处理流程 | 代码 + 预训练权重 | **CC BY-NC-SA 4.0**。<https://github.com/yisol/IDM-VTON> —— 作为你现有 canvas 贴衣 / AI 精修的对照基线很合适 |
+| **3D / 4D 服装类** | `CLOTH3D`、`CLOTH4D`（CVPR 2023）、`TailorNet Dataset`、`Deep Fashion3D`、`3DPeople`、`THUman`、`SIZER`、`Digital Wardrobe`、`Garment Dataset (Wang 2018)` | 社区清单列出，**规模与许可待逐个核实** | 见 awesome-virtual-try-on 与 <https://github.com/3DFaceBody/awesome-3dbody-papers> |
+
+### B 类配套：人体解析 / 姿态（试衣遮挡与 ROI 的直接来源）
+
+| 名称 | 内容 | 规模 | 说明 |
+|:---|:---|:---|:---|
+| **LIP (Look Into Person)** | 单人人体解析，19 类像素级语义标注 + 2D 关键点 | **约 50,000 张图**（官方项目页口径） | <https://sysu-hcp.net/resources/datasets/index.html> |
+| **CIHP / VIP** | 多人实例级人体解析；CIHP 28,280 训练 + 5,000 验证 + 5,000 测试（共 38,280）；VIP 是视频多人解析基准 | 二手资料口径，待官方复核 | 用于多人场景的 ROI 与遮挡判断 |
+| **ATR** | 时尚图像的 18 类单人解析（Dress Code 的标签图即由 ATR 训练的 SCHP 生成） | 官方页待核实 | 与 `SCHP` (`github.com/GoGoDuck912/Self-Correction-Human-Parsing`) 配套 |
+| **COCO Keypoints / MPII / 3DPW / MPI-INF-3DHP** | 2D/3D 姿态基准 | 见各官方页 | 用于校验 BlazePose 在真实分布上的关键点误差 |
+
+---
+
+## 落地建议（按优先级）
+
+1. **先做「有真值的算法压力测试」，成本最低、收益最大**
+   用 **BEDLAM**（或 SURREAL）的连续序列驱动 `AnthroMeter`，把融合输出与 SMPL-X GT 段长比较，得到不同噪声/遮挡/姿态下的误差曲线。这一步能把「平均 CV 0.79%」升级成「相对真值误差 ±X%」，直接支撑 README 里的精度主张。需要的数据：SMPL-X 关节 + 时间序列，正好是 `poseWorldLandmarks` 的格式。
+
+2. **用 ANSUR 2 / NHANES 做比例合理性校验**
+   不拿来当真值，而是当先验：检查输出的肩宽/身高、肩胯比是否落在人群分布内，拦截明显的尺度标定错误（比如参照物框错、激光距离填错）。
+
+3. **试衣线只做回归，不再扩张**
+   用 **VITON-HD** 的固定测试对（2,032 对）做 canvas 贴衣 + AI 精修的视觉回归；`LIP/CIHP/ATR` 的解析掩码可替换目前基于分割掩码的轮廓扫描，改善宽松衣物下的肩宽/胯宽。注意这两条线的许可都是非商用。
+
+4. **自建数据才是长期壁垒**
+   公开数据里「带人工卷尺实测尺寸的 3D 人体」几乎空白（CAESAR 商业、3DBodyTex 链接失效、Yan et al. 未放数据）。Cleanfit 已经有的 ROI 分段采集 + 卷尺锚点 + JSON 导出，恰好是低成本攒这类数据的工具 —— 建议把导出格式固定下来，攒够样本后就是别人没有的资产。
+
+## 许可红线速查
+
+| 限制类型 | 涉及数据集 |
+|:---|:---|
+| **明确仅研究用途 / 禁商用** | VITON-HD（CC BY-NC 4.0）、IDM-VTON（CC BY-NC-SA 4.0）、SMPL 系列（research purposes）、Human3.6M（EULA） |
+| **需注册 + 签署协议 + 人工审核** | BEDLAM、AGORA、SMPL 系列、Dress Code（最严：机构邮箱、不向私企、纸质签名） |
+| **禁止再分发** | BEDLAM（下载链接仅官网有效） |
+| **商业授权 / 链接失效** | CAESAR（商业）、3DBodyTex（原下载不稳定）、MakeHuman 资产库（2026 年服务调整） |
+| **相对开放** | ANSUR 2（公开 zip，需引用）、NHANES（CDC 公开）、SURREAL（项目页 + GitHub）、LIP（学术用途） |
+
+---
+
+## 主要参考链接
+
+- 人体模型：<https://smpl.is.tue.mpg.de/> · <https://smpl-x.is.tue.mpg.de/> · <https://star.is.tue.mpg.de/>
+- 合成真值：<https://bedlam.is.tue.mpg.de/> · <https://agora.is.tue.mpg.de/> · <https://www.di.ens.fr/willow/research/surreal/data/> · <http://vision.imar.ro/human3.6m/>
+- 人体测量：<http://mreed.umtri.umich.edu/mreed/downloads.html> · <https://bodyshapelab.org/> · <https://arxiv.org/abs/1911.00694>
+- 虚拟试衣：<https://github.com/shadow2496/VITON-HD> · <https://github.com/aimagelab/dress-code> · <https://github.com/yisol/IDM-VTON> · <https://github.com/shamrock7/awesome-virtual-try-on>
+- 人体解析：<https://sysu-hcp.net/resources/datasets/index.html> · <https://github.com/GoGoDuck912/Self-Correction-Human-Parsing>
+- 3D 人体资源索引：<https://github.com/3DFaceBody/awesome-3dbody-papers>
+
+> 本文件是调研笔记，不是法律意见。下载前请以各项目官网当日许可文本为准。
