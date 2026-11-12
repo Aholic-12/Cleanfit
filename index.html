@@ -3,25 +3,84 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="refresh" content="0; url=./demo/">
-<title>Cleanfit · Pose Mirror</title>
+<title>Cleanfit · 人体比例精准测量</title>
 <style>
-  html, body {
-    margin: 0; height: 100%;
-    background: #04080f; color: #7ff3ff;
-    font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  :root { --cyan: #22d3ee; --cyan-soft: #7ff3ff; --muted: #5b8fa3; --line: rgba(34,211,238,.18); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    background: #04080f; color: #d7eef7;
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
     display: flex; align-items: center; justify-content: center;
+    padding: 40px 20px; -webkit-font-smoothing: antialiased;
   }
-  a { color: #22d3ee; }
-  .box { text-align: center; letter-spacing: 2px; font-size: 13px; }
-  .k { display: block; margin-bottom: 10px; font-size: 11px; color: #5b8fa3; letter-spacing: 4px; }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(34,211,238,.10), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(34,211,238,.028) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(90deg, rgba(34,211,238,.028) 0 1px, transparent 1px 44px);
+  }
+  .wrap { position: relative; z-index: 1; width: 100%; max-width: 860px; }
+  .brand { font-family: Consolas, ui-monospace, monospace; font-size: 12px; letter-spacing: 3.5px; color: var(--cyan); }
+  .brand span { color: var(--muted); letter-spacing: 2px; }
+  h1 { margin: 14px 0 10px; font-size: clamp(26px, 5vw, 40px); font-weight: 700; letter-spacing: 1px; color: #eafcff; }
+  .lead { margin: 0 0 30px; font-size: 13px; line-height: 1.9; color: #8bb4c6; }
+  .lead b { color: var(--cyan-soft); font-weight: 600; }
+  .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .card {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 22px; text-decoration: none;
+    background: rgba(6,16,25,.88); border: 1px solid var(--line); border-radius: 4px;
+    transition: border-color .2s, transform .2s, box-shadow .2s;
+  }
+  .card:hover { border-color: var(--cyan); transform: translateY(-2px); box-shadow: 0 12px 34px -18px rgba(34,211,238,.75); }
+  .card.primary { border-color: rgba(34,211,238,.5); background: rgba(8,26,38,.92); }
+  .tag { font-family: Consolas, ui-monospace, monospace; font-size: 10px; letter-spacing: 1.4px; color: var(--muted); }
+  .card.primary .tag { color: #fbbf24; }
+  .card b { font-size: 19px; color: #eafcff; letter-spacing: .5px; }
+  .card .desc { font-size: 11.5px; line-height: 1.8; color: #87aebf; flex: 1; }
+  .card .go { font-family: Consolas, ui-monospace, monospace; font-size: 11px; color: var(--cyan); }
+  .meta { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 26px; font-family: Consolas, ui-monospace, monospace; font-size: 10px; letter-spacing: 1px; color: #31586a; }
+  .repo { margin: 18px 0 0; font-size: 11.5px; }
+  .repo a { color: var(--cyan); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .repo a:hover { border-bottom-color: var(--cyan); }
+  @media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
-  <div class="box">
-    <span class="k">CLEANFIT</span>
-    正在进入 Pose Mirror…
-    <p><a href="./demo/">若未自动跳转，点此进入</a></p>
+  <div class="wrap">
+    <div class="brand">CLEANFIT <span>/ ANTHRO SCAN</span></div>
+    <h1>人体比例精准测量</h1>
+    <p class="lead">
+      当前主攻 <b>4D 人体尺寸测量工作台</b>：3D 骨骼段长 × 多帧 / 多姿态 / 多视角稳健融合 × 外部尺度标定。<br>
+      ROI 限定区域、灵敏度与快速采集、4:3 全身入画、卷尺锚点、JSON / CSV 导出。<br>
+      试衣、AI 精修、3D 全息等原型<b>保持原样、暂不迭代</b>。
+    </p>
+
+    <div class="cards">
+      <a class="card primary" href="./demo/measure.html">
+        <span class="tag">★ 当前主攻 · 可运行</span>
+        <b>4D 人体尺寸测量</b>
+        <span class="desc">鼠标直接框选区域 · 5 类姿态采样 · 已知身高 / 激光 / A4 参照物标定 · 14 项尺寸与 CV / 置信度</span>
+        <span class="go">进入工作台 →</span>
+      </a>
+      <a class="card" href="./demo/">
+        <span class="tag">原型 · 保留</span>
+        <b>Pose Mirror 试衣</b>
+        <span class="desc">实时 3D 全息人像 · 网格贴衣 · 光照场与本地 GPU 精修 · 跟随灵敏度可调</span>
+        <span class="go">进入原型 →</span>
+      </a>
+    </div>
+
+    <div class="meta">
+      <span>BlazePose · 33 关键点</span>
+      <span>零外链 · 可离线</span>
+      <span>精度目标 ≤5%（尚未做真人对照）</span>
+      <span>MIT</span>
+    </div>
+    <p class="repo"><a href="https://github.com/Aholic-12/Cleanfit">GitHub 仓库 · 当前进度与验证数据 →</a></p>
   </div>
 </body>
 </html>

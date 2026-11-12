@@ -1,7 +1,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="assets/hero-light.svg">
-  <img src="assets/hero-light.svg" alt="Cleanfit — 深度视觉人体身形测量与版型适配" width="100%">
+  <img src="assets/hero-light.svg" alt="Cleanfit — 人体比例精准测量与版型适配" width="100%">
 </picture>
 
 <div align="center">
@@ -19,7 +19,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/pillars-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="assets/pillars-light.svg">
-  <img src="assets/pillars-light.svg" alt="Cleanfit 核心亮点：≤5% 误差 / AI 三维视觉 / 智能版型 / 深度相机" width="100%">
+  <img src="assets/pillars-light.svg" alt="Cleanfit 长期目标：≤5% 误差 / AI 三维视觉 / 智能版型 / 深度相机（当前进度见下方）" width="100%">
 </picture>
 
 </div>
@@ -30,9 +30,10 @@
 <summary>📑 <b>目录</b></summary>
 <br/>
 
+- [🎯 当前进度 · 聚焦测量精度](#-当前进度--聚焦测量精度)
 - [项目简介](#项目简介)
 - [核心功能](#核心功能)
-- [实时演示 · Pose Mirror](#实时演示--pose-mirror)
+- [实时演示 · 4D 测量工作台 + Pose Mirror](#实时演示--4d-测量工作台--pose-mirror)
 - [系统架构](#系统架构)
 - [硬件方案](#硬件方案)
 - [精度指标](#精度指标)
@@ -46,6 +47,61 @@
 
 <img src="assets/divider.svg" alt="" width="100%">
 
+## 🎯 当前进度 · 聚焦测量精度
+
+> **当前主攻方向：人体测量比例的精准度。** 试衣、AI 精修、3D 全息、Decart 实时换装等原型
+> **保持原样、暂不迭代**，所有新工作都围绕「把尺寸测准」展开。
+> 本页上半部分的 `≤5% 误差`、深度相机点云与 18 个月路线图是**长期目标**，尚未做真人卷尺对照实验；
+> 下面这一节才是仓库里**现在真的能跑**的东西。
+
+### 现在能跑什么
+
+| 模块 | 状态 | 入口 | 说明 |
+|:---|:---:|:---|:---|
+| **4D 人体尺寸测量工作台** ← 主攻 | ✅ 可运行 | [`demo/measure.html`](demo/measure.html) | 浏览器端：BlazePose 3D 关键点 + 多帧/多姿态/多视角稳健融合 + 外部尺度标定 + 卷尺锚点，输出 14 项尺寸与 CV / 置信度，导出 JSON / CSV |
+| Pose Mirror 试衣原型 | 🧊 保留 | [`demo/index.html`](demo/index.html) | 摄像头取景 + 实时 3D 全息人像 + 网格贴衣，跟随灵敏度可调 |
+| AI 精修（本地 GPU） | 🧊 保留 | [`tryon_server/`](tryon_server/) | SD1.5-inpainting 对贴好的躯干重绘一次再烘焙回贴图，RTX 5070 实测 1.7s |
+| Decart Lucy VTON 实时换装 | 🧊 保留 | [`holo/`](holo/) | 生成式视频扩散路线（需 API key），当前未启用 |
+| 点云算法层 | 🚧 骨架 | [`src/cleanfit/`](src/cleanfit/) | 仅 `segment.py` 有基线实现，其余为数据契约 |
+
+**线上体验**：<https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX>
+（首页右上角「精准测量 →」进入工作台；`measure.html?demo` 无摄像头也能跑通全链路）
+
+### 精度主线：为什么这么做
+
+BlazePose 的 `poseWorldLandmarks` 是**模型先验尺度**，会把个体拉向人群平均值；单帧还有关键点抖动、
+遮挡误检、侧身透视缩短。所以精度不靠「换个更重的单帧模型」，而靠一整套测量方法：
+
+| 手段 | 解决的问题 |
+|:---|:---|
+| **3D 段长 × 时间序列（4D）** | 段长与视角无关（实测转体 90° 变化 `0.000000`），多帧融合压随机噪声 |
+| **ROI 限定区域（段级过滤）** | 框全身出全身数据、只框上半身只出上半身指标；摄像头装不下全身时可分两段采集自动合并 |
+| **5 类姿态分桶 + 质量评分** | 正面 / 抬臂 / 斜侧 / 侧身 / 移动，逼出采样多样性 —— 重复同一姿态不增加信息 |
+| **MAD 离群剔除 + 截尾加权均值** | 抗误检尖峰，输出 CV / 样本数 / 置信度 / 收敛度 |
+| **外部尺度标定** | 已知身高 / A4 同平面参照物 / 激光测距，把模型先验尺度映射成真实厘米；每行可填卷尺实测锚点 |
+| **多设备** | 多摄像头切换并入同一份样本；预留 `window.CleanfitDepthSource` 给 D4xx / LiDAR |
+
+### 已验证 / 尚未验证
+
+| 已验证 ✅ | 结果 |
+|:---|:---|
+| 视角不变性 | 转体 90°，3D 段长变化 `0.000000` |
+| 融合抗噪（合成序列 400 帧、4mm 关节噪声 + 5% 离群帧） | 身高误差 `0.000cm`、肩宽 `0.009cm`、平均 CV `0.79%`、剔除 19 个离群帧 |
+| 浏览器端到端（快速模式） | 49 帧自动收敛、置信度 100%、导出 14 项 / CSV 15 行 |
+| ROI 段级过滤 | 框上半身后身高 / 大腿为 `--`，肩宽 / 上臂仍有值 |
+| 摄像头 4:3 全身优先 | 640×480 默认，切 16:9 自动重协商为 1280×720 |
+
+> ⚠️ **尚未验证**：以上数值来自**合成骨架序列与算法收敛性测试**，不是真人卷尺对照实验。
+> 真实绝对精度取决于标定质量、关键点稳定性与遮挡；围度（胸 / 腰 / 臀围、臂展）是经验系数估算。
+> README 中的 `≤5%` 仍是**目标**，不是已达成指标。
+
+> 🔌 **硬件实测（2026-11）**：本机 `Intel RealSense SR300` 的 Depth 设备在 Windows 中为 `Error`，
+> `pyrealsense2 2.59` 已移除 SR300 支持（`query_devices()` 返回 0 台），浏览器也读不了 Z16 / Y8 格式。
+> **当前拿不到真实深度帧**，绝对尺度因此由激光测距 / 已知参照物 / 已知身高这类外部基准提供；
+> 接上 D4xx / LiDAR 后实现 `window.CleanfitDepthSource.getDistanceM(u, v, t)` 即可自动并入标定。
+
+<img src="assets/divider.svg" alt="" width="100%">
+
 ## 项目简介
 
 <table>
@@ -56,7 +112,8 @@
 
 项目走 **「小而准」** 的技术路线 —— 限定场景深耕精度，不做全场景泛化，不堆砌冗余功能。
 
-> 🚧 **项目正在积极开发中。** 功能正在逐步构建和更新，敬请期待！
+> 🚧 **项目正在积极开发中。** 当前阶段聚焦「人体测量比例精准度」，
+> 可运行成果与验证数据见上方 [当前进度](#-当前进度--聚焦测量精度)。
 
   </td>
  </tr>
@@ -99,27 +156,50 @@
  </tr>
 </table>
 
-## 实时演示 · Pose Mirror
+## 实时演示 · 4D 测量工作台 + Pose Mirror
 
-浏览器端可跑的姿态镜像原型：左侧取景窗口接入摄像头，右侧实时重建一具 3D 全息人像，
-把画面里人的动作一比一复刻过去，并在取景画面上叠加肩线 / 腰线 / 胯线的测量标注。
+### ① 4D 人体尺寸测量工作台（当前主攻）
 
 ```bash
-python demo/serve.py
-# 打开 http://127.0.0.1:8848/        （摄像头需要 localhost 或 https）
-# 打开 http://127.0.0.1:8848/?demo=1 （无摄像头，看合成姿态演示）
+# 推荐：Windows 一键启动（起本地 GPU 精修服务 + 静态站点）
+start_demo.bat
+
+# 或只起静态站点（摄像头需要 localhost / https）
+python -m http.server 8851 --directory demo
+# → http://127.0.0.1:8851/measure.html        （摄像头实测）
+# → http://127.0.0.1:8851/measure.html?demo   （无摄像头，合成姿态跑通全链路）
 ```
 
 | 环节 | 方案 |
 |:---|:---|
+| 姿态估计 | MediaPipe BlazePose（lite），33 个 3D 世界关键点，关闭内置时域平滑以降低延迟 |
+| 限定区域 | 画面上直接鼠标拖框；框内拖动 / 拖边缩放 / 双击删除，过滤下沉到「段」级 |
+| 采样 | 灵敏度 1–10 档；5 类姿态分桶引导；快速 / 标准 / 高精度三档 + 达标自动停止 |
+| 融合 | 质量评分 → MAD 离群剔除 → 10% 截尾加权均值；输出 CV、样本数、置信度、收敛度 |
+| 尺度 | 已知身高 / A4 同平面参照物 / 激光测距 + 参照物 / 仅激光；卷尺锚点可逐项覆盖 |
+| 输出 | 14 项尺寸（cm）+ JSON / CSV 导出，含标定方式、ROI、视角数、采集参数 |
+| 入画 | 头顶 / 脚部 / 左右出画检测 + 4:3 全身优先 + 半身拼接采集引导 |
+| 依赖 | 全部本地化（`demo/vendor/`），无外链、无 CDN，可离线运行 |
+
+完整算法说明、标定公式与验证数据见 [`demo/README.md`](demo/README.md)。
+
+### ② Pose Mirror 姿态镜像（原型，保持原样）
+
+浏览器端可跑的姿态镜像原型：左侧取景窗口接入摄像头，右侧实时重建一具 3D 全息人像，
+把画面里人的动作一比一复刻过去，并在取景画面上叠加肩线 / 腰线 / 胯线的测量标注。
+
+同一静态服务下打开 `http://127.0.0.1:8851/` 即可（也可用 `python demo/serve.py`，默认 8848）。
+
+| 环节 | 方案 |
+|:---|:---|
 | 姿态估计 | MediaPipe BlazePose，33 关键点，输出以米为单位的世界坐标 |
-| 3D 重建 | Three.js 按关键点摆位，关节球 + 骨骼柱 + 躯干面片，指数平滑去抖 |
+| 3D 重建 | Three.js 按关键点摆位，关节球 + 骨骼柱 + 躯干面片，自适应平滑去抖 |
 | 测量 | 人像分割掩码逐行扫描外轮廓，肩 / 腰 / 胯取宽度极值，身高定标换算成厘米 |
 | 依赖 | 全部本地化（`demo/vendor/`），无外链、无 CDN，可离线运行 |
 
 这是**视觉与交互的原型验证**，不是最终算法：它用单目 RGB 做估计，精度达不到项目指标，
 作用是先把「取景 → 追踪 → 3D 复刻 → 数据面板」这条链路的交互语言定下来。
-正式管线仍然走深度相机 + 点云，见下方「系统架构」。
+正式的精度主线见上方 ① 与「系统架构」。
 
 ## 系统架构
 
@@ -178,13 +258,17 @@ python demo/serve.py
 
 ## 精度指标
 
-> 📏 所有指标均基于限定测试场景：室内均匀柔光、正面自然站立、紧身打底衣物、拍摄距离 1.2m ± 0.1m
+> 🧪 **状态说明**：下表是**长期目标（受控场景下的误差承诺）**，目前**尚未通过真人卷尺对照实验验证**。
+> 当前已验证的是算法收敛性与稳定性（合成序列 + 浏览器端到端），数据见
+> [当前进度](#-当前进度--聚焦测量精度) 与 [`demo/README.md`](demo/README.md)。
+
+> 📏 目标指标均基于限定测试场景：室内均匀柔光、正面自然站立、紧身打底衣物、拍摄距离 1.2m ± 0.1m
 
 <table>
  <tr>
   <th align="center" width="18%">类型</th>
   <th align="center">指标</th>
-  <th align="center" width="26%">误差承诺</th>
+  <th align="center" width="26%">目标误差（未验证）</th>
  </tr>
  <tr>
   <td align="center">✅ <b>保证项</b></td>
@@ -207,6 +291,21 @@ python demo/serve.py
 </picture>
 
 ## 开发路线图
+
+### 当前阶段（2026-11）· 精度专项
+
+原 18 个月路线图保留在下方的折叠区作为长期方向；**近期只做「人体测量比例精准度」这一条线**，其余模块冻结：
+
+- [x] 浏览器端 4D 测量工作台：ROI 段级过滤 / 姿态分桶 / 稳健融合 / 尺度标定 / 导出
+- [x] 采集灵敏度、快速达标停止、4:3 全身入画与入画检测、半身拼接
+- [ ] **真人卷尺对照实验**：固定样本做 Bland–Altman / 相对误差统计，把「目标 ≤5%」变成有数据支撑的结论
+- [ ] 接入可用的深度源（D4xx / LiDAR）替换外部尺度基准，消除模型先验比例的系统偏差
+- [ ] 多摄像头外参标定，让「多视角」从「并入样本」升级为真正的三维重建
+- [ ] 同一个人不同天 / 不同衣物的纵向复测与误差来源拆解
+
+<details>
+<summary>📅 <b>长期路线图（原 18 个月计划，保留）</b></summary>
+<br/>
 
 ```mermaid
 gantt
@@ -236,24 +335,37 @@ gantt
 | **3** | 第 8–12 月 | 功能完善；腰臀比精度打磨、身形分类、虚拟试穿开发 |
 | **4** | 第 13–18 月 | 测试补全、性能优化、可选拓展（侧面测量 / 多体位验证） |
 
+</details>
+
 ## 项目结构
 
 ```
 Cleanfit/
-├── src/cleanfit/              核心代码
+├── demo/                      浏览器端原型（详见 demo/README.md）
+│   ├── measure.html           ★ 4D 人体尺寸测量工作台（当前主攻）
+│   ├── index.html             Pose Mirror 试衣原型（保留）
+│   ├── js/anthro.js           ★ 4D 测量引擎：ROI / 姿态分桶 / 稳健融合 / 尺度标定
+│   ├── js/measure-app.js      ★ 工作台 UI：摄像头 / 鼠标框选 / 采样 / 导出
+│   ├── js/rig.js              Three.js 全息人像
+│   ├── js/fitting.js          网格贴衣（保留）
+│   ├── js/app.js              Pose Mirror 主逻辑
+│   ├── css/measure.css        ★ 工作台样式
+│   └── vendor/                本地化 BlazePose / three.js（零外链，可离线）
+├── tryon_server/              本地 GPU 重绘服务（SD1.5-inpaint，保留）
+├── holo/                      Decart Lucy VTON 实时换装原型（需 API key，保留）
+├── src/cleanfit/              Python 点云算法层（长期方向，骨架）
+│   ├── segment.py             ① 点云分割与去噪（唯一有基线实现的模块）
 │   ├── capture.py             采集层 · 深度帧与彩色帧对齐
-│   ├── segment.py             ① 点云分割与去噪
 │   ├── landmark.py            ② 骨性特征点定位
 │   ├── calibrate.py           ③ 透视与距离校正
 │   ├── classify.py            ④ 身形分类与版型匹配
-│   ├── tryon.py               静态虚拟试穿
-│   ├── report.py              结构化报告导出
-│   ├── pipeline.py            四层串联，一次跑完
-│   └── __main__.py            命令行入口
-├── demo/                      浏览器端姿态镜像原型（详见 demo/README.md）
+│   ├── tryon.py / report.py   静态试穿 / 报告导出
+│   └── pipeline.py / __main__.py  四层串联 / 命令行入口
+├── docs/                      逆向报告与效果截图
 ├── tests/                     测试
 ├── assets/                    README 图形素材（本地 SVG，零外链）
-├── .github/                   Issue / PR 模板
+├── .github/                   Issue / PR 模板 + CI
+├── start_demo.bat             Windows 一键启动本地服务
 ├── pyproject.toml             打包与工具配置
 ├── requirements.txt           运行时依赖
 ├── CONTRIBUTING.md            贡献指南
@@ -261,21 +373,35 @@ Cleanfit/
 └── README.md
 ```
 
-> 🧩 **当前状态**：`segment.py` 已有基线实现（深度阈值 + 形态学开闭 + 连通域，纯 numpy，含单元测试）；其余算法模块只定义了数据结构与函数签名，调用会抛 `NotImplementedError`。这样做的目的是先把四层之间的数据契约固定下来，再逐层填算法。
+> 🧩 **Python 层状态**：`segment.py` 已有基线实现（深度阈值 + 形态学开闭 + 连通域，纯 numpy，含单元测试）；其余算法模块只定义了数据结构与函数签名，调用会抛 `NotImplementedError` —— 目的是先固定四层之间的数据契约。
+> **当前可运行、且持续迭代的是 `demo/` 下的浏览器端 4D 测量工作台**，见上方「实时演示」。
 
 ## 快速开始
 
-```bash
-# 克隆仓库
-git clone https://github.com/Aholic-12/Cleanfit.git
+### 👉 体验当前成果：4D 人体尺寸测量工作台（推荐，无需 Python 算法依赖）
 
-# 进入项目目录
+```bash
+git clone https://github.com/Aholic-12/Cleanfit.git
 cd Cleanfit
 
-# 安装（可编辑模式，同时装好依赖）
-pip install -e .
+# 任选静态服务器；摄像头需要 localhost 或 https
+python -m http.server 8851 --directory demo
+# → http://127.0.0.1:8851/measure.html        实测
+# → http://127.0.0.1:8851/measure.html?demo   无摄像头演示
+```
 
-# 或者只装依赖
+Windows 也可直接双击 `start_demo.bat`（额外启动本地 GPU 精修服务）。
+线上版本：<https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX>
+
+> 打开后：在画面上直接拖框限定测量区域 → 填真实身高（或激光测距 / A4 参照物）→ 点「开始采样」，
+> 快速档达标自动停止 → 导出 JSON / CSV。完整用法见 [`demo/README.md`](demo/README.md)。
+
+### Python 点云算法层（长期方向）
+
+```bash
+# 进入项目目录后
+pip install -e .          # 可编辑模式，同时装好依赖
+# 或
 pip install -r requirements.txt
 ```
 
@@ -341,6 +467,20 @@ pip install -r requirements.txt
     <br/>
     <b>⚡ 精度优先</b><br/>
     <sub>优先保证核心测量的精度与稳定性，再考虑功能拓展。</sub>
+    <br/><br/>
+  </td>
+ </tr>
+ <tr>
+  <td width="50%" valign="top">
+    <br/>
+    <b>🔌 深度源待接入</b><br/>
+    <sub>实测 SR300 深度流不可用（驱动 Error + librealsense 已弃用该型号）。当前用激光测距 / 参照物 / 已知身高做外部尺度基准，不假装已有深度真值。</sub>
+    <br/><br/>
+  </td>
+  <td width="50%" valign="top">
+    <br/>
+    <b>📐 估算项不冒充实测</b><br/>
+    <sub>胸 / 腰 / 臀围与臂展是宽度乘经验系数的推算；14 项里只有 3D 骨骼段长属于直接测得，导出文件逐项标注类型。</sub>
     <br/><br/>
   </td>
  </tr>
