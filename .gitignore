@@ -66,3 +66,6 @@ node_modules/
 npm-debug.log*
 # 允许提交示例，但仍忽略真实密钥
 !.env.example
+
+# ---- ANSUR II 原始数据包（约 13MB，按需下载，不入库）----
+/train/data/*.zip

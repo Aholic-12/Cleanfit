@@ -199,6 +199,36 @@
   .notice b { color: #8a6a12; }
   .notice .n-ico { font-family: var(--mono); font-size: 18px; color: var(--amber); line-height: 1.2; }
 
+  /* ---------- 真人数据校准 ---------- */
+  .calib-wrap { display: grid; grid-template-columns: 1.08fr .92fr; gap: 48px; align-items: start; }
+  .calib-list { display: flex; flex-direction: column; gap: 15px; }
+  .calib-item .cl { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+  .calib-item .cl .nm { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .calib-item .cl .imp { font-family: var(--mono); font-size: 11px; letter-spacing: .3px; color: var(--green-dk); white-space: nowrap; }
+  .calib-item .cl .imp.neg { color: #b06a00; }
+  .bar-row { display: flex; align-items: center; gap: 9px; margin-bottom: 5px; }
+  .bar-row .tag { width: 26px; flex: none; font-family: var(--mono); font-size: 10px; color: #4d574b; }
+  .bar-track { flex: 1; height: 13px; background: #e7ebe3; overflow: hidden; }
+  .bar-fill { height: 100%; transform: scaleX(0); transform-origin: left; transition: transform .9s cubic-bezier(.2,.7,.2,1); }
+  .bar-fill.in { transform: scaleX(1); }
+  .bar-fill.old { background: #c6cec1; }
+  .bar-fill.new { background: linear-gradient(90deg, var(--green-dk), var(--green)); }
+  .bar-row .val { width: 68px; flex: none; text-align: right; font-family: var(--mono); font-size: 10.5px; color: #6b736a; }
+  .bar-row .val.new { color: var(--green-dk); font-weight: 700; }
+  .calib-facts { display: flex; flex-direction: column; gap: 12px; }
+  .fact { padding: 16px 18px; background: var(--gray-2); border-left: 3px solid var(--green); }
+  .fact .k { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.4px; color: var(--green-dk); }
+  .fact h5 { margin: 7px 0 6px; font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .fact p { margin: 0; font-size: 11.8px; line-height: 1.8; color: var(--muted); }
+  .calib-note { margin-top: 2px; padding: 15px 18px; background: #fffaf0; border-left: 3px solid var(--amber); font-size: 11.8px; line-height: 1.8; color: #6b5a33; }
+  .calib-note b { color: #8a6a12; }
+  .ref-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 42px; background: var(--line); border: 1px solid var(--line); }
+  .ref-strip > div { background: var(--white); padding: 20px 24px; }
+  .ref-strip .n { font-family: var(--mono); font-size: 26px; font-weight: 700; letter-spacing: -1px; line-height: 1; color: var(--ink); }
+  .ref-strip .n small { font-size: 12px; letter-spacing: 0; color: var(--green-dk); margin-left: 3px; }
+  .ref-strip .t { margin-top: 8px; font-size: 11.5px; line-height: 1.7; color: var(--muted); }
+  .src-note { margin-top: 16px; font-family: var(--mono); font-size: 10px; letter-spacing: .4px; color: #9aa396; }
+
   /* 路线 CTA */
   .cta-band { position: relative; overflow: hidden; background: var(--ink); color: var(--white); padding: 78px 0; }
   .cta-band::before {
@@ -233,6 +263,7 @@
     .tabs { grid-template-columns: repeat(3, 1fr); }
     .cards { grid-template-columns: repeat(2, 1fr); }
     .tech-grid, .cta-in, .data-grid { grid-template-columns: 1fr; gap: 32px; }
+    .calib-wrap { grid-template-columns: 1fr; gap: 30px; }
     .stats { grid-template-columns: repeat(2, 1fr); }
     .stat:nth-child(2) { border-right: 0; }
     .f-grid { grid-template-columns: 1fr 1fr; }
@@ -242,6 +273,7 @@
     .nav-right > a:first-child { display: none; }
     .tabs { grid-template-columns: repeat(2, 1fr); }
     .cards, .method, .stats, .f-grid { grid-template-columns: 1fr; }
+    .ref-strip { grid-template-columns: 1fr; }
     .stat { border-right: 0; border-bottom: 1px solid var(--line); }
     .head-row { flex-direction: column; align-items: flex-start; }
   }
@@ -264,6 +296,7 @@
     <nav class="menu">
       <a href="#product">产品</a>
       <a href="#tech">技术</a>
+      <a href="#calibration">真人校准</a>
       <a href="#data">精度数据</a>
       <a href="#roadmap">路线</a>
       <a href="#dev">开发者</a>
@@ -284,8 +317,8 @@
       <h1>把人体比例<br><em>测到可复现</em></h1>
       <p class="hero-lead">
         <b>3D 骨骼段长 × 多帧 / 多姿态 / 多视角稳健融合 × 外部尺度标定</b>。<br>
-        浏览器端实时采集，直接鼠标框选限定区域，输出 14 项尺寸、变异系数与置信度，
-        一键导出 JSON / CSV。试衣、AI 精修、3D 全息原型保持原样。
+        浏览器端实时采集，鼠标框选限定区域，输出 14 项尺寸、变异系数与置信度；
+        再用 <b>5,933 名真人</b>测量数据校准经验系数，一键导出 JSON / CSV。
       </p>
       <div class="cta">
         <a class="btn btn-green" href="https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX" target="_blank" rel="noopener">进入 4D 测量工作台 <span>→</span></a>
@@ -347,6 +380,7 @@
         <div class="row"><span>SAMPLES</span><span class="ok">49 FRAMES</span></div>
         <div class="row"><span>CONFIDENCE</span><b>100%</b></div>
         <div class="row"><span>AVG CV</span><span class="ok">0.58%</span></div>
+        <div class="row"><span>REFERENCE</span><span class="ok">ANSUR II · 6,068</span></div>
         <div class="row"><span>MODE</span><span>FAST · 4:3</span></div>
       </div>
     </div>
@@ -372,9 +406,9 @@
 <!-- ================= 数字条 ================= -->
 <div class="wrap"><div class="stats reveal" id="stats">
   <div class="stat"><div class="n">14<small>项</small></div><div class="t">人体尺寸输出（含 CV / 样本数 / 置信度）</div></div>
-  <div class="stat"><div class="n">5<small>类</small></div><div class="t">姿态分桶：正面 / 抬臂 / 斜侧 / 侧身 / 移动</div></div>
-  <div class="stat"><div class="n">4<small>种</small></div><div class="t">尺度标定：身高 / A4 / 激光 + A4 / 激光</div></div>
-  <div class="stat"><div class="n">0.79<small>%</small></div><div class="t">合成序列 400 帧融合后的平均变异系数</div></div>
+  <div class="stat"><div class="n">5,933<small>人</small></div><div class="t">ANSUR II 真人样本，用于校准经验系数</div></div>
+  <div class="stat"><div class="n">−87<small>%</small></div><div class="t">臀围误差降幅（留出集 MAE 34.6 → 4.7 cm）</div></div>
+  <div class="stat"><div class="n">6,068<small>人</small></div><div class="t">14 项参考分布，测量值自动标注人群百分位</div></div>
 </div></div>
 
 <!-- ================= 产品 ================= -->
@@ -466,6 +500,86 @@
   </div>
 </section>
 
+<!-- ================= 真人数据校准 ================= -->
+<section class="section" id="calibration">
+  <div class="wrap">
+    <div class="head-row reveal">
+      <div>
+        <div class="kicker">Calibration / 真人数据校准</div>
+        <h2>用 5,933 个真人<br>把经验系数换掉</h2>
+        <p class="sub">原来的「肩宽 +5cm」「围度 π×宽×系数」都是拍脑袋的经验值。我们用美国陆军 ANSUR II 公开人体测量数据（6,068 人、108 项实测）拟合了 6 个比例校正模型，并且<b>只采用在留出集上确实更准的那些</b> —— 更差的项目原样退回旧公式。</p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap">
+        <a class="btn btn-outline" href="https://github.com/Aholic-12/Cleanfit/blob/main/train/output/report.md" target="_blank" rel="noopener">训练报告 →</a>
+        <a class="btn btn-outline" href="https://github.com/Aholic-12/Cleanfit/blob/main/docs/datasets.md" target="_blank" rel="noopener">数据来源</a>
+      </div>
+    </div>
+
+    <div class="calib-wrap">
+      <div class="calib-list reveal">
+        <div class="calib-item">
+          <div class="cl"><span class="nm">肩宽（三角肌外缘）</span><span class="imp">MAE −56%</span></div>
+          <div class="bar-row"><span class="tag">旧</span><div class="bar-track"><div class="bar-fill old" style="width:12.1%"></div></div><span class="val">4.17 cm</span></div>
+          <div class="bar-row"><span class="tag">新</span><div class="bar-track"><div class="bar-fill new" style="width:5.3%"></div></div><span class="val new">1.83 cm</span></div>
+        </div>
+        <div class="calib-item">
+          <div class="cl"><span class="nm">胸围</span><span class="imp">MAE −76%</span></div>
+          <div class="bar-row"><span class="tag">旧</span><div class="bar-track"><div class="bar-fill old" style="width:62.0%"></div></div><span class="val">21.41 cm</span></div>
+          <div class="bar-row"><span class="tag">新</span><div class="bar-track"><div class="bar-fill new" style="width:15.1%"></div></div><span class="val new">5.23 cm</span></div>
+        </div>
+        <div class="calib-item">
+          <div class="cl"><span class="nm">腰围</span><span class="imp">MAE −81%</span></div>
+          <div class="bar-row"><span class="tag">旧</span><div class="bar-track"><div class="bar-fill old" style="width:97.7%"></div></div><span class="val">33.77 cm</span></div>
+          <div class="bar-row"><span class="tag">新</span><div class="bar-track"><div class="bar-fill new" style="width:18.3%"></div></div><span class="val new">6.32 cm</span></div>
+        </div>
+        <div class="calib-item">
+          <div class="cl"><span class="nm">臀围</span><span class="imp">MAE −87%</span></div>
+          <div class="bar-row"><span class="tag">旧</span><div class="bar-track"><div class="bar-fill old" style="width:100%"></div></div><span class="val">34.56 cm</span></div>
+          <div class="bar-row"><span class="tag">新</span><div class="bar-track"><div class="bar-fill new" style="width:13.5%"></div></div><span class="val new">4.65 cm</span></div>
+        </div>
+        <div class="calib-item">
+          <div class="cl"><span class="nm">臂展</span><span class="imp">MAE −76%</span></div>
+          <div class="bar-row"><span class="tag">旧</span><div class="bar-track"><div class="bar-fill old" style="width:26.4%"></div></div><span class="val">9.14 cm</span></div>
+          <div class="bar-row"><span class="tag">新</span><div class="bar-track"><div class="bar-fill new" style="width:6.5%"></div></div><span class="val new">2.23 cm</span></div>
+        </div>
+        <div class="calib-item">
+          <div class="cl"><span class="nm">胯宽</span><span class="imp neg">MAE +19% · 未采用</span></div>
+          <div class="bar-row"><span class="tag">旧</span><div class="bar-track"><div class="bar-fill old" style="width:3.9%"></div></div><span class="val">1.34 cm</span></div>
+          <div class="bar-row"><span class="tag">新</span><div class="bar-track"><div class="bar-fill new" style="width:4.6%"></div></div><span class="val new">1.59 cm</span></div>
+        </div>
+      </div>
+
+      <div class="calib-facts reveal">
+        <div class="fact">
+          <div class="k">FINDING 01</div>
+          <h5>肩宽被系统性低估约 4 cm</h5>
+          <p>真人「肩峰宽 → 三角肌外缘」平均差 <b>9.14 cm</b>，旧公式只加 5 cm。这不是随机误差，是方向一致的偏差。</p>
+        </div>
+        <div class="fact">
+          <div class="k">FINDING 02</div>
+          <h5>围度旧公式基本无依据</h5>
+          <p><span class="mono">π × 宽度 × 系数</span> 会系统性低估胸 / 腰 / 臀围 20–35 cm；真值显示围度更依赖「肩宽比 + 髋宽比 + 臂段比」的组合。</p>
+        </div>
+        <div class="fact">
+          <div class="k">FINDING 03</div>
+          <h5>胯宽：按数据保留原公式</h5>
+          <p>训练模型在留出集上反而更差（1.59 vs 1.34 cm），所以标记不采用 —— 不为「有成果」强行全量替换。</p>
+        </div>
+        <div class="calib-note">
+          <b>诚实边界：</b>ANSUR II 是美军人群（2012、年轻、体脂偏低），能验证方法、给合理量级，<b>不能当中国消费者先验</b>。围度仍是估算项 —— 骨架段长给不出软组织围度。
+        </div>
+      </div>
+    </div>
+
+    <div class="ref-strip reveal">
+      <div><div class="n">6,068<small>人</small></div><div class="t">ANSUR II 全量参考样本 · 108 项实测</div></div>
+      <div><div class="n">14<small>项</small></div><div class="t">逐项人群分布 · p5 / p50 / p95</div></div>
+      <div><div class="n">p0–p100</div><div class="t">测量值自动标注人群百分位，越界即标红</div></div>
+    </div>
+    <div class="src-note reveal">SOURCE · GORDON ET AL. (2012) ANSUR II · U.S. ARMY · 6,068 SUBJECTS · 108 MEASUREMENTS</div>
+  </div>
+</section>
+
 <!-- ================= 精度数据 ================= -->
 <section class="section gray" id="data">
   <div class="wrap">
@@ -473,13 +587,13 @@
       <div>
         <div class="kicker">Validation / 精度数据</div>
         <h2>哪些已经验证，哪些还没有</h2>
-        <p class="sub">下面左侧是算法收敛性与工程链路的实测结果；右侧是明确尚未完成的部分。把两者分开写，是不想把合成数据的结论当成真人精度。</p>
+        <p class="sub">左侧是算法收敛性、真人数据校准与工程链路的实测结果；右侧是明确尚未完成的部分。把两者分开写，是不想把合成数据或统计校准的结论当成真人精度。</p>
       </div>
     </div>
 
     <div class="data-grid reveal">
       <div class="panel">
-        <div class="panel-h"><span class="dot"></span>已验证 · 合成序列 / 浏览器端到端</div>
+        <div class="panel-h"><span class="dot"></span>已验证 · 合成序列 / 真人校准 / 端到端</div>
         <table>
           <tr><td>转体 90° 后 3D 段长变化</td><td class="v">0.000000</td></tr>
           <tr><td>400 帧 + 4mm 噪声 + 5% 离群 · 身高误差</td><td class="v">0.000 cm</td></tr>
@@ -488,6 +602,9 @@
           <tr><td>快速档浏览器端到端</td><td class="v">49 帧 · 100%</td></tr>
           <tr><td>ROI 段级过滤 / 4:3 入画</td><td class="v">通过</td></tr>
           <tr><td>本地 GPU 重绘（RTX 5070）</td><td class="v">1.70 s</td></tr>
+          <tr><td>ANSUR II 6,068 人参考分布（14 项）</td><td class="v">已构建</td></tr>
+          <tr><td>肩 / 胸 / 腰 / 臀 / 臂展 比例校正</td><td class="v">MAE −56%~−87%</td></tr>
+          <tr><td>训练端 Python ↔ 前端 JS 预测一致性</td><td class="v">2.9e-8</td></tr>
         </table>
       </div>
       <div class="panel warn">
@@ -496,7 +613,8 @@
           <tr><td>真人卷尺对照实验（Bland–Altman / 相对误差）</td><td class="v">未开展</td></tr>
           <tr><td>「≤5% 误差」长期目标</td><td class="v">目标，非结论</td></tr>
           <tr><td>真实深度帧（SR300 Depth 设备 Error，librealsense 已弃用该型号）</td><td class="v">当前不可用</td></tr>
-          <tr><td>胸 / 腰 / 臀围、臂展</td><td class="v">经验系数估算</td></tr>
+          <tr><td>胸 / 腰 / 臀围、臂展</td><td class="v">已真人校准 · 仍属估算</td></tr>
+          <tr><td>中国人群比例先验（ANSUR II 为美军样本）</td><td class="v">未覆盖</td></tr>
           <tr><td>多摄像头外参标定 / 真三维重建</td><td class="v">规划中</td></tr>
           <tr><td>同一人跨天、跨衣物的纵向复测</td><td class="v">规划中</td></tr>
           <tr><td>全场景泛化（不限于受控室内）</td><td class="v">不做承诺</td></tr>
@@ -526,6 +644,8 @@
     <ul class="todo reveal">
       <li><span>[x]</span> 4D 测量工作台：ROI / 分桶 / 稳健融合 / 尺度标定 / 导出</li>
       <li><span>[x]</span> 采样灵敏度、快速达标停止、4:3 全身入画、半身拼接</li>
+      <li><span>[x]</span> ANSUR II 真人数据校准：6 个校正模型 + 6,068 人参考库</li>
+      <li><span>[x]</span> 测量结果自动标注人群百分位，越界标红</li>
       <li><span>[ ]</span> 真人卷尺对照实验，把「目标 ≤5%」变成实测结论</li>
       <li><span>[ ]</span> 接入 D4xx / LiDAR 深度源，消除模型先验比例的系统偏差</li>
       <li><span>[ ]</span> 多摄像头外参标定，让「多视角」升级为三维重建</li>
@@ -556,6 +676,8 @@
         <h5>文档</h5>
         <a href="https://github.com/Aholic-12/Cleanfit#-当前进度--聚焦测量精度" target="_blank" rel="noopener">当前进度</a>
         <a href="https://github.com/Aholic-12/Cleanfit/blob/main/demo/README.md" target="_blank" rel="noopener">算法与标定说明</a>
+        <a href="https://github.com/Aholic-12/Cleanfit/blob/main/train/output/report.md" target="_blank" rel="noopener">校准训练报告</a>
+        <a href="https://github.com/Aholic-12/Cleanfit/blob/main/docs/datasets.md" target="_blank" rel="noopener">数据集与许可</a>
         <a href="https://github.com/Aholic-12/Cleanfit/blob/main/README.md" target="_blank" rel="noopener">项目 README</a>
         <a href="https://github.com/Aholic-12/Cleanfit/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">贡献指南</a>
       </div>
@@ -596,15 +718,22 @@
   select(0);
 
   // 轻量滚动显现
+  function revealEl(el) {
+    el.classList.add('in');
+    var bars = el.querySelectorAll('.bar-fill');
+    bars.forEach(function (b, i) {
+      setTimeout(function () { b.classList.add('in'); }, 120 + i * 55);
+    });
+  }
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        if (e.isIntersecting) { revealEl(e.target); io.unobserve(e.target); }
       });
     }, { threshold: 0.08 });
     document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
   } else {
-    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+    document.querySelectorAll('.reveal').forEach(revealEl);
   }
 })();
 </script>

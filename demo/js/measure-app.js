@@ -14,6 +14,7 @@ import {
   AnthroMeter, METRIC_DEFS, BUCKETS, calibrateHeight, depthSource, framingCheck,
 } from './anthro.js';
 import { mockPose, projectToNorm } from './mock.js';
+import { percentileOf, isPlausible } from './reference.js';
 
 const $ = (id) => document.getElementById(id);
 const N = 33;
@@ -115,6 +116,9 @@ function buildTable() {
     const v = document.createElement('td'); v.className = 'v empty'; v.textContent = '--';
     const cv = document.createElement('td'); cv.className = 'cv'; cv.textContent = '--';
     const n = document.createElement('td'); n.className = 'n'; n.textContent = '0';
+    const pc = document.createElement('td'); pc.className = 'pc';
+    const pcs = document.createElement('span'); pcs.className = 'p'; pcs.textContent = '--';
+    pc.append(pcs);
     const td = document.createElement('td');
     const input = document.createElement('input');
     input.type = 'number'; input.min = '0'; input.step = '0.1'; input.placeholder = '实测';
@@ -125,9 +129,9 @@ function buildTable() {
       else delete state.overrides[def.key];
     });
     td.append(input);
-    tr.append(lb, v, cv, n, td);
+    tr.append(lb, v, cv, n, pc, td);
     els.resultBody.append(tr);
-    rowEls[def.key] = { v, cv, n };
+    rowEls[def.key] = { v, cv, n, pc, pcs };
   }
 }
 
@@ -617,6 +621,17 @@ function refresh() {
     e.v.classList.toggle('empty', !m);
     e.cv.textContent = m ? (m.cv * 100).toFixed(1) + '%' : '--';
     e.n.textContent = m ? m.n : '0';
+    // 人群分位：用 ANSUR II 真人分布判断该值是否合理（仅对可直接对照的指标）
+    const pct = m ? percentileOf(def.key, m.value) : null;
+    if (pct == null) {
+      e.pcs.textContent = '--';
+      e.pc.className = 'pc';
+    } else {
+      e.pcs.textContent = `p${pct.toFixed(0)}`;
+      const ok = m && isPlausible(def.key, m.value);
+      e.pc.className = 'pc' + (!ok ? ' bad' : (pct < 5 || pct > 95 ? ' warn' : ''));
+      e.pc.title = `${def.label} ${m.value.toFixed(1)} cm 位于 ANSUR II 真人分布第 ${pct.toFixed(1)} 百分位`;
+    }
   }
 
   // 实时采集速率与本帧质量，方便判断「灵敏度」够不够；停采后保留最后一次读数
@@ -694,12 +709,16 @@ function doExport(kind) {
   data.roi = state.roi;
   data.referenceBox = state.refBox;
   data.viewports = state.devices.size;
+  // 给每一行补上「ANSUR II 人群分位」，导出的数据自带合理性参照
+  for (const row of data.rows) {
+    row.percentile = row.cm != null ? percentileOf(row.key, row.cm) : null;
+  }
   let text, mime, ext;
   if (kind === 'json') {
     text = JSON.stringify(data, null, 2); mime = 'application/json'; ext = 'json';
   } else {
-    const head = '项目,数值(cm),变异系数,样本数,类型,来源';
-    const lines = data.rows.map((r) => `"${r.label}",${r.cm ?? ''},${r.cv ?? ''},${r.n},${r.kind},${r.source ?? ''}`);
+    const head = '项目,数值(cm),变异系数,样本数,人群分位,类型,来源';
+    const lines = data.rows.map((r) => `"${r.label}",${r.cm ?? ''},${r.cv ?? ''},${r.n},${r.percentile != null ? 'p' + r.percentile.toFixed(1) : ''},${r.kind},${r.source ?? ''}`);
     text = '\uFEFF' + [head, ...lines].join('\n');
     mime = 'text/csv;charset=utf-8'; ext = 'csv';
   }

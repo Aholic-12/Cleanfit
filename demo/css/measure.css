@@ -201,6 +201,10 @@
 .m-table td.v { font-family: var(--mono); font-size: 11.5px; color: var(--cyan-soft); white-space: nowrap; }
 .m-table td.v.empty { color: var(--muted); }
 .m-table td.cv, .m-table td.n { font-family: var(--mono); font-size: 9.5px; }
+.m-table td.pc { font-family: var(--mono); font-size: 9.5px; white-space: nowrap; }
+.m-table td.pc .p { padding: 1px 4px; border-radius: 2px; background: rgba(34, 211, 238, .10); color: var(--cyan-soft); }
+.m-table td.pc.warn .p { background: rgba(251, 191, 36, .14); color: var(--amber); }
+.m-table td.pc.bad .p { background: rgba(248, 113, 113, .16); color: #f87171; }
 .m-table tr.est td.lb { color: var(--muted); font-style: italic; }
 .m-table input[type=number] {
   width: 62px; padding: 2px 5px; font-family: var(--mono); font-size: 10px;

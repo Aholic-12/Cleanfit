@@ -15,6 +15,8 @@
  *  纯计算模块，不依赖 DOM，便于数值测试与未来接深度/多摄像头数据源。
  * ================================================================== */
 
+import { CALIB, calibPredict } from './calibration.js';
+
 export const IDX = {
   nose: 0, lEar: 7, rEar: 8,
   lSh: 11, rSh: 12, lElb: 13, rElb: 14, lWr: 15, rWr: 16,
@@ -170,6 +172,7 @@ export function extractSegments(P, norm = null, roi = null, minVis = 0.45) {
   if (!P || P.length < 33) return null;
   const has = (...ids) => ids.every((i) => ok(P[i], minVis));
   const s = {};
+  let shJoint = null, hipJoint = null;   // 原始关节中心距，供比例校正器使用
 
   if (has(IDX.lSh, IDX.rSh, IDX.lHip, IDX.rHip, IDX.nose)) {
     const sh = mid(P[IDX.lSh], P[IDX.rSh]);
@@ -180,8 +183,10 @@ export function extractSegments(P, norm = null, roi = null, minVis = 0.45) {
     }
     s.headNeck = Math.max(0.05, sh.y - headTop);
     s.torso = Math.max(0.05, d3(sh, hp));
-    s.shoulder = d3(P[IDX.lSh], P[IDX.rSh]) + 0.05;   // 肩峰 → 三角肌外缘
-    s.hipWidth = d3(P[IDX.lHip], P[IDX.rHip]) + 0.17; // 髋中心 → 大转子外缘
+    shJoint = d3(P[IDX.lSh], P[IDX.rSh]);
+    hipJoint = d3(P[IDX.lHip], P[IDX.rHip]);
+    s.shoulder = shJoint + 0.05;    // 旧经验式，作校正器不可用时的兜底
+    s.hipWidth = hipJoint + 0.17;
   }
 
   const leg = (h, k, a) => (has(h, k, a) ? [d3(P[h], P[k]), d3(P[k], P[a])] : null);
@@ -211,14 +216,43 @@ export function extractSegments(P, norm = null, roi = null, minVis = 0.45) {
     if (direct > 0.6 && direct < 2.5) s.height = s.height ? avg(s.height, direct) : direct;
   }
 
+  // 旧公式先算出兜底值（尺度与下方校正器一致，均为模型单位）
   if (s.shoulder && s.upperArm && s.forearm) {
     s.armSpan = s.shoulder + 2 * (s.upperArm + s.forearm + 0.09);
   }
-  // 围度：宽度 × 经验系数（无深度时只能估算，明确标注）
   if (s.shoulder) s.chestCirc = Math.PI * (s.shoulder * 0.92) * 0.62;
   if (s.hipWidth) {
     s.hipCirc = Math.PI * s.hipWidth * 0.62;
     s.waistCirc = Math.PI * s.hipWidth * 0.53;
+  }
+
+  // ---- ANSUR II 真人数据训练的比例校正器（见 train/train_calibration.py）----
+  // 在「段长/身高」比例空间预测，再乘回身高 → 尺度无关，与 result() 的 k 标定不冲突。
+  // 每个模型带 adopt 标记：只在留出集上确实更准才覆盖旧公式，否则沿用兜底值。
+  if (s.height > 0 && shJoint !== null && hipJoint !== null && s.upperArm && s.forearm) {
+    const h = s.height;
+    const rSh = shJoint / h, rHip = hipJoint / h;
+    const rUp = s.upperArm / h, rFore = s.forearm / h;
+    const inRange = (m, x) => !m.featureRange || x.every((v, i) => {
+      const r = m.featureRange[i];
+      if (!r) return true;
+      const pad = (r[1] - r[0]) * 0.15;      // 允许 15% 的温和外推
+      return v >= r[0] - pad && v <= r[1] + pad;
+    });
+    const use = (key, x, fallback) => {
+      const m = CALIB.models[key];
+      // 比例特征若落在真人训练分布之外（如 demo 合成骨架），多项式会外推失真 → 回退旧公式
+      if (!m || !m.adopt || !inRange(m, x)) return fallback;
+      const p = calibPredict(m, x) * h;
+      return isFinite(p) && p > 0 ? p : fallback;
+    };
+    s.shoulder = use('shoulder', [rSh], s.shoulder);
+    s.hipWidth = use('hipWidth', [rHip], s.hipWidth);
+    const xc = [rSh, rHip, rUp, rFore];
+    s.chestCirc = use('chestCirc', xc, s.chestCirc);
+    s.waistCirc = use('waistCirc', xc, s.waistCirc);
+    s.hipCirc = use('hipCirc', xc, s.hipCirc);
+    s.armSpan = use('armSpan', [rSh, rUp, rFore], s.armSpan);
   }
   if (norm && roi) {
     for (const key of Object.keys(s)) {
