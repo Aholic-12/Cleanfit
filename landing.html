@@ -243,6 +243,28 @@
   .ref-strip .t { margin-top: 8px; font-size: 11.5px; line-height: 1.7; color: var(--muted); }
   .src-note { margin-top: 16px; font-family: var(--mono); font-size: 10px; letter-spacing: .4px; color: #9aa396; }
 
+  /* ---------- 进度看板 ---------- */
+  .prog-kpi { display: flex; gap: 30px; flex-wrap: wrap; }
+  .prog-kpi b { display: block; font-family: var(--mono); font-size: 28px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; color: var(--green-hi); }
+  .prog-kpi span { font-size: 11px; color: #7e8b7c; }
+  .prog-list { display: flex; flex-direction: column; gap: 15px; margin-top: 14px; }
+  .prog-row { display: grid; grid-template-columns: 96px 1fr 52px 64px; align-items: center; gap: 14px; }
+  .prog-row .nm { font-size: 12.5px; color: #c9d2c6; }
+  .prog-row .bar { height: 8px; background: rgba(255,255,255,.08); border-radius: 4px; overflow: hidden; }
+  .prog-row .bar i { display: block; height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(.2,.7,.2,1); }
+  .prog-row .pc { font-family: var(--mono); font-size: 12px; text-align: right; }
+  .prog-row .st { font-size: 11px; }
+  .prog-row.amber .bar i { background: var(--amber); }
+  .prog-row.amber .pc, .prog-row.amber .st { color: var(--amber); }
+  .prog-row.blue .bar i { background: #85b7eb; }
+  .prog-row.blue .pc, .prog-row.blue .st { color: #85b7eb; }
+  .prog-row.gray .bar i { background: #6b736a; }
+  .prog-row.gray .pc, .prog-row.gray .st { color: #8b968a; }
+  .prog-foot { margin-top: 26px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.1); display: flex; gap: 28px; flex-wrap: wrap; font-size: 12px; color: #b3bfae; }
+  .prog-foot i { font-style: normal; color: var(--amber); }
+  .prog-foot i.ok { color: var(--green-hi); }
+  .prog-evi { margin-top: 12px; font-family: var(--mono); font-size: 10px; letter-spacing: .4px; color: #6f7c6b; }
+
   /* 路线 CTA */
   .cta-band { position: relative; overflow: hidden; background: var(--ink); color: var(--white); padding: 78px 0; }
   .cta-band::before {
@@ -289,6 +311,10 @@
     .cards, .method, .stats, .f-grid { grid-template-columns: 1fr; }
     .ref-strip { grid-template-columns: 1fr; }
     .stat { border-right: 0; border-bottom: 1px solid var(--line); }
+    .prog-row { grid-template-columns: 70px 1fr 40px; gap: 10px; }
+    .prog-row .st { display: none; }
+    .prog-kpi { gap: 18px; }
+    .prog-kpi b { font-size: 22px; }
     .head-row { flex-direction: column; align-items: flex-start; }
   }
 </style>
@@ -312,6 +338,7 @@
       <a href="#tech">技术</a>
       <a href="#calibration">真人校准</a>
       <a href="#data">精度数据</a>
+      <a href="#progress">进度</a>
       <a href="#roadmap">路线</a>
       <a href="#dev">开发者</a>
     </nav>
@@ -646,6 +673,63 @@
       <div class="n-ico">!</div>
       <div><b>关于硬件：</b>本机 Intel RealSense SR300 的 Depth 设备在 Windows 中为 Error 状态，<code>pyrealsense2 2.59</code> 已移除该型号支持（<code>query_devices()</code> 返回 0 台），浏览器也读不了 Z16 / Y8 格式。因此当前绝对尺度由<b>激光测距 / 已知参照物 / 已知身高</b>这类外部基准提供，而不是假装已有深度真值。</div>
     </div>
+  </div>
+</section>
+
+<!-- ================= 进度 ================= -->
+<section class="section dark" id="progress">
+  <div class="wrap">
+    <div class="head-row reveal">
+      <div>
+        <div class="kicker">Progress / 当前进度</div>
+        <h2>五个板块，<br>走到哪了</h2>
+        <p class="sub">按「原型 → 工程化 → 验证 → 产品化」四段计。三个地基板块走在前面，表现层里 AR 只做到贴图，推荐还在起步。</p>
+      </div>
+      <div class="prog-kpi">
+        <div><b>45%</b><span>整体完成度</span></div>
+        <div><b>5 个</b><span>板块</span></div>
+        <div><b>14 项</b><span>尺寸输出</span></div>
+      </div>
+    </div>
+
+    <div class="prog-list reveal">
+      <div class="prog-row amber">
+        <span class="nm">测量引擎</span>
+        <span class="bar"><i style="width:70%"></i></span>
+        <span class="pc">70%</span>
+        <span class="st">验证中</span>
+      </div>
+      <div class="prog-row amber">
+        <span class="nm">精度增强</span>
+        <span class="bar"><i style="width:60%"></i></span>
+        <span class="pc">60%</span>
+        <span class="st">验证中</span>
+      </div>
+      <div class="prog-row blue">
+        <span class="nm">身形建模</span>
+        <span class="bar"><i style="width:55%"></i></span>
+        <span class="pc">55%</span>
+        <span class="st">工程化</span>
+      </div>
+      <div class="prog-row blue">
+        <span class="nm">AR 渲染</span>
+        <span class="bar"><i style="width:25%"></i></span>
+        <span class="pc">25%</span>
+        <span class="st">工程化</span>
+      </div>
+      <div class="prog-row gray">
+        <span class="nm">穿搭推荐</span>
+        <span class="bar"><i style="width:15%"></i></span>
+        <span class="pc">15%</span>
+        <span class="st">起步</span>
+      </div>
+    </div>
+
+    <div class="prog-foot reveal">
+      <span><i>●</i> 现在：真人卷尺对照（10 人）</span>
+      <span><i class="ok">●</i> 里程碑：宽度误差 ≤5mm</span>
+    </div>
+    <div class="prog-evi reveal">关键证据 · 合成 400 帧 CV 0.79%　｜　ANSUR II 6,068 人　｜　浏览器 0 异常</div>
   </div>
 </section>
 
