@@ -85,6 +85,20 @@
   .cta { display: flex; flex-wrap: wrap; gap: 12px; }
   .hero-meta { margin-top: 30px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 1.2px; color: #6d7a6a; }
 
+  /* 动作同步开关 */
+  .motion { margin-top: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .motion-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 14px; font-family: var(--sans); font-size: 12px; color: #c9d2c6;
+    background: transparent; border: 1px solid rgba(255,255,255,.25); border-radius: 2px;
+    cursor: pointer; transition: color .2s, border-color .2s;
+  }
+  .motion-btn:hover { color: #fff; border-color: var(--green); }
+  .motion-btn .dot { width: 7px; height: 7px; border-radius: 50%; background: #6d7a6a; transition: background .2s, box-shadow .2s; }
+  .motion-btn.on { color: #fff; border-color: var(--green); }
+  .motion-btn.on .dot { background: var(--green-hi); box-shadow: 0 0 8px var(--green-hi); }
+  .motion-note { font-family: var(--mono); font-size: 10px; letter-spacing: .4px; color: #6d7a6a; }
+
   /* 全息人体视觉（纯内联 SVG + CSS 动画，零外链） */
   .hero-visual { position: relative; display: flex; align-items: center; justify-content: center; min-height: 480px; }
   .figure { width: min(100%, 440px); height: auto; filter: drop-shadow(0 0 22px rgba(34,211,238,.18)); }
@@ -324,12 +338,18 @@
         <a class="btn btn-green" href="https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX" target="_blank" rel="noopener">进入 4D 测量工作台 <span>→</span></a>
         <a class="btn btn-ghost" href="https://github.com/Aholic-12/Cleanfit" target="_blank" rel="noopener">查看源代码</a>
       </div>
+      <div class="motion">
+        <button class="motion-btn" id="btnMotion" type="button">
+          <span class="dot"></span><span id="motionLabel">动作同步</span>
+        </button>
+        <span class="motion-note" id="motionNote">开启后小人跟随你的动作 · 画面仅在本地处理</span>
+      </div>
       <div class="hero-meta">BLAZEPOSE · 33 关键点 &nbsp;/&nbsp; 零外链 · 可离线 &nbsp;/&nbsp; MIT LICENSE</div>
     </div>
 
     <!-- 全息人体线框 + 测量标注（纯内联 SVG） -->
     <div class="hero-visual" aria-hidden="true">
-      <svg class="figure" viewBox="0 0 420 540">
+      <svg class="figure" viewBox="0 0 420 540" id="figure">
         <defs>
           <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#7ff3ff" stop-opacity=".13"/>
@@ -339,40 +359,40 @@
         <!-- 扫描线 -->
         <line class="scanline scan" x1="40" y1="60" x2="380" y2="60"/>
         <!-- 头部 -->
-        <ellipse cx="210" cy="66" rx="27" ry="33" fill="url(#body)" stroke="rgba(127,243,255,.7)" stroke-width="2"/>
-        <path class="bone-soft" d="M188 60h44M210 36v60"/>
+        <ellipse id="fHead" cx="210" cy="66" rx="27" ry="33" fill="url(#body)" stroke="rgba(127,243,255,.7)" stroke-width="2"/>
+        <path id="fHeadCross" class="bone-soft" d="M188 60h44M210 36v60"/>
         <!-- 躯干轮廓 -->
-        <path d="M170 112 L250 112 L240 200 L232 258 L188 258 L180 200 Z" fill="url(#body)" stroke="rgba(34,211,238,.35)" stroke-width="1.4"/>
+        <path id="fTorso" d="M170 112 L250 112 L240 200 L232 258 L188 258 L180 200 Z" fill="url(#body)" stroke="rgba(34,211,238,.35)" stroke-width="1.4"/>
         <!-- 骨架 -->
-        <path class="bone" d="M170 118 L250 118"/>
-        <path class="bone" d="M210 118 L210 258"/>
-        <path class="bone" d="M188 258 L232 258"/>
-        <path class="bone" d="M170 118 L146 176 L132 232"/>
-        <path class="bone" d="M250 118 L274 176 L288 232"/>
-        <path class="bone" d="M188 258 L178 352 L172 448"/>
-        <path class="bone" d="M232 258 L242 352 L248 448"/>
-        <path class="bone-soft" d="M172 448 L158 462M248 448 L262 462"/>
+        <path id="fShoulder" class="bone" d="M170 118 L250 118"/>
+        <path id="fSpine" class="bone" d="M210 118 L210 258"/>
+        <path id="fHip" class="bone" d="M188 258 L232 258"/>
+        <path id="fArmL" class="bone" d="M170 118 L146 176 L132 232"/>
+        <path id="fArmR" class="bone" d="M250 118 L274 176 L288 232"/>
+        <path id="fLegL" class="bone" d="M188 258 L178 352 L172 448"/>
+        <path id="fLegR" class="bone" d="M232 258 L242 352 L248 448"/>
+        <path id="fFeet" class="bone-soft" d="M172 448 L158 462M248 448 L262 462"/>
         <!-- 关节点 -->
         <g class="pulse">
-          <circle class="node-glow" cx="170" cy="118" r="9"/><circle class="node-glow" cx="250" cy="118" r="9"/>
-          <circle class="node-glow" cx="188" cy="258" r="9"/><circle class="node-glow" cx="232" cy="258" r="9"/>
+          <circle id="g11" class="node-glow" cx="170" cy="118" r="9"/><circle id="g12" class="node-glow" cx="250" cy="118" r="9"/>
+          <circle id="g23" class="node-glow" cx="188" cy="258" r="9"/><circle id="g24" class="node-glow" cx="232" cy="258" r="9"/>
         </g>
-        <g>
-          <circle class="node" cx="170" cy="118" r="3.5"/><circle class="node" cx="250" cy="118" r="3.5"/>
-          <circle class="node" cx="146" cy="176" r="3"/><circle class="node" cx="274" cy="176" r="3"/>
-          <circle class="node" cx="132" cy="232" r="3"/><circle class="node" cx="288" cy="232" r="3"/>
-          <circle class="node" cx="188" cy="258" r="3.5"/><circle class="node" cx="232" cy="258" r="3.5"/>
-          <circle class="node" cx="178" cy="352" r="3"/><circle class="node" cx="242" cy="352" r="3"/>
-          <circle class="node" cx="172" cy="448" r="3"/><circle class="node" cx="248" cy="448" r="3"/>
+        <g id="fJoints">
+          <circle id="j11" class="node" cx="170" cy="118" r="3.5"/><circle id="j12" class="node" cx="250" cy="118" r="3.5"/>
+          <circle id="j13" class="node" cx="146" cy="176" r="3"/><circle id="j14" class="node" cx="274" cy="176" r="3"/>
+          <circle id="j15" class="node" cx="132" cy="232" r="3"/><circle id="j16" class="node" cx="288" cy="232" r="3"/>
+          <circle id="j23" class="node" cx="188" cy="258" r="3.5"/><circle id="j24" class="node" cx="232" cy="258" r="3.5"/>
+          <circle id="j25" class="node" cx="178" cy="352" r="3"/><circle id="j26" class="node" cx="242" cy="352" r="3"/>
+          <circle id="j27" class="node" cx="172" cy="448" r="3"/><circle id="j28" class="node" cx="248" cy="448" r="3"/>
         </g>
         <!-- 测量标注：肩宽（线放在头底与肩线之间，文字移到左侧避开头部） -->
-        <path class="measure" d="M170 106 L250 106"/>
-        <path class="measure" d="M170 101v10M250 101v10"/>
-        <text class="measure-txt" x="164" y="110" text-anchor="end">肩宽 39.8 cm</text>
+        <path id="fMs" class="measure" d="M170 106 L250 106"/>
+        <path id="fMst" class="measure" d="M170 101v10M250 101v10"/>
+        <text id="fMstx" class="measure-txt" x="164" y="110" text-anchor="end">肩宽 39.8 cm</text>
         <!-- 测量标注：身高 -->
-        <path class="measure" d="M326 32 L326 466"/>
-        <path class="measure" d="M320 32h12M320 466h12"/>
-        <text class="measure-txt" x="334" y="250" transform="rotate(90 334 250)" text-anchor="middle">身高 175.0 cm</text>
+        <path id="fMh" class="measure" d="M326 32 L326 466"/>
+        <path id="fMht" class="measure" d="M320 32h12M320 466h12"/>
+        <text id="fMhtx" class="measure-txt" x="334" y="250" transform="rotate(90 334 250)" text-anchor="middle">身高 175.0 cm</text>
         <!-- 网格基准 -->
         <path class="bone-soft" d="M60 466 H360" stroke-dasharray="3 6"/>
       </svg>
@@ -735,6 +755,226 @@
   } else {
     document.querySelectorAll('.reveal').forEach(revealEl);
   }
+})();
+</script>
+<script>
+/* 动作同步：让首屏小人跟随摄像头里的动作（本地推理，不上传） */
+(function () {
+  var svg = document.getElementById('figure');
+  if (!svg) return;
+  var $ = function (id) { return document.getElementById(id); };
+  var E = {
+    head: $('fHead'), headCross: $('fHeadCross'), torso: $('fTorso'),
+    shoulder: $('fShoulder'), spine: $('fSpine'), hip: $('fHip'),
+    armL: $('fArmL'), armR: $('fArmR'), legL: $('fLegL'), legR: $('fLegR'), feet: $('fFeet'),
+    ms: $('fMs'), mst: $('fMst'), mstx: $('fMstx'),
+    mh: $('fMh'), mht: $('fMht'), mhtx: $('fMhtx')
+  };
+  var J = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
+  var jEl = {}, gEl = {};
+  J.forEach(function (i) { jEl[i] = $('j' + i); });
+  [11, 12, 23, 24].forEach(function (i) { gEl[i] = $('g' + i); });
+
+  var btn = $('btnMotion'), label = $('motionLabel'), note = $('motionNote');
+  var S = { on: false, pose: null, video: null, stream: null, raf: 0, scale: 0, prev: null, miss: 0 };
+  var AX = 210, AY = 258, TORSO_PX = 140;
+
+  function set(el, d) { if (el) el.setAttribute('d', d); }
+  function attr(el, k, v) { if (el) el.setAttribute(k, v); }
+  function mid(a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+  function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+  function map(lm) {
+    var s = lm[11], r = lm[12], lh = lm[23], rh = lm[24];
+    if (!s || !r || !lh || !rh) return null;
+    var v = function (p) { return p.visibility === undefined ? 1 : p.visibility; };
+    if (Math.min(v(s), v(r), v(lh), v(rh)) < 0.35) return null;
+    var sc = mid(s, r), hc = mid(lh, rh);
+    var torso = dist(sc, hc);
+    if (torso < 0.02) return null;
+    var target = TORSO_PX / torso;
+    S.scale = S.scale ? S.scale + (target - S.scale) * 0.12 : target;
+    var k = clamp(S.scale, 320, 1100);
+    var out = {};
+    for (var i = 0; i < lm.length; i++) {
+      var p = lm[i];
+      if (!p) continue;
+      out[i] = { x: AX - (p.x - hc.x) * k, y: AY + (p.y - hc.y) * k };
+    }
+    return out;
+  }
+
+  function smooth(P) {
+    if (!S.prev) { S.prev = P; return P; }
+    var out = {};
+    for (var k in P) {
+      var a = S.prev[k], b = P[k];
+      out[k] = a ? { x: a.x + (b.x - a.x) * 0.45, y: a.y + (b.y - a.y) * 0.45 } : b;
+    }
+    S.prev = out;
+    return out;
+  }
+
+  function poly(el, pts) {
+    var ok = pts.filter(Boolean);
+    if (ok.length < 2) return;
+    set(el, ok.map(function (p, i) { return (i ? 'L' : 'M') + p.x + ' ' + p.y; }).join(' '));
+  }
+
+  function draw(P) {
+    var sL = P[11], sR = P[12], hL = P[23], hR = P[24];
+    if (!sL || !sR || !hL || !hR) return;
+    var sC = mid(sL, sR), hC = mid(hL, hR);
+    var sw = Math.max(20, dist(sL, sR));
+
+    poly(E.shoulder, [sL, sR]);
+    poly(E.spine, [sC, hC]);
+    poly(E.hip, [hL, hR]);
+    poly(E.armL, [P[11], P[13], P[15]]);
+    poly(E.armR, [P[12], P[14], P[16]]);
+    poly(E.legL, [P[23], P[25], P[27]]);
+    poly(E.legR, [P[24], P[26], P[28]]);
+
+    var wy = sC.y + (hC.y - sC.y) * 0.62;
+    var wx = sC.x + (hC.x - sC.x) * 0.62;
+    var wh = sw * 0.375, hh = sw * 0.275;
+    var sA = sL.x <= sR.x ? sL : sR, sB = sL.x <= sR.x ? sR : sL;
+    var hA = hL.x <= hR.x ? hL : hR, hB = hL.x <= hR.x ? hR : hL;
+    set(E.torso, 'M' + sA.x + ' ' + sA.y + ' L' + sB.x + ' ' + sB.y +
+      ' L' + (wx + wh) + ' ' + wy + ' L' + hB.x + ' ' + hB.y +
+      ' L' + hA.x + ' ' + hA.y + ' L' + (wx - wh) + ' ' + wy + ' Z');
+
+    // 头
+    var eL = P[7], eR = P[8], nose = P[0];
+    var hx, hy, hr;
+    if (eL && eR) { hx = (eL.x + eR.x) / 2; hy = (eL.y + eR.y) / 2; hr = sw * 0.34; }
+    else if (nose) { hx = nose.x; hy = nose.y - sw * 0.26; hr = sw * 0.34; }
+    else { hx = sC.x; hy = sC.y - sw * 0.72; hr = sw * 0.34; }
+    hr = clamp(hr, 14, 40);
+    var ry = hr * 1.2;
+    attr(E.head, 'cx', hx); attr(E.head, 'cy', hy);
+    attr(E.head, 'rx', hr); attr(E.head, 'ry', ry);
+    set(E.headCross, 'M' + (hx - hr * 0.8) + ' ' + hy + 'h' + (hr * 1.6) +
+      'M' + hx + ' ' + (hy - ry * 0.9) + 'v' + (ry * 1.8));
+
+    // 关节点
+    J.forEach(function (i) {
+      var p = P[i], el = jEl[i];
+      if (!p || !el) return;
+      attr(el, 'cx', p.x); attr(el, 'cy', p.y);
+    });
+    [11, 12, 23, 24].forEach(function (i) {
+      var p = P[i], el = gEl[i];
+      if (!p || !el) return;
+      attr(el, 'cx', p.x); attr(el, 'cy', p.y);
+    });
+
+    // 脚
+    if (P[27] && P[28]) {
+      set(E.feet, 'M' + P[27].x + ' ' + P[27].y + ' L' + (P[27].x - 14) + ' ' + (P[27].y + 14) +
+        'M' + P[28].x + ' ' + P[28].y + ' L' + (P[28].x + 14) + ' ' + (P[28].y + 14));
+    }
+
+    // 肩宽标注
+    var shY = Math.min(sL.y, sR.y) - 12;
+    var shLx = Math.min(sL.x, sR.x), shRx = Math.max(sL.x, sR.x);
+    set(E.ms, 'M' + shLx + ' ' + shY + ' L' + shRx + ' ' + shY);
+    set(E.mst, 'M' + shLx + ' ' + (shY - 5) + 'v10M' + shRx + ' ' + (shY - 5) + 'v10');
+    attr(E.mstx, 'x', shLx - 6); attr(E.mstx, 'y', shY + 4);
+
+    // 身高标注
+    var top = hy - ry;
+    var bot = Math.max(P[27].y, P[28].y) + 16;
+    var maxX = 0;
+    for (var kk in P) if (P[kk] && P[kk].x > maxX) maxX = P[kk].x;
+    var rx = maxX + 28;
+    set(E.mh, 'M' + rx + ' ' + top + ' L' + rx + ' ' + bot);
+    set(E.mht, 'M' + (rx - 6) + ' ' + top + 'h12M' + (rx - 6) + ' ' + bot + 'h12');
+    var ty = (top + bot) / 2;
+    attr(E.mhtx, 'x', rx + 10); attr(E.mhtx, 'y', ty);
+    attr(E.mhtx, 'transform', 'rotate(90 ' + (rx + 10) + ' ' + ty + ')');
+  }
+
+  function onResults(res) {
+    var lm = res.poseLandmarks;
+    if (!lm) {
+      S.miss++;
+      if (S.miss === 45) note.textContent = '没检测到人，往后退一点、让全身入镜';
+      return;
+    }
+    S.miss = 0;
+    var P = map(lm);
+    if (!P) return;
+    draw(smooth(P));
+  }
+
+  function loadScript(src) {
+    return new Promise(function (res, rej) {
+      var s = document.createElement('script');
+      s.src = src; s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  var last = 0;
+  function pump(t) {
+    if (!S.on) return;
+    if (t - last > 42) {
+      last = t;
+      S.pose.send({ image: S.video }).catch(function () {});
+    }
+    S.raf = requestAnimationFrame(pump);
+  }
+
+  async function start() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      note.textContent = '此浏览器不支持摄像头'; return;
+    }
+    note.textContent = '正在请求摄像头…';
+    try {
+      S.stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 480, facingMode: 'user' }, audio: false
+      });
+    } catch (e) { note.textContent = '摄像头未授权'; return; }
+
+    var v = document.createElement('video');
+    v.playsInline = true; v.muted = true; v.srcObject = S.stream;
+    try { await v.play(); } catch (e) {}
+    S.video = v;
+
+    if (!S.pose) {
+      if (typeof Pose === 'undefined') {
+        try { await loadScript('./demo/vendor/mediapipe/pose.js'); } catch (e) {}
+      }
+      if (typeof Pose === 'undefined') { note.textContent = '推理引擎加载失败'; stop(); return; }
+      S.pose = new Pose({ locateFile: function (f) { return new URL('demo/vendor/mediapipe/', location.href).href + f; } });
+      S.pose.setOptions({
+        modelComplexity: 0, smoothLandmarks: true, enableSegmentation: false,
+        minDetectionConfidence: 0.6, minTrackingConfidence: 0.6
+      });
+      S.pose.onResults(onResults);
+      try { await S.pose.initialize(); } catch (e) { note.textContent = '引擎初始化失败'; stop(); return; }
+    }
+
+    S.on = true; S.miss = 0;
+    btn.classList.add('on'); label.textContent = '停止同步';
+    note.textContent = '跟随中 · 画面仅在本地处理';
+    S.raf = requestAnimationFrame(pump);
+  }
+
+  function stop() {
+    S.on = false;
+    cancelAnimationFrame(S.raf);
+    if (S.stream) { S.stream.getTracks().forEach(function (t) { t.stop(); }); S.stream = null; }
+    btn.classList.remove('on'); label.textContent = '动作同步';
+    note.textContent = '已停止 · 静态示意';
+  }
+
+  btn.addEventListener('click', function () { S.on ? stop() : start(); });
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden && S.on) stop();
+  });
 })();
 </script>
 </body>
