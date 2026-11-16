@@ -229,20 +229,6 @@
   .ref-strip .t { margin-top: 8px; font-size: 11.5px; line-height: 1.7; color: var(--muted); }
   .src-note { margin-top: 16px; font-family: var(--mono); font-size: 10px; letter-spacing: .4px; color: #9aa396; }
 
-  /* ---------- 硬件锚点 ---------- */
-  .hw-figure { margin: 0; border: 1px solid var(--line); background: #0a0e0c; overflow: hidden; }
-  .hw-figure img { display: block; width: 100%; height: auto; }
-  .hw-figure figcaption {
-    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-    padding: 12px 16px; border-top: 1px solid var(--line);
-    font-family: var(--mono); font-size: 10px; letter-spacing: .6px; color: #7e8b7c;
-  }
-  .hw-specs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 20px; background: var(--line); border: 1px solid var(--line); }
-  .hw-specs > div { background: var(--white); padding: 20px 22px; }
-  .hw-specs .n { font-family: var(--mono); font-size: 26px; font-weight: 700; letter-spacing: -1px; line-height: 1; color: var(--ink); }
-  .hw-specs .n small { font-size: 12px; letter-spacing: 0; color: var(--green-dk); margin-left: 2px; }
-  .hw-specs .t { margin-top: 8px; font-size: 11.5px; line-height: 1.7; color: var(--muted); }
-
   /* 路线 CTA */
   .cta-band { position: relative; overflow: hidden; background: var(--ink); color: var(--white); padding: 78px 0; }
   .cta-band::before {
@@ -288,7 +274,6 @@
     .tabs { grid-template-columns: repeat(2, 1fr); }
     .cards, .method, .stats, .f-grid { grid-template-columns: 1fr; }
     .ref-strip { grid-template-columns: 1fr; }
-    .hw-specs { grid-template-columns: 1fr; }
     .stat { border-right: 0; border-bottom: 1px solid var(--line); }
     .head-row { flex-direction: column; align-items: flex-start; }
   }
@@ -312,7 +297,6 @@
       <a href="#product">产品</a>
       <a href="#tech">技术</a>
       <a href="#calibration">真人校准</a>
-      <a href="#hardware">硬件</a>
       <a href="#data">精度数据</a>
       <a href="#roadmap">路线</a>
       <a href="#dev">开发者</a>
@@ -596,34 +580,6 @@
   </div>
 </section>
 
-<!-- ================= 硬件锚点 ================= -->
-<section class="section" id="hardware">
-  <div class="wrap">
-    <div class="head-row reveal">
-      <div>
-        <div class="kicker">Hardware / 实测锚点</div>
-        <h2>两个激光，<br>把宽度测到毫米</h2>
-        <p class="sub">统计校准只能把误差压到厘米级。要再往下走，必须引入物理实测：一个刚性门框、两侧对射的激光测距，直接测出宽度 —— <span class="mono">W = B − dL − dR</span>。</p>
-      </div>
-      <a class="btn btn-outline" href="https://github.com/Aholic-12/Cleanfit/blob/main/hardware/esp32_laser_gate/README.md" target="_blank" rel="noopener">硬件方案 →</a>
-    </div>
-
-    <figure class="hw-figure reveal">
-      <img src="./assets/hardware-gate.jpg" alt="双激光测量门框：两侧激光模块对射，中间是全息人体线框" loading="lazy" />
-      <figcaption>
-        <span>测量门框 · 概念示意</span>
-        <span>2× VL53L1X · 对射测宽 · ESP32-S3</span>
-      </figcaption>
-    </figure>
-
-    <div class="hw-specs reveal">
-      <div><div class="n">±3–7<small>mm</small></div><div class="t">宽度误差（基线 1mm + 单侧测距 2mm）</div></div>
-      <div><div class="n">&lt;¥200</div><div class="t">整机成本（ESP32-S3 + 2× 模块 + 支架）</div></div>
-      <div><div class="n">2<small>路</small></div><div class="t">激光对射，纯几何减法，不需角度绝对值</div></div>
-    </div>
-  </div>
-</section>
-
 <!-- ================= 精度数据 ================= -->
 <section class="section gray" id="data">
   <div class="wrap">
@@ -659,7 +615,6 @@
           <tr><td>真实深度帧（SR300 Depth 设备 Error，librealsense 已弃用该型号）</td><td class="v">当前不可用</td></tr>
           <tr><td>胸 / 腰 / 臀围、臂展</td><td class="v">已真人校准 · 仍属估算</td></tr>
           <tr><td>中国人群比例先验（ANSUR II 为美军样本）</td><td class="v">未覆盖</td></tr>
-          <tr><td>激光宽度精度（方案与固件已完成，实物未搭）</td><td class="v">待实测</td></tr>
           <tr><td>多摄像头外参标定 / 真三维重建</td><td class="v">规划中</td></tr>
           <tr><td>同一人跨天、跨衣物的纵向复测</td><td class="v">规划中</td></tr>
           <tr><td>全场景泛化（不限于受控室内）</td><td class="v">不做承诺</td></tr>
@@ -691,8 +646,6 @@
       <li><span>[x]</span> 采样灵敏度、快速达标停止、4:3 全身入画、半身拼接</li>
       <li><span>[x]</span> ANSUR II 真人数据校准：6 个校正模型 + 6,068 人参考库</li>
       <li><span>[x]</span> 测量结果自动标注人群百分位，越界标红</li>
-      <li><span>[x]</span> 双激光测宽方案与固件（ESP32-S3 + 2× VL53L1X）</li>
-      <li><span>[ ]</span> 激光门框实物搭建，宽度精度做到 ±5mm</li>
       <li><span>[ ]</span> 真人卷尺对照实验，把「目标 ≤5%」变成实测结论</li>
       <li><span>[ ]</span> 接入 D4xx / LiDAR 深度源，消除模型先验比例的系统偏差</li>
       <li><span>[ ]</span> 多摄像头外参标定，让「多视角」升级为三维重建</li>
@@ -737,7 +690,7 @@
       </div>
     </div>
     <div class="f-bottom">
-      <span>© 2026 CLEANFIT · MIT LICENSE · 核心图形内联 SVG · 硬件图为本地资源</span>
+      <span>© 2026 CLEANFIT · MIT LICENSE · 全部图形为内联 SVG，零外链</span>
       <span>BLAZEPOSE / THREE.JS / WEBGL · BUILT FOR MEASUREMENT ACCURACY</span>
     </div>
   </div>
