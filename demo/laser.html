@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cleanfit · 激光测宽</title>
+<style>
+  :root {
+    --bg: #04080f; --panel: #071119; --line: rgba(34,211,238,.18);
+    --cyan: #22d3ee; --cyan-soft: #7ff3ff; --green: #76b900;
+    --text: #d7eef7; --muted: #6f93a3; --amber: #fbbf24; --red: #f87171;
+    --mono: "JetBrains Mono", Consolas, ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    display: flex; justify-content: center; padding: 28px 16px;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 55% 45% at 50% 0%, rgba(34,211,238,.08), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(34,211,238,.022) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(90deg, rgba(34,211,238,.022) 0 1px, transparent 1px 44px);
+  }
+  .wrap { position: relative; z-index: 1; width: 100%; max-width: 760px; }
+  .brand { font-family: var(--mono); font-size: 11px; letter-spacing: 3px; color: var(--cyan); }
+  .brand span { color: var(--muted); letter-spacing: 1.5px; }
+  h1 { margin: 10px 0 6px; font-size: 24px; font-weight: 600; letter-spacing: .5px; }
+  .lead { margin: 0 0 22px; font-size: 12.5px; line-height: 1.8; color: var(--muted); }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 22px; margin-bottom: 16px; }
+  .big { display: flex; align-items: baseline; gap: 10px; }
+  .big .num { font-family: var(--mono); font-size: 58px; font-weight: 700; letter-spacing: -2px; color: var(--cyan-soft); line-height: 1; }
+  .big .unit { font-family: var(--mono); font-size: 16px; color: var(--muted); }
+  .big .state { margin-left: auto; font-family: var(--mono); font-size: 11px; padding: 4px 9px; border-radius: 3px; background: rgba(34,211,238,.10); color: var(--cyan); }
+  .big .state.warn { background: rgba(251,191,36,.14); color: var(--amber); }
+  .big .state.bad { background: rgba(248,113,113,.14); color: var(--red); }
+
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
+  .kv { background: #061019; border: 1px solid rgba(34,211,238,.10); border-radius: 4px; padding: 12px 14px; }
+  .kv .k { font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; color: var(--muted); }
+  .kv .v { font-family: var(--mono); font-size: 20px; margin-top: 5px; color: var(--text); }
+  .kv .v small { font-size: 11px; color: var(--muted); margin-left: 3px; }
+
+  canvas { display: block; width: 100%; height: 84px; margin-top: 16px; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; color: var(--muted); }
+  input[type=number], input[type=text] {
+    width: 150px; padding: 8px 10px; font-family: var(--mono); font-size: 13px;
+    color: var(--text); background: #061019; border: 1px solid var(--line); border-radius: 3px;
+  }
+  input[type=text] { width: 196px; }
+  input:focus { outline: none; border-color: var(--cyan); }
+  button {
+    padding: 9px 16px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    background: transparent; color: var(--text); border: 1px solid rgba(34,211,238,.35); border-radius: 3px;
+    transition: all .15s;
+  }
+  button:hover { border-color: var(--cyan); color: var(--cyan-soft); }
+  button.primary { background: var(--cyan); color: #04131a; border-color: var(--cyan); }
+  button.primary:hover { background: var(--cyan-soft); }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+
+  .log { margin-top: 14px; max-height: 150px; overflow: auto; font-family: var(--mono); font-size: 10.5px; line-height: 1.7; color: var(--muted); }
+  .log b { color: var(--cyan); font-weight: 400; }
+  .hint { margin-top: 10px; font-size: 11px; line-height: 1.7; color: #55707d; }
+  .sep { height: 1px; background: rgba(34,211,238,.10); margin: 18px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">CLEANFIT <span>/ LASER GATE</span></div>
+  <h1>双激光对射测宽</h1>
+  <p class="lead">W = B − dL − dR。接上 ESP32 后点「连接串口」，或填 WebSocket 地址。没有硬件可以点「模拟数据」先看界面。</p>
+
+  <div class="card">
+    <div class="big">
+      <span class="num" id="w">--</span><span class="unit">cm</span>
+      <span class="state" id="state">未连接</span>
+    </div>
+    <div class="grid3">
+      <div class="kv"><div class="k">dL 左侧距离</div><div class="v" id="dl">--<small>mm</small></div></div>
+      <div class="kv"><div class="k">dR 右侧距离</div><div class="v" id="dr">--<small>mm</small></div></div>
+      <div class="kv"><div class="k">B 基线</div><div class="v" id="b">--<small>mm</small></div></div>
+    </div>
+    <canvas id="spark" width="1400" height="168"></canvas>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="field"><label>基线 B (mm)</label><input type="number" id="baseline" value="700" step="1" /></div>
+      <div class="field"><label>WebSocket 地址</label><input type="text" id="wsurl" value="ws://192.168.1.50:81" /></div>
+      <button class="primary" id="btnSerial">连接串口</button>
+      <button id="btnWs">连接 WebSocket</button>
+      <button id="btnSim">模拟数据</button>
+      <button id="btnStop">停止</button>
+    </div>
+    <div class="log" id="log"></div>
+    <p class="hint">WebSerial 需要 Chrome / Edge，并且页面必须是 https 或 localhost。串口波特率固定 115200。</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const S = { port: null, reader: null, ws: null, timer: null, hist: [], running: false };
+  const MAXH = 120;
+
+  function log(msg) {
+    const el = $('log');
+    const t = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    el.innerHTML += `<div><b>${t}</b> ${msg}</div>`;
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function median(a) {
+    if (!a.length) return NaN;
+    const b = [...a].sort((x, y) => x - y);
+    const m = b.length >> 1;
+    return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2;
+  }
+
+  function setState(text, cls) {
+    const el = $('state');
+    el.textContent = text;
+    el.className = 'state' + (cls ? ' ' + cls : '');
+  }
+
+  function handle(o) {
+    const B = Number($('baseline').value) || 700;
+    const dL = Number(o.dL), dR = Number(o.dR);
+    const valid = o.ok && dL > 0 && dR > 0;
+    $('dl').innerHTML = (dL > 0 ? dL : '--') + '<small>mm</small>';
+    $('dr').innerHTML = (dR > 0 ? dR : '--') + '<small>mm</small>';
+    $('b').innerHTML = B + '<small>mm</small>';
+
+    if (!valid) {
+      $('w').textContent = '--';
+      setState('无有效回波', 'warn');
+      return;
+    }
+    const W = B - dL - dR;
+    if (W <= 0) {
+      $('w').textContent = '--';
+      setState('无人 / 超基线', 'bad');
+      return;
+    }
+    S.hist.push(W);
+    if (S.hist.length > MAXH) S.hist.shift();
+    const wm = median(S.hist.slice(-9));
+    $('w').textContent = (wm / 10).toFixed(1);
+
+    const recent = S.hist.slice(-9);
+    const mean = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const sd = Math.sqrt(recent.reduce((a, b) => a + (b - mean) ** 2, 0) / recent.length);
+    if (sd < 3) setState('稳定 ±' + sd.toFixed(1) + 'mm');
+    else if (sd < 8) setState('轻微抖动 ±' + sd.toFixed(1) + 'mm', 'warn');
+    else setState('不稳定 ±' + sd.toFixed(1) + 'mm', 'bad');
+
+    draw();
+  }
+
+  function draw() {
+    const c = $('spark'), ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(34,211,238,.10)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 3; i++) {
+      const y = (H / 3) * i;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    if (S.hist.length < 2) return;
+    const lo = Math.min(...S.hist), hi = Math.max(...S.hist);
+    const pad = Math.max((hi - lo) * 0.25, 2);
+    const min = lo - pad, max = hi + pad;
+    ctx.strokeStyle = '#22d3ee';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    S.hist.forEach((v, i) => {
+      const x = (i / (S.hist.length - 1)) * W;
+      const y = H - ((v - min) / (max - min)) * H;
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    });
+    ctx.stroke();
+  }
+
+  function feedLines(text) {
+    for (const line of text.split('\n')) {
+      const s = line.trim();
+      if (!s.startsWith('{')) continue;
+      try { handle(JSON.parse(s)); } catch (e) { /* 忽略半行 */ }
+    }
+  }
+
+  async function connectSerial() {
+    if (!('serial' in navigator)) { log('此浏览器不支持 WebSerial，请用 Chrome / Edge'); return; }
+    try {
+      S.port = await navigator.serial.requestPort();
+      await S.port.open({ baudRate: 115200 });
+      log('串口已打开 115200');
+      setState('串口已连接');
+      S.running = true;
+      const dec = new TextDecoderStream();
+      S.port.readable.pipeTo(dec.writable).catch(() => {});
+      S.reader = dec.readable.getReader();
+      let buf = '';
+      while (S.running) {
+        const { value, done } = await S.reader.read();
+        if (done) break;
+        buf += value;
+        let i;
+        while ((i = buf.indexOf('\n')) >= 0) {
+          feedLines(buf.slice(0, i));
+          buf = buf.slice(i + 1);
+        }
+      }
+    } catch (e) {
+      log('串口失败：' + e.message);
+    }
+  }
+
+  function connectWs() {
+    const url = $('wsurl').value.trim();
+    try {
+      S.ws = new WebSocket(url);
+      S.ws.onopen = () => { log('WebSocket 已连接 ' + url); setState('WS 已连接'); };
+      S.ws.onmessage = (e) => feedLines(String(e.data));
+      S.ws.onerror = () => log('WebSocket 错误');
+      S.ws.onclose = () => { log('WebSocket 断开'); setState('未连接'); };
+    } catch (e) {
+      log('WebSocket 失败：' + e.message);
+    }
+  }
+
+  function simulate() {
+    stop();
+    S.running = true;
+    log('模拟数据：肩宽约 48–49cm');
+    S.timer = setInterval(() => {
+      const B = Number($('baseline').value) || 700;
+      const target = 485 + (Math.random() - 0.5) * 14;
+      const dL = Math.round((B - target) / 2 + (Math.random() - 0.5) * 6);
+      const dR = Math.round((B - target) / 2 + (Math.random() - 0.5) * 6);
+      handle({ t: Date.now(), dL, dR, B, ok: 1 });
+    }, 60);
+  }
+
+  function stop() {
+    S.running = false;
+    if (S.timer) { clearInterval(S.timer); S.timer = null; }
+    if (S.ws) { try { S.ws.close(); } catch {} S.ws = null; }
+    if (S.reader) { try { S.reader.cancel(); } catch {} S.reader = null; }
+    if (S.port) { try { S.port.close(); } catch {} S.port = null; }
+    setState('已停止');
+  }
+
+  $('btnSerial').addEventListener('click', connectSerial);
+  $('btnWs').addEventListener('click', connectWs);
+  $('btnSim').addEventListener('click', simulate);
+  $('btnStop').addEventListener('click', stop);
+  $('baseline').addEventListener('input', () => {
+    $('b').innerHTML = (Number($('baseline').value) || 0) + '<small>mm</small>';
+  });
+  draw();
+})();
+</script>
+</body>
+</html>
