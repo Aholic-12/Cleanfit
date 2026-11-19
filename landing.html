@@ -213,6 +213,27 @@
   .notice b { color: #8a6a12; }
   .notice .n-ico { font-family: var(--mono); font-size: 18px; color: var(--amber); line-height: 1.2; }
 
+  /* ---------- 市场与商业 ---------- */
+  .biz-kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: 24px; }
+  .biz-kpi > div { background: var(--white); padding: 22px 20px; }
+  .biz-kpi b { display: block; font-family: var(--mono); font-size: 27px; letter-spacing: -1.2px; line-height: 1; color: var(--green-dk); }
+  .biz-kpi span { display: block; margin-top: 9px; font-size: 11.5px; line-height: 1.65; color: var(--muted); }
+  .biz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .biz-card { border: 1px solid var(--line); background: var(--white); padding: 22px; }
+  .biz-card h3 { margin: 0; font-size: 15px; }
+  .biz-card .h-en { font-family: var(--mono); font-size: 10px; letter-spacing: 1.4px; color: var(--green-dk); margin: 5px 0 15px; }
+  .biz-card ul { margin: 0; padding: 0; list-style: none; }
+  .biz-card li { position: relative; padding: 9px 0 9px 15px; border-top: 1px solid #eef1eb; font-size: 12.5px; line-height: 1.75; color: #4d574b; }
+  .biz-card li:before { content: ''; position: absolute; left: 0; top: 17px; width: 5px; height: 5px; background: var(--green); }
+  .biz-card li b { color: var(--ink); }
+  .biz-flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 26px; }
+  .biz-flow > div { position: relative; border: 1px solid var(--line); background: var(--gray); padding: 16px 10px; text-align: center; }
+  .biz-flow > div:not(:last-child):after { content: '→'; position: absolute; right: -13px; top: 50%; transform: translateY(-50%); color: var(--green-dk); font-size: 15px; z-index: 2; background: var(--white); }
+  .biz-flow b { display: block; font-size: 12.5px; }
+  .biz-flow span { display: block; margin-top: 6px; font-size: 10.5px; line-height: 1.55; color: var(--muted); }
+  .biz-src { margin-top: 22px; padding: 14px 18px; border-left: 3px solid var(--amber); background: #fffdf6; font-size: 11px; line-height: 1.95; color: var(--muted); }
+  .biz-src b { color: #8a6a12; }
+
   /* ---------- 真人数据校准 ---------- */
   .calib-wrap { display: grid; grid-template-columns: 1.08fr .92fr; gap: 48px; align-items: start; }
   .calib-list { display: flex; flex-direction: column; gap: 15px; }
@@ -301,6 +322,10 @@
     .tech-grid, .cta-in, .data-grid { grid-template-columns: 1fr; gap: 32px; }
     .calib-wrap { grid-template-columns: 1fr; gap: 30px; }
     .stats { grid-template-columns: repeat(2, 1fr); }
+    .biz-kpi { grid-template-columns: repeat(2, 1fr); }
+    .biz-grid { grid-template-columns: 1fr; }
+    .biz-flow { grid-template-columns: repeat(2, 1fr); }
+    .biz-flow > div:not(:last-child):after { content: ''; }
     .stat:nth-child(2) { border-right: 0; }
     .f-grid { grid-template-columns: 1fr 1fr; }
   }
@@ -309,6 +334,8 @@
     .nav-right > a:first-child { display: none; }
     .tabs { grid-template-columns: repeat(2, 1fr); }
     .cards, .method, .stats, .f-grid { grid-template-columns: 1fr; }
+    .biz-kpi, .biz-flow { grid-template-columns: 1fr; }
+    .biz-flow > div:not(:last-child):after { content: '↓'; right: 50%; top: auto; bottom: -14px; transform: translateX(50%); }
     .ref-strip { grid-template-columns: 1fr; }
     .stat { border-right: 0; border-bottom: 1px solid var(--line); }
     .prog-row { grid-template-columns: 70px 1fr 40px; gap: 10px; }
@@ -338,6 +365,7 @@
       <a href="#tech">技术</a>
       <a href="#calibration">真人校准</a>
       <a href="#data">精度数据</a>
+      <a href="#business">市场商业</a>
       <a href="#progress">进度</a>
       <a href="#roadmap">路线</a>
       <a href="#dev">开发者</a>
@@ -672,6 +700,72 @@
     <div class="notice reveal">
       <div class="n-ico">!</div>
       <div><b>关于硬件：</b>本机 Intel RealSense SR300 的 Depth 设备在 Windows 中为 Error 状态，<code>pyrealsense2 2.59</code> 已移除该型号支持（<code>query_devices()</code> 返回 0 台），浏览器也读不了 Z16 / Y8 格式。因此当前绝对尺度由<b>激光测距 / 已知参照物 / 已知身高</b>这类外部基准提供，而不是假装已有深度真值。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 市场与商业 ================= -->
+<section class="section" id="business">
+  <div class="wrap">
+    <div class="head-row reveal">
+      <div>
+        <div class="kicker">Business / 市场与商业</div>
+        <h2>痛点够真，<br>但商业模式要落在测量上</h2>
+        <p class="sub">网上买衣服的尺码问题，每年让商家和消费者共同买单。市场已经验证了「量体」的商业价值，但绝大多数方案靠统计猜比例。Cleanfit 切入的是更底层、也更难替代的一环：<b>把尺寸本身量准，并让误差可复现</b>。</p>
+      </div>
+    </div>
+
+    <div class="biz-kpi reveal">
+      <div><b>50–60%</b><span>女装 / 婚庆类电商退货率<br>行业公开数据</span></div>
+      <div><b>60%+</b><span>退货诱因来自尺码不符<br>与上身效果偏差</span></div>
+      <div><b>¥15</b><span>单件退货处理成本<br>500 件 / 55% 退货约亏 ¥7 万</span></div>
+      <div><b>$93.8 亿</b><span>2026 全球虚拟试衣市场<br>CAGR 22.3%</span></div>
+    </div>
+
+    <div class="biz-grid reveal">
+      <div class="biz-card">
+        <h3>市场痛点</h3>
+        <div class="h-en">PAIN POINT</div>
+        <ul>
+          <li><b>商家：</b>备少了断货、备多了压货。一款 500 件、退货率 55% 的新品，直接亏损近 ¥7 万。</li>
+          <li><b>消费者：</b>看模特图冲动下单，到手版型不符 —— 不是不想买，是不敢买。</li>
+          <li><b>现有解法：</b>图片、直播、AI 试衣都在「算」尺码；用户真正需要的是「看得见」的上身效果。</li>
+          <li><b>价值已被验证：</b>3DLOOK 用 2 张照片、30–60 秒出 80+ 项尺寸，官网宣称退货最高降 20%、返工最高降 90%。</li>
+        </ul>
+      </div>
+      <div class="biz-card">
+        <h3>商业模式</h3>
+        <div class="h-en">REVENUE MODEL</div>
+        <ul>
+          <li><b>B2B 测量 SDK / API：</b>把「获取我的尺寸」组件嵌进电商详情页，按次调用或企业订阅（同类产品已提供 7 天试用）。</li>
+          <li><b>门店硬件 + 服务：</b>激光量体门框作为线下入口，卖设备 + 年费；宽度精度靠物理实测，不靠猜。</li>
+          <li><b>供应链数据服务：</b>体型分布 → 版型建议与备货预测，向品牌方 / 工厂收费。</li>
+          <li><b>Cleanfit 的位置：</b>先做误差可复现的测量底层。没有可信尺寸，上面三层都站不住。</li>
+        </ul>
+      </div>
+      <div class="biz-card">
+        <h3>供应链闭环</h3>
+        <div class="h-en">SUPPLY CHAIN</div>
+        <ul>
+          <li><b>先试后产：</b>用虚拟试穿做预售验证，把「先生产后销售」改成数据驱动的轻库存模式。</li>
+          <li><b>C2M 直连工厂：</b>订单直达产线，跳过品牌与代理环节，实现精准匹配。</li>
+          <li><b>小单快反：</b>数字打样 + 智能排产，一件衣服从设计到上架压缩到数天。</li>
+          <li><b>成本结构：</b>单款 3D 建模从 ¥800–2000 降到 ¥50–300；首单少亏 44%、库存风险降 40%。</li>
+          <li><b>规模效应：</b>5 万件爆款量级下，建模成本摊薄至 ¥0.12 / 件。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="biz-flow reveal">
+      <div><b>① 浏览器量体</b><span>14 项尺寸 + CV + 置信度</span></div>
+      <div><b>② 体型档案</b><span>身形分类 + 比例档案</span></div>
+      <div><b>③ 虚拟试穿</b><span>先看上身效果再下单</span></div>
+      <div><b>④ 版型推荐</b><span>按体型匹配版型与理由</span></div>
+      <div><b>⑤ 柔性供应链</b><span>先试后产 · 小单快反</span></div>
+    </div>
+
+    <div class="biz-src reveal">
+      <b>数据来源与边界：</b>退货率、退货成本与建模降本数据来自网经社公开数据及 36 氪 2026-11-13 报道；市场规模与 CAGR 来自该报道引用的行业预测；3DLOOK 数据来自其官网；C2M 定义来自公开资料。以上均为<b>行业公开数据，不是 Cleanfit 的实测业绩</b>。本页面不承诺「接入后退货率下降 X%」—— 我们目前可验证的贡献只有测量端的误差数据，商业化尚未开始。
     </div>
   </div>
 </section>
