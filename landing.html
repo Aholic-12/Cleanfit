@@ -80,7 +80,7 @@
   .eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--green); }
   .hero h1 { margin: 0 0 22px; font-size: clamp(42px, 5.2vw, 72px); line-height: 1.12; font-weight: 800; letter-spacing: -1.5px; }
   .hero h1 em { font-style: normal; color: var(--green-hi); }
-  .hero-lead { margin: 0 0 32px; max-width: 560px; font-size: 16px; line-height: 1.95; color: #c9d2c6; }
+  .hero-lead { margin: 0 0 32px; max-width: 560px; font-size: 17px; line-height: 1.85; color: #c9d2c6; }
   .hero-lead b { color: var(--white); font-weight: 600; }
   .cta { display: flex; flex-wrap: wrap; gap: 12px; }
   .hero-meta { margin-top: 30px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 1.2px; color: #6d7a6a; }
@@ -146,13 +146,13 @@
 
   /* ---------- 通用区块 ---------- */
   section { scroll-margin-top: 58px; }
-  .section { padding: 88px 0; }
+  .section { padding: 104px 0; }
   .section.gray { background: var(--gray); }
   .section.dark { background: var(--ink); color: var(--white); }
-  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 2.2px; color: var(--green-dk); text-transform: uppercase; margin-bottom: 14px; }
+  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 2.2px; color: var(--green-dk); text-transform: uppercase; margin-bottom: 18px; }
   .section.dark .kicker { color: var(--green-hi); }
-  h2 { margin: 0 0 16px; font-size: clamp(28px, 3.4vw, 42px); line-height: 1.25; font-weight: 800; letter-spacing: -.8px; }
-  .sub { margin: 0; max-width: 720px; font-size: 14.5px; line-height: 1.95; color: var(--muted); }
+  h2 { margin: 0 0 18px; font-size: clamp(32px, 4vw, 52px); line-height: 1.16; font-weight: 800; letter-spacing: -1.2px; }
+  .sub { margin: 0; max-width: 680px; font-size: 15px; line-height: 1.85; color: var(--muted); }
   .section.dark .sub { color: #9daa99; }
   .head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; margin-bottom: 42px; }
 
@@ -363,12 +363,10 @@
     <nav class="menu">
       <a href="#product">产品</a>
       <a href="#tech">技术</a>
-      <a href="#calibration">真人校准</a>
-      <a href="#data">精度数据</a>
-      <a href="#business">市场商业</a>
+      <a href="#calibration">校准</a>
+      <a href="#data">数据</a>
+      <a href="#business">商业</a>
       <a href="#progress">进度</a>
-      <a href="#roadmap">路线</a>
-      <a href="#dev">开发者</a>
     </nav>
     <div class="nav-right">
       <a href="https://github.com/Aholic-12/Cleanfit" target="_blank" rel="noopener">GitHub</a>
@@ -385,9 +383,8 @@
       <div class="eyebrow">4D Anthropometry · 2026</div>
       <h1>把人体比例<br><em>测到可复现</em></h1>
       <p class="hero-lead">
-        <b>3D 骨骼段长 × 多帧 / 多姿态 / 多视角稳健融合 × 外部尺度标定</b>。<br>
-        浏览器端实时采集，鼠标框选限定区域，输出 14 项尺寸、变异系数与置信度；
-        再用 <b>5,933 名真人</b>测量数据校准经验系数，一键导出 JSON / CSV。
+        浏览器里的 4D 人体测量工作台。<br>
+        <b>3D 段长 × 多帧融合 × 5,933 真人校准</b>，输出 14 项尺寸与置信度。
       </p>
       <div class="cta">
         <a class="btn btn-green" href="https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX" target="_blank" rel="noopener">进入 4D 测量工作台 <span>→</span></a>
@@ -397,7 +394,7 @@
         <button class="motion-btn" id="btnMotion" type="button">
           <span class="dot"></span><span id="motionLabel">动作同步</span>
         </button>
-        <span class="motion-note" id="motionNote">开启后小人跟随你的动作 · 画面仅在本地处理</span>
+        <span class="motion-note" id="motionNote">小人跟随你的动作 · 本地处理</span>
       </div>
       <div class="hero-meta">BLAZEPOSE · 33 关键点 &nbsp;/&nbsp; 零外链 · 可离线 &nbsp;/&nbsp; MIT LICENSE</div>
     </div>
@@ -480,10 +477,10 @@
 
 <!-- ================= 数字条 ================= -->
 <div class="wrap"><div class="stats reveal" id="stats">
-  <div class="stat"><div class="n">14<small>项</small></div><div class="t">人体尺寸输出（含 CV / 样本数 / 置信度）</div></div>
-  <div class="stat"><div class="n">5,933<small>人</small></div><div class="t">ANSUR II 真人样本，用于校准经验系数</div></div>
-  <div class="stat"><div class="n">−87<small>%</small></div><div class="t">臀围误差降幅（留出集 MAE 34.6 → 4.7 cm）</div></div>
-  <div class="stat"><div class="n">6,068<small>人</small></div><div class="t">14 项参考分布，测量值自动标注人群百分位</div></div>
+  <div class="stat"><div class="n">14<small>项</small></div><div class="t">尺寸 + 置信度输出</div></div>
+  <div class="stat"><div class="n">5,933<small>人</small></div><div class="t">真人样本校准</div></div>
+  <div class="stat"><div class="n">−87<small>%</small></div><div class="t">臀围误差降幅</div></div>
+  <div class="stat"><div class="n">6,068<small>人</small></div><div class="t">参考分布 · 自动标分位</div></div>
 </div></div>
 
 <!-- ================= 产品 ================= -->
@@ -493,7 +490,7 @@
       <div>
         <div class="kicker">Products / 产品矩阵</div>
         <h2>一个主攻，三个保留的原型</h2>
-        <p class="sub">当前所有新工作都围绕「把尺寸测准」。试衣、GPU 精修与实时换装原型保持原样、暂不迭代，仍可直接使用。</p>
+        <p class="sub">所有新工作聚焦「把尺寸测准」；其余三个原型保持可用、暂不迭代。</p>
       </div>
       <a class="btn btn-outline" href="https://github.com/Aholic-12/Cleanfit#-当前进度--聚焦测量精度" target="_blank" rel="noopener">查看当前进度 →</a>
     </div>
@@ -507,7 +504,7 @@
           <circle cx="24" cy="24" r="3.5" fill="#76b900"/>
         </svg>
         <h3>4D 人体尺寸测量</h3>
-        <p>直接在画面上拖出限定区域，按引导变换姿态，快速档达标自动停止；14 项尺寸与置信度一键导出。</p>
+        <p>框选区域、变换姿态，14 项尺寸与置信度一键导出。</p>
         <div class="tags"><i>ROI</i><i>MAD 融合</i><i>尺度标定</i><i>JSON/CSV</i></div>
         <a class="go" href="https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX" target="_blank" rel="noopener">进入工作台 →</a>
       </article>
@@ -518,7 +515,7 @@
           <path d="M24 16v16M14 22l10-3 10 3M24 32l-7 11M24 32l7 11" fill="none" stroke="#5a6655" stroke-width="2" stroke-linecap="round"/>
         </svg>
         <h3>Pose Mirror 试衣</h3>
-        <p>摄像头取景 + 实时 3D 全息人像 + 网格贴衣，光照场、袖缝几何、领口挖空与手臂遮挡还原。</p>
+        <p>实时 3D 全息人像与网格贴衣，含光影与遮挡还原。</p>
         <div class="tags"><i>Three.js</i><i>60 FPS</i><i>本地 GPU</i></div>
         <a class="go" href="./demo/" target="_blank" rel="noopener">打开原型 →</a>
       </article>
@@ -530,7 +527,7 @@
           <path d="M14 32l6-8 5 4 9-11" fill="none" stroke="#76b900" stroke-width="2.2" stroke-linecap="round"/>
         </svg>
         <h3>本地 GPU 精修</h3>
-        <p>SD1.5-inpainting 对贴好的躯干重绘一次，逆变换烘焙回贴图；画质是 AI 的，帧率仍由 canvas 保持。</p>
+        <p>SD1.5 局部重绘，1.7 秒出图，帧率仍由 canvas 保持。</p>
         <div class="tags"><i>SD 1.5</i><i>RTX 5070</i><i>1.7s</i></div>
         <a class="go" href="https://github.com/Aholic-12/Cleanfit/tree/main/tryon_server" target="_blank" rel="noopener">查看服务 →</a>
       </article>
@@ -542,7 +539,7 @@
           <circle cx="36" cy="16" r="2.5" fill="#76b900"/><circle cx="38" cy="26" r="1.8" fill="#76b900"/>
         </svg>
         <h3>实时换装（保留）</h3>
-        <p>Decart Lucy VTON 生成式视频扩散原型，WebRTC 实时回传；需 API key，当前未启用，代码完整保留。</p>
+        <p>生成式视频换装原型，需 API key，当前未启用。</p>
         <div class="tags"><i>WebRTC</i><i>Lucy VTON</i><i>未启用</i></div>
         <a class="go" href="https://github.com/Aholic-12/Cleanfit/tree/main/holo" target="_blank" rel="noopener">查看代码 →</a>
       </article>
@@ -557,19 +554,19 @@
       <div class="reveal">
         <div class="kicker">Technology / 精度主线</div>
         <h2>精度不来自<br>更重的单帧模型</h2>
-        <p class="sub">BlazePose 的世界坐标是「模型先验尺度」，会把个体拉向人群平均值；单帧还有关键点抖动、遮挡误检与侧身透视缩短。Cleanfit 把精度拆成六个可验证的环节。</p>
+        <p class="sub">BlazePose 世界坐标是「模型先验尺度」，会把个体拉向人群平均。Cleanfit 把精度拆成六个可验证环节。</p>
         <div style="margin-top:30px">
           <a class="btn btn-green" href="https://github.com/Aholic-12/Cleanfit/blob/main/demo/README.md" target="_blank" rel="noopener">阅读算法说明 →</a>
         </div>
       </div>
 
       <div class="method reveal">
-        <div><div class="idx">01 / 4D</div><h4>3D 段长 × 时间序列</h4><p>段长绕 Y 轴旋转不变（实测转体 90° 变化 0.000000），把「单帧猜测」变成跨时间的可复现测量。</p></div>
-        <div><div class="idx">02 / ROI</div><h4>限定区域 · 段级过滤</h4><p>鼠标直接拖框、拖边缩放、双击删除。框全身出全身数据，只框上半身只出上半身指标，可分段采集自动合并。</p></div>
-        <div><div class="idx">03 / POSE</div><h4>姿态分桶 + 质量评分</h4><p>五类姿态引导采样，避免 500 帧全是同一个姿势；可见度、ROI 命中率、朝向与运动模糊共同决定该帧是否收进。</p></div>
-        <div><div class="idx">04 / ROBUST</div><h4>MAD 离群剔除</h4><p>中位数绝对偏差剔除误检尖峰，再做 10% 截尾加权均值；每项输出 CV、离群数、样本数与收敛度。</p></div>
-        <div><div class="idx">05 / SCALE</div><h4>外部尺度标定</h4><p>已知身高、A4 同平面参照物、激光测距 + 参照物、仅激光四种方式，把模型先验尺度映射成真实厘米。</p></div>
-        <div><div class="idx">06 / DEVICE</div><h4>多设备与深度源</h4><p>多摄像头切换并入同一份样本；预留 <span class="mono">CleanfitDepthSource</span> 接口，接上 D4xx / LiDAR 即可自动并入标定。</p></div>
+        <div><div class="idx">01 / 4D</div><h4>3D 段长 × 时间序列</h4><p>段长绕体轴旋转不变（转体 90° 变化 0.000000），把单帧猜测变成可复现测量。</p></div>
+        <div><div class="idx">02 / ROI</div><h4>限定区域 · 段级过滤</h4><p>拖框选区、拖边缩放、双击删除；框哪里就出哪里的指标，可分段采集自动合并。</p></div>
+        <div><div class="idx">03 / POSE</div><h4>姿态分桶 + 质量评分</h4><p>五类姿态引导采样；可见度、ROI 命中、朝向与运动模糊共同决定该帧是否收录。</p></div>
+        <div><div class="idx">04 / ROBUST</div><h4>MAD 离群剔除</h4><p>MAD 剔除误检尖峰 + 10% 截尾加权，输出 CV、样本数与收敛度。</p></div>
+        <div><div class="idx">05 / SCALE</div><h4>外部尺度标定</h4><p>身高 / A4 / 激光 + A4 / 激光四种方式，把模型尺度映射成真实厘米。</p></div>
+        <div><div class="idx">06 / DEVICE</div><h4>多设备与深度源</h4><p>多摄切换并入同一样本；预留 CleanfitDepthSource 接口，接 D4xx / LiDAR 即可标定。</p></div>
       </div>
     </div>
   </div>
@@ -582,7 +579,7 @@
       <div>
         <div class="kicker">Calibration / 真人数据校准</div>
         <h2>用 5,933 个真人<br>把经验系数换掉</h2>
-        <p class="sub">原来的「肩宽 +5cm」「围度 π×宽×系数」都是拍脑袋的经验值。我们用美国陆军 ANSUR II 公开人体测量数据（6,068 人、108 项实测）拟合了 6 个比例校正模型，并且<b>只采用在留出集上确实更准的那些</b> —— 更差的项目原样退回旧公式。</p>
+        <p class="sub">用 6,068 个真人实测拟合 6 个校正模型，<b>只保留留出集上确实更准的</b>；更差的退回旧公式。</p>
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap">
         <a class="btn btn-outline" href="https://github.com/Aholic-12/Cleanfit/blob/main/train/output/report.md" target="_blank" rel="noopener">训练报告 →</a>
@@ -628,20 +625,20 @@
         <div class="fact">
           <div class="k">FINDING 01</div>
           <h5>肩宽被系统性低估约 4 cm</h5>
-          <p>真人「肩峰宽 → 三角肌外缘」平均差 <b>9.14 cm</b>，旧公式只加 5 cm。这不是随机误差，是方向一致的偏差。</p>
+          <p>真人「肩峰→三角肌外缘」平均差 <b>9.14 cm</b>，旧公式只加 5 cm。</p>
         </div>
         <div class="fact">
           <div class="k">FINDING 02</div>
           <h5>围度旧公式基本无依据</h5>
-          <p><span class="mono">π × 宽度 × 系数</span> 会系统性低估胸 / 腰 / 臀围 20–35 cm；真值显示围度更依赖「肩宽比 + 髋宽比 + 臂段比」的组合。</p>
+          <p>π × 宽 × 系数会低估胸 / 腰 / 臀围 20–35 cm。</p>
         </div>
         <div class="fact">
           <div class="k">FINDING 03</div>
           <h5>胯宽：按数据保留原公式</h5>
-          <p>训练模型在留出集上反而更差（1.59 vs 1.34 cm），所以标记不采用 —— 不为「有成果」强行全量替换。</p>
+          <p>训练后反而更差（1.59 vs 1.34 cm），保留原公式。</p>
         </div>
         <div class="calib-note">
-          <b>诚实边界：</b>ANSUR II 是美军人群（2012、年轻、体脂偏低），能验证方法、给合理量级，<b>不能当中国消费者先验</b>。围度仍是估算项 —— 骨架段长给不出软组织围度。
+          <b>边界：</b>美军样本（2012、年轻、体脂低），可验证方法，<b>不能当中国消费者先验</b>；围度仍属估算。
         </div>
       </div>
     </div>
@@ -662,7 +659,7 @@
       <div>
         <div class="kicker">Validation / 精度数据</div>
         <h2>哪些已经验证，哪些还没有</h2>
-        <p class="sub">左侧是算法收敛性、真人数据校准与工程链路的实测结果；右侧是明确尚未完成的部分。把两者分开写，是不想把合成数据或统计校准的结论当成真人精度。</p>
+        <p class="sub">左：已验证。右：未完成。分开写，是不把合成数据的结论当成真人精度。</p>
       </div>
     </div>
 
@@ -699,7 +696,7 @@
 
     <div class="notice reveal">
       <div class="n-ico">!</div>
-      <div><b>关于硬件：</b>本机 Intel RealSense SR300 的 Depth 设备在 Windows 中为 Error 状态，<code>pyrealsense2 2.59</code> 已移除该型号支持（<code>query_devices()</code> 返回 0 台），浏览器也读不了 Z16 / Y8 格式。因此当前绝对尺度由<b>激光测距 / 已知参照物 / 已知身高</b>这类外部基准提供，而不是假装已有深度真值。</div>
+      <div><b>硬件现状：</b>SR300 深度设备在当前系统不可用（驱动已弃用、浏览器不支持 Z16）。绝对尺度由<b>激光 / A4 / 已知身高</b>提供，不假装已有深度真值。</div>
     </div>
   </div>
 </section>
@@ -711,7 +708,7 @@
       <div>
         <div class="kicker">Business / 市场与商业</div>
         <h2>痛点够真，<br>但商业模式要落在测量上</h2>
-        <p class="sub">网上买衣服的尺码问题，每年让商家和消费者共同买单。市场已经验证了「量体」的商业价值，但绝大多数方案靠统计猜比例。Cleanfit 切入的是更底层、也更难替代的一环：<b>把尺寸本身量准，并让误差可复现</b>。</p>
+        <p class="sub">市场已验证「量体」的价值，但多数方案靠统计猜比例。Cleanfit 切入更底层的一环：<b>把尺寸量准，让误差可复现</b>。</p>
       </div>
     </div>
 
@@ -727,31 +724,31 @@
         <h3>市场痛点</h3>
         <div class="h-en">PAIN POINT</div>
         <ul>
-          <li><b>商家：</b>备少了断货、备多了压货。一款 500 件、退货率 55% 的新品，直接亏损近 ¥7 万。</li>
-          <li><b>消费者：</b>看模特图冲动下单，到手版型不符 —— 不是不想买，是不敢买。</li>
-          <li><b>现有解法：</b>图片、直播、AI 试衣都在「算」尺码；用户真正需要的是「看得见」的上身效果。</li>
-          <li><b>价值已被验证：</b>3DLOOK 用 2 张照片、30–60 秒出 80+ 项尺寸，官网宣称退货最高降 20%、返工最高降 90%。</li>
+          <li><b>商家：</b>500 件 / 55% 退货的新品，直接亏近 ¥7 万。</li>
+          <li><b>消费者：</b>不是不想买，是不敢买。</li>
+          <li><b>现状：</b>都在「算」尺码，用户要的是「看得见」。</li>
+          <li><b>已验证：</b>3DLOOK 2 张照片出 80+ 项，宣称退货降 20%。</li>
         </ul>
       </div>
       <div class="biz-card">
         <h3>商业模式</h3>
         <div class="h-en">REVENUE MODEL</div>
         <ul>
-          <li><b>B2B 测量 SDK / API：</b>把「获取我的尺寸」组件嵌进电商详情页，按次调用或企业订阅（同类产品已提供 7 天试用）。</li>
-          <li><b>门店硬件 + 服务：</b>激光量体门框作为线下入口，卖设备 + 年费；宽度精度靠物理实测，不靠猜。</li>
-          <li><b>供应链数据服务：</b>体型分布 → 版型建议与备货预测，向品牌方 / 工厂收费。</li>
-          <li><b>Cleanfit 的位置：</b>先做误差可复现的测量底层。没有可信尺寸，上面三层都站不住。</li>
+          <li><b>B2B SDK：</b>「获取我的尺寸」组件嵌入电商，按次或订阅。</li>
+          <li><b>硬件 + 服务：</b>激光量体门框，卖设备 + 年费。</li>
+          <li><b>数据服务：</b>体型分布 → 版型与备货建议。</li>
+          <li><b>我们的位置：</b>先做可信的测量底层。</li>
         </ul>
       </div>
       <div class="biz-card">
         <h3>供应链闭环</h3>
         <div class="h-en">SUPPLY CHAIN</div>
         <ul>
-          <li><b>先试后产：</b>用虚拟试穿做预售验证，把「先生产后销售」改成数据驱动的轻库存模式。</li>
-          <li><b>C2M 直连工厂：</b>订单直达产线，跳过品牌与代理环节，实现精准匹配。</li>
-          <li><b>小单快反：</b>数字打样 + 智能排产，一件衣服从设计到上架压缩到数天。</li>
-          <li><b>成本结构：</b>单款 3D 建模从 ¥800–2000 降到 ¥50–300；首单少亏 44%、库存风险降 40%。</li>
-          <li><b>规模效应：</b>5 万件爆款量级下，建模成本摊薄至 ¥0.12 / 件。</li>
+          <li><b>先试后产：</b>预售验证替代先产后销。</li>
+          <li><b>C2M：</b>订单直达产线，跳过中间环节。</li>
+          <li><b>小单快反：</b>设计到上架压缩到数天。</li>
+          <li><b>成本：</b>3D 建模 ¥800–2000 → ¥50–300；首单少亏 44%。</li>
+          <li><b>规模：</b>5 万件摊薄至 ¥0.12 / 件。</li>
         </ul>
       </div>
     </div>
@@ -765,7 +762,7 @@
     </div>
 
     <div class="biz-src reveal">
-      <b>数据来源与边界：</b>退货率、退货成本与建模降本数据来自网经社公开数据及 36 氪 2026-11-13 报道；市场规模与 CAGR 来自该报道引用的行业预测；3DLOOK 数据来自其官网；C2M 定义来自公开资料。以上均为<b>行业公开数据，不是 Cleanfit 的实测业绩</b>。本页面不承诺「接入后退货率下降 X%」—— 我们目前可验证的贡献只有测量端的误差数据，商业化尚未开始。
+      <b>来源与边界：</b>行业数据来自网经社 / 36 氪（2026-11-13）、3DLOOK 官网等公开资料，<b>非 Cleanfit 实测业绩</b>。我们目前可验证的只有测量端误差数据，商业化尚未开始。
     </div>
   </div>
 </section>
@@ -777,7 +774,7 @@
       <div>
         <div class="kicker">Progress / 当前进度</div>
         <h2>五个板块，<br>走到哪了</h2>
-        <p class="sub">按「原型 → 工程化 → 验证 → 产品化」四段计。三个地基板块走在前面，表现层里 AR 只做到贴图，推荐还在起步。</p>
+        <p class="sub">按「原型 → 工程化 → 验证 → 产品化」四段计。地基先行，AR 停在贴图，推荐刚起步。</p>
       </div>
       <div class="prog-kpi">
         <div><b>45%</b><span>整体完成度</span></div>
@@ -833,7 +830,7 @@
     <div class="reveal">
       <div class="kicker">Roadmap / 当前阶段</div>
       <h2>下一步只做一件事：<br>把精度变成有数据支撑的结论</h2>
-      <p class="sub">18 个月的长期规划保留在仓库 README 里；近期清单只围绕测量精度，其余模块冻结。</p>
+      <p class="sub">近期只围绕测量精度，其余模块冻结。</p>
       <div style="margin-top:30px; display:flex; gap:12px; flex-wrap:wrap">
         <a class="btn btn-green" href="https://cleanfit-holo.apps.workbuddy.host/?sharecode=LATEL4JUFX" target="_blank" rel="noopener">开始测量 →</a>
         <a class="btn btn-ghost" href="https://github.com/Aholic-12/Cleanfit" target="_blank" rel="noopener">GitHub 仓库</a>
@@ -861,7 +858,7 @@
           <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="4" fill="#76b900"/><circle cx="16" cy="16" r="8.5" fill="none" stroke="#0b0d0c" stroke-width="1.7"/><path d="M16 3v7M16 22v7M3 16h7M22 16h7" stroke="#0b0d0c" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="16" r="2.6" fill="#0b0d0c"/></svg>
           <span>CLEANFIT</span>
         </a>
-        <p>浏览器端人体比例精准测量。限定场景深耕精度，不做全场景泛化，不堆砌冗余功能。</p>
+        <p>浏览器端 4D 人体测量。深耕精度，不做泛化，不堆功能。</p>
       </div>
       <div class="f-col">
         <h5>产品</h5>
@@ -897,10 +894,10 @@
 <script>
 (function () {
   var PANELS = [
-    '<b>4D 融合采集</b> —— 用与视角无关的 3D 骨骼段长做基础量，再沿时间序列累积数百帧；快速档 40 帧 + 1 类姿态即可收敛，达标自动停止。',
-    '<b>限定区域框选</b> —— 画面上直接按住鼠标拖出新区域，框内拖动移动、拖边与四角缩放、双击删除；过滤下沉到「段」级，只框上半身就只出上半身指标。',
-    '<b>五类姿态分桶</b> —— 系统按肩向量朝向与髋部位移自动分桶（正面 / 抬臂 / 斜侧 / 侧身 / 移动），逐步引导换动作，重复同一姿态不再增加信息。',
-    '<b>稳健统计抗噪</b> —— 每帧先打质量分，再用 MAD 剔除离群、10% 截尾加权均值融合，输出 CV、样本数、置信度与收敛度，抗误检尖峰。',
+    '<b>4D 融合采集</b> —— 3D 段长做基础量，沿时间累积数百帧；快速档 40 帧收敛，达标自动停止。',
+    '<b>限定区域框选</b> —— 拖框选区、拖边缩放、双击删除；过滤下沉到「段」级，框哪里就出哪里的指标。',
+    '<b>五类姿态分桶</b> —— 按肩向量与髋位移自动分桶（正面 / 抬臂 / 斜侧 / 侧身 / 移动），引导换动作。',
+    '<b>稳健统计抗噪</b> —— 每帧打质量分，MAD 剔除离群 + 10% 截尾加权，输出 CV、样本数与置信度。',
     '<b>外部尺度标定</b> —— 已知身高 / A4 同平面参照物 / 激光测距 + 参照物 / 仅激光四种方式，把模型先验尺度映射成真实厘米；每项可填卷尺实测锚点。',
     '<b>多设备与深度源</b> —— 切换不同摄像头继续采样会并入同一份多视角样本；预留 <span class="mono">window.CleanfitDepthSource</span>，接上 D4xx / LiDAR 即自动并入标定。'
   ];
